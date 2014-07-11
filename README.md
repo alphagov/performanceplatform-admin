@@ -23,3 +23,9 @@ pip install -r requirements.txt
 ```bash
 python start.py 3070
 ```
+
+## Running tests
+
+```bash
+./run_tests.sh
+```
