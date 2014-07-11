@@ -4,7 +4,7 @@ python:
 env:
   global:
     # Contains a GH_TOKEN for the @gds-pp-ci user with public_repo access
-    secure: VwHwNKidb1KpFwRmWV2iyh9UIgLO8iOZjC5HZ3QKaiotWBx0IUOk9gsZgvsXYyNdshwHG3zwJaoA0KeBCxVqUyPpTvOU+NSdh7NYdEUt6vgn4HrTbASNvyCnQfNgOoLp9sqXhJeOynHlO9N8mEhmHPHDh9/+O81I5aZ/BJj2smg=
+    secure: phJDs0lrSnnexBbeEde6Sn5TC4IcXPfjnHdJaSIn9juXg8Ks8K5GZ0HvFwBVsABZTC+ym9xmcRILt0ZUU81k1H9Ol9G2dnwCm+D9uNPzAP4yTxFpaKmfjutRA72K2mN5yS/1JZ3HZ5JZ54mJghyVev+KnIoMv1RsmpAo5hxNpQE=
 install:
   - pip install -r requirements_for_tests.txt --use-mirrors
 script:
