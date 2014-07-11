@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
@@ -10,7 +10,7 @@ def root():
 
 @app.route("/_status", methods=['GET'])
 def status():
-    return "Status endpoint"
+    return jsonify({"admin": "ok"})
 
 
 def start(port):
