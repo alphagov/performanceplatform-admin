@@ -15,5 +15,6 @@ branches:
   except:
     - release
     - /^release_\d+$/
+    - /^deployed-to.*$/
 notifications:
   email: false
