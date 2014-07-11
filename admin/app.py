@@ -1,6 +1,12 @@
 from flask import Flask, jsonify
+from os import getenv
+
+
+GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
 app = Flask(__name__)
+
+app.config.from_object('admin.config.{0}'.format(GOVUK_ENV))
 
 
 @app.route("/", methods=['GET'])
