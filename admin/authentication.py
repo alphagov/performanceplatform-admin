@@ -1,5 +1,5 @@
 from admin import app
-from flask import redirect, request, session
+from flask import jsonify, redirect, request, session
 from requests_oauthlib import OAuth2Session
 
 
