@@ -1,13 +1,6 @@
-from flask import Flask, jsonify
-from os import getenv
+from admin import app
+from flask import jsonify
 import requests
-
-
-GOVUK_ENV = getenv('GOVUK_ENV', 'development')
-
-app = Flask(__name__)
-
-app.config.from_object('admin.config.{0}'.format(GOVUK_ENV))
 
 
 @app.route("/", methods=['GET'])
@@ -41,8 +34,3 @@ def status():
         app_status['stagecraft'] = error_status
 
     return jsonify(app_status)
-
-
-def start(port):
-    app.debug = True
-    app.run('0.0.0.0', port=port)
