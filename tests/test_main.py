@@ -12,7 +12,7 @@ def performance_platform_status_mock(url, request):
 
 class AppTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = app.app.test_client()
+        self.app = app.test_client()
 
     def test_status_endpoint_returns_ok(self):
         response = self.app.get("/_status")
