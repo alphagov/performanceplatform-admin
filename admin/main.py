@@ -1,11 +1,11 @@
 from admin import app
-from flask import jsonify
+from flask import jsonify, render_template
 import requests
 
 
 @app.route("/", methods=['GET'])
 def root():
-    return "Application root"
+    return render_template('index.html')
 
 
 @app.route("/_status", methods=['GET'])
