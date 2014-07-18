@@ -8,6 +8,11 @@ def root():
     return render_template('index.html')
 
 
+@app.route("/data-sets", methods=['GET'])
+def data_sets():
+    return render_template('data_sets.html')
+
+
 @app.route("/_status", methods=['GET'])
 def status():
     app_status = {'admin': {'status': 'ok'}}

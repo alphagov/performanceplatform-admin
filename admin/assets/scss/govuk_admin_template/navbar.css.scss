@@ -1,0 +1,98 @@
+/* ==========================================================================
+   Navbar
+   ========================================================================== */
+
+.navbar .container .navbar-brand {
+  background: url("/assets/govuk_admin_template/header-crown.png") 0 0.67em no-repeat;
+  color: #fff;
+  font-family: $font-family-gill-sans;
+  font-size: 20px;
+  margin-left: 0;
+  padding-left: 2.3em;
+  min-height: 37px;
+
+  .ie8 &,
+  .lte-ie7 & {
+    min-height: 20px;
+  }
+}
+
+// Prevent navbar height from collapsing when there's
+// no navbar_right or navbar_items
+header .navbar-header {
+  min-height: 50px;
+}
+
+@media (max-width: 768px) {
+  .navbar .container .navbar-brand {
+    margin-left: 15px;
+  }
+}
+
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus {
+  text-decoration: underline;
+}
+
+.navbar-text a {
+  color: $gray-light;
+  text-decoration: underline;
+}
+
+// Let's make these more specific to add the intended white colour
+.navbar-inverse .nav-collapse .nav a:hover,
+.navbar-inverse .nav-collapse .nav .active a,
+.navbar-inverse .nav-collapse .nav .active a:hover,
+.navbar-inverse .nav-collapse .nav .active a:focus {
+  color: #fff;
+}
+
+.ie8 .navbar .container,
+.lte-ie7 .navbar .container {
+  padding-left: 30px;
+  padding-right: 0;
+}
+
+/* Environment indicators
+   ========================================================================== */
+
+.environment-indicator {
+  border-bottom: 5px solid #000;
+}
+
+.environment-production .environment-indicator {
+  border-bottom-color: $production-color;
+}
+
+.environment-preview .environment-indicator {
+  border-bottom-color: $preview-color;
+}
+
+.environment-development .environment-indicator {
+  border-bottom-color: $dev-color;
+}
+
+.environment-label {
+  background: #333;
+  padding: 3px 5px;
+  border-radius: 3px;
+  font-weight: bold;
+  margin-top: 13px;
+  margin-right: 10px;
+  float: left;
+}
+
+.environment-production .environment-label {
+  background-color: $production-color;
+  color: #fff;
+}
+
+.environment-preview .environment-label {
+  background-color: $preview-color;
+  color: #000;
+}
+
+.environment-development .environment-label {
+  background-color: $dev-color;
+  color: #000;
+}
