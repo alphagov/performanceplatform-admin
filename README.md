@@ -26,6 +26,8 @@ pip install -r requirements.txt
 python start.py 3070
 ```
 
+This should also automatically compile sass to `admin/static/css/govuk_admin_template.css` when run in development
+
 ## Running tests
 
 ```bash
