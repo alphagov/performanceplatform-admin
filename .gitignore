@@ -6,4 +6,4 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 nosetests.xml
-admin/static
+admin/static/govuk_admin_template.css
