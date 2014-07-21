@@ -16,7 +16,7 @@ import admin.authentication
 def start(port):
     app.debug = app.config['DEBUG'] or False
     if app.debug:
-        # does not watch for changes and recompile if debug false
+        # does not watch for changes and recompile on requests if debug false
         Scss(app,
              static_dir='admin/static/css',
              asset_dir='admin/assets/scss/manifest',
