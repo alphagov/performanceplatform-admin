@@ -6,3 +6,4 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 nosetests.xml
+admin/static

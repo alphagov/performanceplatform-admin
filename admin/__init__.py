@@ -1,5 +1,5 @@
 from flask import Flask
-from os import getenv
+from os import getenv, path
 
 app = Flask(__name__)
 from flask.ext.scss import Scss
@@ -15,5 +15,9 @@ import admin.authentication
 
 def start(port):
     app.debug = True
-    Scss(app, static_dir='admin/static', asset_dir='admin/assets/scss')
+    Scss(app,
+         static_dir='admin/static',
+         asset_dir='admin/assets/scss/manifest',
+         load_paths=[
+             path.join(path.dirname(__file__), 'assets/scss')])
     app.run('0.0.0.0', port=port)
