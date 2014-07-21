@@ -8,3 +8,5 @@ STAGECRAFT_HOST = 'http://stagecraft.development.performance.service.gov.uk'
 SIGNON_OAUTH_ID = 'oauth_id'
 SIGNON_OAUTH_SECRET = 'oauth_secret'
 SIGNON_BASE_URL = 'https://signon.dev.gov.uk'
+
+DEBUG = True

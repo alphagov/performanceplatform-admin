@@ -1,9 +1,0 @@
-https://pypi.python.org/pypi/Flask-Sass/0.9
-https://pypi.python.org/pypi/Flask-libsass/1.1.0
-https://pypi.python.org/pypi/Flask-Scss/0.3
-https://www.google.co.uk/search?q=Flask-Sass+0.9&oq=Flask-Sass+0.9&aqs=chrome..69i57j69i60.531j0j7&sourceid=chrome&es_sm=119&ie=UTF-8
-http://stackoverflow.com/questions/14412677/using-sass-with-flask-and-jinja2
-https://github.com/imiric/flask-sass
-https://pythonhosted.org/Flask-Scss/
-http://stackoverflow.com/questions/12989916/using-scss-with-flask
-
