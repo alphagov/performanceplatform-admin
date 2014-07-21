@@ -1,6 +1,7 @@
 # Performance Platform admin
 
 [![Build status](https://travis-ci.org/alphagov/performanceplatform-admin.svg?branch=master)](https://travis-ci.org/alphagov/performanceplatform-admin)
+[![Coverage Status](https://coveralls.io/repos/alphagov/performanceplatform-admin/badge.png)](https://coveralls.io/r/alphagov/performanceplatform-admin)
 
 Performance Platform admin is a [Flask][] app that allows authorised
 users to update [performance data on GOV.UK][pp].
