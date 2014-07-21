@@ -1,3 +1,6 @@
 <h1>Performance Platform admin</h1>
 
+{% if user %}
+<p>Hello {{ user.name }}</p>
+{% endif %}
 <p><a href="/login">Login with GOV.UK Signon</a></p>

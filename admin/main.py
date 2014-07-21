@@ -1,11 +1,14 @@
 from admin import app
-from flask import jsonify, render_template
+from flask import jsonify, render_template, session
 import requests
 
 
 @app.route("/", methods=['GET'])
 def root():
-    return render_template('index.html')
+    context = dict()
+    if 'user' in session:
+        context['user'] = session['user']
+    return render_template('index.html', **context)
 
 
 @app.route("/_status", methods=['GET'])
