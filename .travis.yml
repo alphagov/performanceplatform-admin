@@ -10,6 +10,7 @@ install:
 script:
   - ./run_tests.sh
 after_success:
+  - coveralls
   - ./.travis/release_tag.sh
 branches:
   except:
