@@ -16,7 +16,7 @@ import admin.authentication
 def start(port):
     app.debug = True
     Scss(app,
-         static_dir='admin/static',
+         static_dir='admin/static/css',
          asset_dir='admin/assets/scss/manifest',
          load_paths=[
              path.join(path.dirname(__file__), 'assets/scss')])
