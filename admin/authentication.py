@@ -26,9 +26,6 @@ def authorize():
         authorization_response=request.url)
     user = gds_session.get('{0}/user.json'.format(
         app.config['SIGNON_BASE_URL'])).json()
-    session['user'] = {
-        'name': user['user']['name'],
-        'email': user['user']['email'],
-        'permissions': user['user']['permissions'],
-    }
+    session['oauth_user'] = user['user']
+    session['oauth_token'] = token
     return redirect(url_for('root'))

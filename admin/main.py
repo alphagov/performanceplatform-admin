@@ -1,13 +1,21 @@
 from admin import app
 from flask import jsonify, render_template, session
 import requests
+from performanceplatform.client.admin import AdminAPI
 
 
 @app.route("/", methods=['GET'])
 def root():
     context = dict()
-    if 'user' in session:
-        context['user'] = session['user']
+
+    if 'oauth_user' in session and 'oauth_token' in session:
+        admin_client = AdminAPI(app.config['STAGECRAFT_HOST'],
+                                session['oauth_token']['access_token'])
+        context = {
+            'user': session['oauth_user'],
+            'data_sets': admin_client.list_data_sets(),
+        }
+
     return render_template('index.html', **context)
 
 

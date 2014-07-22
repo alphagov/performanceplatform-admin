@@ -1,6 +1,15 @@
 <h1>Performance Platform admin</h1>
 
 {% if user %}
-<p>Hello {{ user.name }}</p>
+  <p>Hello {{ user.name }}</p>
+{% else %}
+  <p><a href="/login">Login with GOV.UK Signon</a></p>
 {% endif %}
-<p><a href="/login">Login with GOV.UK Signon</a></p>
+
+{% if data_sets %}
+  <ul>
+  {% for data_set in data_sets %}
+    <li>{{ data_set.name }}</li>
+  {% endfor %}
+  </ul>
+{% endif %}
