@@ -1,0 +1,95 @@
+/* ==========================================================================
+   Input helpers
+   ========================================================================== */
+
+/* Input widths to match grid widths
+   ========================================================================== */
+
+.input-md-1 {
+  @include input-md-width(1);
+}
+
+.input-md-2 {
+  @include input-md-width(2);
+}
+
+.input-md-3 {
+  @include input-md-width(3);
+}
+
+.input-md-4 {
+  @include input-md-width(4);
+}
+
+.input-md-5 {
+  @include input-md-width(5);
+}
+
+.input-md-6 {
+  @include input-md-width(6);
+}
+
+.input-md-7 {
+  @include input-md-width(7);
+}
+
+.input-md-8 {
+  @include input-md-width(8);
+}
+
+.input-md-9 {
+  @include input-md-width(9);
+}
+
+.input-md-10 {
+  @include input-md-width(10);
+}
+
+.input-md-11 {
+  @include input-md-width(11);
+}
+
+.form-inline {
+  .input-md-1,
+  .input-md-2,
+  .input-md-3,
+  .input-md-4,
+  .input-md-5,
+  .input-md-6,
+  .input-md-7,
+  .input-md-8,
+  .input-md-9,
+  .input-md-10,
+  .input-md-11 {
+    width: 100%;
+  }
+}
+
+span.btn-file {
+    cursor:pointer;
+    text-decoration:underline;
+    color: #428bca;
+    position: relative;
+    overflow: hidden;
+    input[type=file] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        text-align: right;
+        filter: alpha(opacity=0);
+        opacity: 0;
+        outline: none;
+        background: white;
+        cursor: inherit;
+        display: block;
+    }
+}
+
+.custom-form-inline {
+  @extend .form-inline; 
+  button.btn {
+    margin-left: 10px;
+  }
+}

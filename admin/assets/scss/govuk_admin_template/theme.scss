@@ -1,0 +1,48 @@
+/* ==========================================================================
+   Fonts
+   ========================================================================== */
+
+$font-family-gill-sans: "GillSans", "Gill Sans", "Helvetica Neue", Arial, sans-serif;
+
+/* ==========================================================================
+   Margins
+   ========================================================================== */
+
+$default-vertical-margin:   $line-height-computed;
+$default-vertical-padding:  $default-vertical-margin;
+$default-horizontal-margin: $grid-gutter-width / 3;
+
+// Simulate bootstrap labels spacing (no built-in variable for this)
+$default-label-margin:      5px;
+
+/* ==========================================================================
+   Colours
+   ========================================================================== */
+
+$link-color-visited       : #609; /* Purple */
+
+// From https://www.gov.uk/service-manual/user-centered-design/resources/colour-palettes
+$turquoise                : #28a197;
+$orange                   : #f47738;
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+$default-btn-height       : 30px;
+
+$primary-button-color     : #fff; /* White */
+$success-button-color     : #fff;
+$info-button-color        : #fff;
+$inverse-button-color     : #fff;
+$danger-button-color      : #fff;
+$warning-button-color     : #fff;
+$default-button-color     : #333; /* Dark grey */
+
+/* ==========================================================================
+   Environments
+   ========================================================================== */
+
+$production-color: #df3034; /* Red */
+$preview-color:    #ffbf47; /* Orange */
+$dev-color:        #bfc1c3; /* Grey */
