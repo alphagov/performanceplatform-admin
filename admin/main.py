@@ -19,6 +19,16 @@ def root():
     return render_template('index.html', **context)
 
 
+@app.route("/data-sets", methods=['GET'])
+def data_sets():
+    return render_template('data_sets.html')
+
+
+@app.route("/upload-error", methods=['GET'])
+def upload_error():
+    return render_template('upload_error.html')
+
+
 @app.route("/_status", methods=['GET'])
 def status():
     app_status = {'admin': {'status': 'ok'}}
