@@ -1,5 +1,9 @@
 <h1>Performance Platform admin</h1>
 
+{% with messages = get_flash_messages() %}
+<p>{{ message }}</p>
+{% endwith %}
+
 {% if user %}
   <p>Hello {{ user.name }}</p>
 {% else %}
