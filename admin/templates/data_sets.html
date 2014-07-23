@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Upload data{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+      {% if True %}
+        {% include "upload/upload_okay.html" %}
+      {% else %}
+        <div class="col-xs-4">
+          <h3>Upload data to the Performance Platform</h3>
+        </div>
+      {% endif %}
+    </div>
+    <div class="row">
+      <div class="col-xs-4">
+        <div class="callout callout-warning">
+          <strong>Make sure that the data you are providing:</strong>
+          <ul>
+            <li>contains no personal data of any kind</li>
+            <li>has been signed off by your Senior Information Risk Officer</li>
+            <li>does not exceed IL0 confidentiality</li>
+          </ul>
+        </div>
+        <small>
+          If your dataset isn't listed, email
+          <a href="mailto:performance@digital.cabinet-office.gov.uk">
+            performance@digital.cabinet-office.gov.uk
+          </a>
+        </small>
+      </div>
+      <div class="col-xs-8">
+        <hr>
+        <ul class="list-unstyled">
+          <li>
+            <h4>Some data group</h4>
+            <ul class="list-unstyled">
+              <strong>Some data set name</strong>
+              <li>
+                {% include "upload/form.html" %}
+              </li>
+            </ul>    
+          </li>
+        </ul>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
