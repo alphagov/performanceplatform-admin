@@ -1,5 +1,5 @@
 from admin import app
-from flask import jsonify, redirect, request, session
+from flask import redirect, request, session, url_for, flash
 from requests_oauthlib import OAuth2Session
 
 
@@ -24,5 +24,15 @@ def authorize():
         app.config['SIGNON_BASE_URL']),
         client_secret=app.config['SIGNON_OAUTH_SECRET'],
         authorization_response=request.url)
-    return jsonify(gds_session.get('{0}/user.json'.format(
-        app.config['SIGNON_BASE_URL'])).json())
+    # need to pass ?client_id=[SIGNON_OAUTH_ID]
+    user = gds_session.get('{0}/user.json'.format(
+        app.config['SIGNON_BASE_URL'])).json()
+    if 'signin' in user['user']['permissions']:
+        session['oauth_user'] = user['user']
+        session['oauth_token'] = token
+
+        flash("You have been successfully signed in")
+    else:
+        flash("You do not have access to this application.")
+
+    return redirect(url_for('root'))

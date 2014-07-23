@@ -2,6 +2,7 @@ argh==0.25.0
 Flask==0.10.1
 gunicorn==18.0
 logstash_formatter==0.5.7
+performanceplatform-client==0.0.6
 requests==2.3.0
 requests-oauthlib==0.4.1
 ndg-httpsclient==0.3.2
