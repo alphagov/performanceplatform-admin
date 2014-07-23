@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}There's a problem with your data{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-8">
+        <h3>
+          There’s a problem with your data
+        </h3>
+        <p>
+          We tried to upload your data into the dataset 
+          <strong> vehicle-licensing volumetrics</strong>, 
+          but there was a problem. Make sure the format of your 
+          CSV spreadsheet exactly matches any example you have received, 
+          then try uploading again.
+          </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        {% include "upload/form.html" %}
+      </div>
+    </div>
+</div>
+{% endblock %}
