@@ -27,6 +27,8 @@ pip install -r requirements.txt
 python start.py 3070
 ```
 
+This should also automatically compile sass to `admin/static/css/govuk_admin_template.css` when run in development
+
 ## Running tests
 
 ```bash
@@ -38,3 +40,11 @@ python start.py 3070
 1. Create [signon application and user](https://github.com/alphagov/signonotron2#usage)
 2. Update [development config](https://github.com/alphagov/performanceplatform-admin/blob/master/admin/config/development.py) with OAuth2 credentials.
 3. Run app with OAUTHLIB_INSECURE_TRANSPORT environment variable set `OAUTHLIB_INSECURE_TRANSPORT=1 python start.py 3070`
+
+## Compiling scss 
+
+If you need to compile scss outside of the normal app starting process then run:
+
+```bash
+python tools/compile_sass.py
+```
