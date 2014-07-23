@@ -3,7 +3,7 @@ from admin.files.parsers.excel import parse_excel, EXCEL_ERROR
 import os
 import unittest
 
-from hamcrest import assert_that, contains
+from hamcrest import assert_that, contains, instance_of
 
 
 def fixture_path(name):
@@ -21,6 +21,16 @@ class ParseExcelTestCase(unittest.TestCase):
             ["name", "age", "nationality"],
             ["Pawel", 27, "Polish"],
             ["Max", 35, "Italian"],
+        ))
+
+    def test_parse_types(self):
+        rows = self._parse_excel("types.xls")
+
+        assert_that(rows[1][1], instance_of(int))
+        assert_that(rows[1][2], instance_of(float))
+        assert_that(rows, contains(
+            ["string", "int", "float"],
+            ["foobar", 10, 10.5]
         ))
 
     def test_parse_xlsx_dates(self):

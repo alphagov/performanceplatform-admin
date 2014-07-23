@@ -49,13 +49,21 @@ def _extract_values(row, book):
 
 
 def _extract_cell_value(cell, book):
+    value = None
     if cell.ctype == xlrd.XL_CELL_DATE:
         time_tuple = xlrd.xldate_as_tuple(cell.value, book.datemode)
         dt = datetime.datetime(*time_tuple)
-        return dt.replace(tzinfo=pytz.UTC).isoformat()
-    if cell.ctype == xlrd.XL_CELL_EMPTY:
-        return None
+        value = dt.replace(tzinfo=pytz.UTC).isoformat()
+    elif cell.ctype == xlrd.XL_CELL_NUMBER:
+        value = cell.value
+        if value == int(value):
+            value = int(value)
+    elif cell.ctype == xlrd.XL_CELL_EMPTY:
+        value = None
     elif cell.ctype == xlrd.XL_CELL_ERROR:
         logging.warn("Encountered errors in cells when parsing excel file")
-        return EXCEL_ERROR
-    return cell.value
+        value = EXCEL_ERROR
+    else:
+        value = cell.value
+
+    return value
