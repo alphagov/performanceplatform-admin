@@ -35,12 +35,16 @@
         <ul class="list-unstyled">
           <li>
             <h4>Some data group</h4>
-            <ul class="list-unstyled">
-              <strong>Some data set name</strong>
-              <li>
-                {% include "upload/form.html" %}
-              </li>
-            </ul>    
+            {% if data_sets %}
+              <ul class="list-unstyled">
+                {% for data_set in data_sets %}
+                  <li>
+                  <strong>{{ data_set.name }}</strong>
+                    {% include "upload/form.html" %}
+                  </li>
+                {% endfor %}
+              </ul>    
+              {% endif %}
           </li>
         </ul>
       </div>

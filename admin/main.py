@@ -4,8 +4,7 @@ import requests
 from performanceplatform.client.admin import AdminAPI
 
 
-@app.route("/", methods=['GET'])
-def root():
+def get_context(session):
     context = dict()
 
     if 'oauth_user' in session and 'oauth_token' in session:
@@ -16,12 +15,17 @@ def root():
             'data_sets': admin_client.list_data_sets(),
         }
 
-    return render_template('index.html', **context)
+    return context
+
+
+@app.route("/", methods=['GET'])
+def root():
+    return render_template('index.html')
 
 
 @app.route("/data-sets", methods=['GET'])
 def data_sets():
-    return render_template('data_sets.html')
+    return render_template('data_sets.html', **get_context(session))
 
 
 @app.route("/upload-error", methods=['GET'])

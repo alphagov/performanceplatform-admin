@@ -1,8 +1,7 @@
-{% if session.get('user') %}
+{% if user %}
     <div class="navbar-text pull-right">
-        Hello, <a href="https://signon.production.alphagov.co.uk">{{ session.get('user').get('name') }}</a>
-&bull; <a href="{{ url_for("oauth_sign_out") }}">Sign out</a>
-
+        Hello, {{ user.name }}
+        &bull; <a href="/sign-out">Sign out</a>
     </div>
 {% endif %}
 
