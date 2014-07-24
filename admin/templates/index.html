@@ -1,7 +1,9 @@
 <h1>Performance Platform admin</h1>
 
 {% with messages = get_flashed_messages() %}
-<p>{{ message }}</p>
+  {% for message in messages %}
+  <p>{{ message }}</p>
+  {% endfor %}
 {% endwith %}
 
 {% if user %}
@@ -11,9 +13,9 @@
 {% endif %}
 
 {% if data_sets %}
-  <ul>
+  <ul class="data-set-list">
   {% for data_set in data_sets %}
-    <li>{{ data_set.name }}</li>
+  <li class="data-set">{{ data_set.data_group }}/{{ data_set.data_type }}</li>
   {% endfor %}
   </ul>
 {% endif %}
