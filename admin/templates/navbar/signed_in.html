@@ -1,0 +1,7 @@
+{% if user %}
+    <div class="navbar-text pull-right">
+        Hello, {{ user.name }}
+        &bull; <a href="/sign-out">Sign out</a>
+    </div>
+{% endif %}
+

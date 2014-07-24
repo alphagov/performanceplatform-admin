@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Performance platform admin</title>
+    {% include "includes.html" %}
+</head>
+
+<body class="environment-production">
+    {% include "navbar/nav.html" %}
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row flashes">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{category}}">{{ message }}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block body %}{% endblock %}
+    </div>
+</body>
+
+</html>

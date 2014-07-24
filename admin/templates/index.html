@@ -1,19 +1,31 @@
-<h1>Performance Platform admin</h1>
+{% extends "base.html" %}
 
-{% with messages = get_flashed_messages() %}
-<p>{{ message }}</p>
-{% endwith %}
+{% block title %}Performance platform admin{% endblock %}
 
-{% if user %}
-  <p>Hello {{ user.name }}</p>
-{% else %}
-  <p><a href="/login">Login with GOV.UK Signon</a></p>
-{% endif %}
+{% block body %}
 
-{% if data_sets %}
-  <ul>
-  {% for data_set in data_sets %}
-    <li>{{ data_set.name }}</li>
-  {% endfor %}
-  </ul>
-{% endif %}
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-8">
+        {% with messages = get_flashed_messages() %}
+        <p>{{ message }}</p>
+        {% endwith %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-8">
+        <h2>Performance platform admin</h2>
+        <p>If you have a dashboard on the <a href="http://gov.uk/performance">performance platform</a> you can upload data using this tool</p>
+        <p><a class="btn btn-success" href="/login">Sign in</a></p>
+        <small>
+          If you’re having trouble signing in or need 
+          an account, email 
+          <a href="mailto:performance@digital.cabinet-office.gov.uk">
+            performance@digital.cabinet-office.gov.uk
+          </a>
+        </small>
+      </div>
+    </div>
+</div>
+
+{% endblock %}

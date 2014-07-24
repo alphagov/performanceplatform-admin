@@ -10,3 +10,4 @@ pyOpenSSL==0.14
 pyasn1==0.1.7
 pytz==2014.4
 xlrd==0.9.3
+Flask-Scss==0.3
