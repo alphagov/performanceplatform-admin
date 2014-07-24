@@ -1,0 +1,3 @@
+
+class ParseError(StandardError):
+    pass
