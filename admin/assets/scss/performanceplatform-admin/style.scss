@@ -1,0 +1,12 @@
+// pyScss is buggy and occassionally outputs selectors in the wrong order.
+// This leads to some selectors being overridden by less important ones, because
+// ordering is important in CSS.
+// Duplicate the below selector here so that it has a higher priority than in Bootstrap.
+// See this bug in pyScss: https://github.com/Kronuz/pyScss/issues/269
+@media (min-width: 768px) {
+  .navbar-nav > li > a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+}
+

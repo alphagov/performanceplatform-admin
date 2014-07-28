@@ -15,11 +15,11 @@ scss_compiler = scss.Scss()
 compiled_css_from_file = scss_compiler.compile(
     scss_file=path.join(
         project_root,
-        'admin/assets/scss/manifest/govuk_admin_template.scss'))
+        'admin/assets/scss/manifest/index.scss'))
 
 css_path = path.join(
     project_root,
-    'admin/static/css/govuk_admin_template.css')
+    'admin/static/css/performanceplatform-admin.css')
 
 with open(css_path, 'w') as file:
     file.write(compiled_css_from_file)

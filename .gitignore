@@ -7,4 +7,5 @@ pip-delete-this-directory.txt
 
 nosetests.xml
 .coverage
-admin/static/css/govuk_admin_template.css
+
+admin/static/**/*.css
