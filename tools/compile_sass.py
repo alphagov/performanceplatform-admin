@@ -10,11 +10,7 @@ project_root = path.dirname(path.dirname(path.realpath(__file__)))
 scss.config.LOAD_PATHS = [
     path.join(project_root, 'admin/assets/scss')]
 
-# compress does not seem to be working
-scss_compiler = scss.Scss(
-    scss_opts={
-        'compress': True,
-    })
+scss_compiler = scss.Scss()
 
 compiled_css_from_file = scss_compiler.compile(
     scss_file=path.join(
