@@ -1,7 +1,10 @@
 from os import path
+import logging
 import scss
 
-# if this file is always at the root of the project
+logging.basicConfig()
+
+# The project root is the parent directory of tools/
 project_root = path.dirname(path.dirname(path.realpath(__file__)))
 
 scss.config.LOAD_PATHS = [
