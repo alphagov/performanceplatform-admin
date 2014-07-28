@@ -11,6 +11,8 @@ app.secret_key = app.config['COOKIE_SECRET_KEY']
 
 import admin.main
 import admin.authentication
+from redis import Redis
+from admin.redis_session import RedisSessionInterface
 
 
 def start(port):
@@ -22,4 +24,9 @@ def start(port):
              asset_dir='admin/assets/scss/manifest',
              load_paths=[
                  path.join(path.dirname(__file__), 'assets/scss')])
+    redis_instance = Redis(
+        host=app.config['REDIS_HOST'],
+        port=app.config['REDIS_PORT']
+    )
+    app.session_interface = RedisSessionInterface(redis=redis_instance)
     app.run('0.0.0.0', port=port)
