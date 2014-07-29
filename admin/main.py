@@ -1,5 +1,5 @@
 from admin import app
-from flask import jsonify, render_template, session
+from flask import jsonify, render_template, session, redirect, url_for
 import requests
 from performanceplatform.client.admin import AdminAPI
 
@@ -20,7 +20,10 @@ def get_context(session):
 
 @app.route("/", methods=['GET'])
 def root():
-    return render_template('index.html')
+    if 'user' in get_context(session):
+        return redirect(url_for('data_sets'))
+    else:
+        return render_template('index.html')
 
 
 @app.route("/data-sets", methods=['GET'])
