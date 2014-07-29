@@ -24,9 +24,10 @@ def start(port):
              asset_dir='admin/assets/scss/manifest',
              load_paths=[
                  path.join(path.dirname(__file__), 'assets/scss')])
-    redis_instance = Redis(
+    app.redis_instance = Redis(
         host=app.config['REDIS_HOST'],
         port=app.config['REDIS_PORT']
     )
-    app.session_interface = RedisSessionInterface(redis=redis_instance)
+    app.session_interface = RedisSessionInterface(
+        redis=app.redis_instance, prefix='admin_app:session:')
     app.run('0.0.0.0', port=port)
