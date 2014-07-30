@@ -10,3 +10,11 @@ SIGNON_OAUTH_SECRET = 'oauth_secret'
 SIGNON_BASE_URL = 'http://signon.dev.gov.uk'
 
 DEBUG = True
+
+# You can use development_local_overrides.py in this directory to set config
+# that is unique to your development environment, like OAuth IDs and secrets.
+# It is not in version control.
+try:
+    from development_local_overrides import *
+except ImportError as e:
+    pass
