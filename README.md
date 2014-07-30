@@ -9,7 +9,7 @@ users to update [performance data on GOV.UK][pp].
 [Flask]: http://flask.pocoo.org/
 [pp]: https://www.gov.uk/performance
 
-## Installing dependencies
+## Application dependencies
 
 We recommend using [virtualenv][] to manage this application's dependencies.
 
@@ -21,13 +21,28 @@ pip install -r requirements.txt
 
 [virtualenv]: http://virtualenv.readthedocs.org/
 
+### Getting set up with GOV.UK's single sign-on service
+
+1. Create a [signon application and user](https://github.com/alphagov/signonotron2#usage)
+2. Update [development config](https://github.com/alphagov/performanceplatform-admin/blob/master/admin/config/development.py) with OAuth2 credentials
+3. Set an environment variable to allow OAuth over insecure TLS in development: `export OAUTHLIB_INSECURE_TRANSPORT=1`
+4. Run the app as normal
+
+### Compiling stylesheets
+
+If you need to compile stylesheets outside of the normal app starting process then run:
+
+```bash
+python tools/compile_sass.py
+```
+
 ## Running the app
 
 ```bash
 python start.py 3070
 ```
 
-This should also automatically compile sass to `admin/static/css/govuk_admin_template.css` when run in development
+Starting the app in development will automatically compile stylesheets.
 
 You can modify your local configuration without affecting version control using
 the instructions in the `admin/config/development.py` file.
@@ -36,18 +51,4 @@ the instructions in the `admin/config/development.py` file.
 
 ```bash
 ./run_tests.sh
-```
-
-## Getting set up with signonotron2
-
-1. Create [signon application and user](https://github.com/alphagov/signonotron2#usage)
-2. Update [development config](https://github.com/alphagov/performanceplatform-admin/blob/master/admin/config/development.py) with OAuth2 credentials.
-3. Run app with OAUTHLIB_INSECURE_TRANSPORT environment variable set `OAUTHLIB_INSECURE_TRANSPORT=1 python start.py 3070`
-
-## Compiling scss 
-
-If you need to compile scss outside of the normal app starting process then run:
-
-```bash
-python tools/compile_sass.py
 ```
