@@ -14,15 +14,9 @@ def oauth_sign_out():
 def root():
     session_context = get_context(session)
     if 'user' in get_context(session):
-        return redirect(url_for('data_sets'))
+        return redirect(url_for('upload_list_data_sets'))
     else:
         return render_template('index.html', **session_context)
-
-
-@app.route("/data-sets", methods=['GET'])
-@requires_authentication
-def data_sets(session_context=None):
-    return render_template('data_sets.html', **session_context)
 
 
 @app.route("/upload-error", methods=['GET'])
