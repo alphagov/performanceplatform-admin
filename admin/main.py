@@ -3,6 +3,9 @@ from flask import jsonify, render_template, session, redirect, url_for
 import requests
 from performanceplatform.client.admin import AdminAPI
 from functools import wraps
+from os import getenv
+
+GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
 
 def requires_authentication(f):
@@ -16,6 +19,7 @@ def requires_authentication(f):
     return verify_user_logged_in
 
 
+# this is doing too much or should it have the signon_base_url stuff too
 def get_context(session):
     context = dict()
 
@@ -24,18 +28,33 @@ def get_context(session):
                                 session['oauth_token']['access_token'])
         context = {
             'user': session['oauth_user'],
-            'data_sets': admin_client.list_data_sets(),
+            'data_sets': admin_client.list_data_sets()
         }
+    context['environment'] = environment_dict()
 
     return context
 
 
+def environment_dict():
+    return {
+        'name': GOVUK_ENV,
+        'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
+    }
+
+
+@app.route("/sign-out")
+def oauth_sign_out():
+    session.clear()
+    redirect(app.config['SIGNON_BASE_URL'] + '/users/sign_out')
+
+
 @app.route("/", methods=['GET'])
 def root():
+    session_context = get_context(session)
     if 'user' in get_context(session):
         return redirect(url_for('data_sets'))
     else:
-        return render_template('index.html')
+        return render_template('index.html', **session_context)
 
 
 @app.route("/data-sets", methods=['GET'])
@@ -47,7 +66,7 @@ def data_sets(session_context=None):
 @app.route("/upload-error", methods=['GET'])
 @requires_authentication
 def upload_error(session_context=None):
-    return render_template('upload_error.html')
+    return render_template('upload_error.html', **session_context)
 
 
 @app.route("/_status", methods=['GET'])
