@@ -14,7 +14,7 @@ scss_compiler = scss.Scss()
 compiled_css_from_file = scss_compiler.compile(
     scss_file=path.join(
         project_root,
-        'admin/assets/scss/manifest/index.scss'))
+        'admin/assets/scss/manifest/performanceplatform-admin.scss'))
 
 css_path = path.join(
     project_root,
