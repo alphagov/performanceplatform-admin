@@ -35,7 +35,9 @@ def requires_authentication(func):
     @wraps(func)
     def verify_user_logged_in(*args, **kwargs):
         session_context = get_context(session)
+        print session_context
         if 'user' not in session_context:
+            print "REDIRECTING, UNAUTHORISED"
             return redirect(url_for('root'))
         kwargs['session_context'] = session_context
         return func(*args, **kwargs)

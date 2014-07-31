@@ -28,6 +28,13 @@ class UploadedFile(object):
         self.file_size = os.path.getsize(filename)
         self.content_type, _ = mimetypes.guess_type(filename)
 
+        print "INIT"
+        print self.filename
+        print self.file_size
+        print open(self.filename).read()
+
+        # import pdb; pdb.set_trace()
+
     def __enter__(self):
         return self
 
@@ -58,6 +65,9 @@ class UploadedFile(object):
 
     def validate(self):
         problems = []
+
+        print self.file_size
+
 
         if self.is_empty():
             problems.append('File is empty')
