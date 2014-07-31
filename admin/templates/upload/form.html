@@ -1,8 +1,8 @@
 <form class="custom-form-inline" action="upload" method="post" enctype="multipart/form-data" role="form">
-  <label class="sr-only" for="{{ upload_extension }}-file">{{ upload_format }} file to upload</label>
+  <label class="sr-only" for="spreadsheet-file">file to upload</label>
   <span class="btn-file">
-    Choose {{ upload_extension or "CSV" }} spreadsheet
-    <input id="{{ upload_extension }}-file" type="file" name="file">
+    Choose spreadsheet
+    <input id="spreadsheet-file" type="file" name="file">
   </span>
 
   <button class="btn btn-primary btn-xs" type="submit">Upload</button>
