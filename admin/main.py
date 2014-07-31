@@ -2,6 +2,18 @@ from admin import app
 from flask import jsonify, render_template, session, redirect, url_for
 import requests
 from performanceplatform.client.admin import AdminAPI
+from functools import wraps
+
+
+def requires_authentication(f):
+    @wraps(f)
+    def verify_user_logged_in(*args, **kwargs):
+        session_context = get_context(session)
+        if 'user' not in session_context:
+            return redirect(url_for('root'))
+        kwargs['session_context'] = session_context
+        return f(*args, **kwargs)
+    return verify_user_logged_in
 
 
 def get_context(session):
@@ -27,12 +39,14 @@ def root():
 
 
 @app.route("/data-sets", methods=['GET'])
-def data_sets():
-    return render_template('data_sets.html', **get_context(session))
+@requires_authentication
+def data_sets(session_context=None):
+    return render_template('data_sets.html', **session_context)
 
 
 @app.route("/upload-error", methods=['GET'])
-def upload_error():
+@requires_authentication
+def upload_error(session_context=None):
     return render_template('upload_error.html')
 
 
