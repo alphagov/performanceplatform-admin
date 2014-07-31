@@ -16,6 +16,8 @@ app.secret_key = app.config['COOKIE_SECRET_KEY']
 
 import admin.main
 import admin.authentication
+import admin.upload
+
 from redis import Redis
 from admin.redis_session import RedisSessionInterface
 

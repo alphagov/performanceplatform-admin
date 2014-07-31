@@ -21,7 +21,7 @@ class AppTestCase(unittest.TestCase):
         get_context_mock.return_value = {'user': {'email': 'test@example.com'}}
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/data-sets'))
+        assert_that(response.headers['Location'], ends_with('/upload-data'))
 
     def test_status_endpoint_returns_ok(self):
         response = self.app.get("/_status")

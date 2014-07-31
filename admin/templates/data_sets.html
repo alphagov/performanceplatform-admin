@@ -5,14 +5,9 @@
 {% block body %}
 <div class="container-fluid">
     <div class="row">
-      {#To be filled in with the completion of the upload story#}
-      {% if True %}
-        {% include "upload/upload_okay.html" %}
-      {% else %}
-        <div class="col-xs-4">
-          <h3>Upload data to the Performance Platform</h3>
-        </div>
-      {% endif %}
+      <div class="col-xs-4">
+        <h3>Upload data to the Performance Platform</h3>
+      </div>
     </div>
     <div class="row">
       <div class="col-xs-4">
@@ -31,24 +26,22 @@
           </a>
         </small>
       </div>
+
       <div class="col-xs-8">
-        <hr>
-        <ul class="list-unstyled">
-          <li>
-            <h4>Some data group</h4>
-            {% if data_sets %}
-              <ul class="list-unstyled data-set-list">
-                {% for data_set in data_sets %}
-                  <li>
-                  <strong class="data-set-name">{{ data_set.name }}</strong>
-                    {% include "upload/form.html" %}
-                  </li>
-                {% endfor %}
-              </ul>    
-              {% endif %}
-          </li>
-        </ul>
+        {% if data_sets %}
+          <ul class="list-unstyled">
+            {% for data_set in data_sets %}
+              <li>
+                <strong>{{ data_set.data_group }} {{ data_set.data_type }}</strong>
+                {% include "upload/form.html" %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>You do not have access to any Performance Platform datasets.</p>
+        {% endif %}
       </div>
+
     </div>
 </div>
 
