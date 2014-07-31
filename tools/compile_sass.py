@@ -4,7 +4,6 @@ import scss
 
 logging.basicConfig()
 
-# The project root is the parent directory of tools/
 project_root = path.dirname(path.dirname(path.realpath(__file__)))
 
 scss.config.LOAD_PATHS = [
