@@ -4,7 +4,6 @@ from admin import app
 from hamcrest import assert_that, equal_to, ends_with
 from httmock import urlmatch, HTTMock
 from mock import patch
-import requests
 
 
 @urlmatch(netloc=r'[a-z]+\.development\.performance\.service\.gov\.uk$')
@@ -22,7 +21,7 @@ class AppTestCase(unittest.TestCase):
         signed_in.return_value = True
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/data-sets'))
+        assert_that(response.headers['Location'], ends_with('/upload-data'))
 
     def test_status_endpoint_returns_ok(self):
         with HTTMock(performance_platform_status_mock):
@@ -39,27 +38,6 @@ class AppTestCase(unittest.TestCase):
                     equal_to({"status": "ok"}))
         assert_that(json.loads(response.data)['backdrop'],
                     equal_to({"status": "ok"}))
-
-    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
-    def test_data_sets_redirects_to_sign_out_when_403_on_data_set_list(
-            self,
-            mock_data_set_list):
-        bad_response = requests.Response()
-        bad_response.status_code = 403
-        http_error = requests.exceptions.HTTPError()
-        http_error.response = bad_response
-        mock_data_set_list.side_effect = http_error
-        with self.app as client:
-            with client.session_transaction() as sess:
-                sess.update({
-                    'oauth_token': {
-                        'access_token': 'token'},
-                    'oauth_user': 'a user'})
-            response = self.app.get("/data-sets")
-            assert_that(response.status_code, equal_to(302))
-            assert_that(
-                response.headers['Location'],
-                ends_with('/sign-out'))
 
     def test_signout_redirects_properly_and_clears_session(self):
         response = self.app.get("/sign-out")

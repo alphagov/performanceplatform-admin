@@ -16,27 +16,9 @@ def oauth_sign_out():
 @app.route("/", methods=['GET'])
 def root():
     if signed_in(session):
-        return redirect(url_for('data_sets'))
+        return redirect(url_for('upload_list_data_sets'))
     else:
         return render_template('index.html', **base_template_context())
-
-
-@app.route("/data-sets", methods=['GET'])
-@requires_authentication
-def data_sets(admin_client):
-    template_context = base_template_context()
-    try:
-        data_sets = admin_client.list_data_sets()
-    except requests.exceptions.HTTPError as err:
-        if err.response.status_code == 403:
-            return redirect(url_for('oauth_sign_out'))
-        else:
-            raise
-    template_context.update({
-        'user': session['oauth_user'],
-        'data_sets': data_sets
-    })
-    return render_template('data_sets.html', **template_context)
 
 
 @app.route("/upload-error", methods=['GET'])
