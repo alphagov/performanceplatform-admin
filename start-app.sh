@@ -12,4 +12,6 @@ source "$VENV_DIR/bin/activate"
 echo "Installing dependencies"
 pip install -r requirements.txt
 
+export PYTHONUNBUFFERED=1
+
 exec python start.py $1
