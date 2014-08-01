@@ -49,7 +49,12 @@ class AppTestCase(unittest.TestCase):
     def test_requires_authentication_continues_when_auth_on_data_sets(
             self,
             get_context_mock):
-        get_context_mock.return_value = {'user': {'email': 'test@example.com'}}
+        get_context_mock.return_value = {
+            'user': {
+                'email': 'test@example.com'
+            },
+            'environment': {}
+        }
         with HTTMock(performance_platform_status_mock):
             response = self.app.get("/data-sets")
         assert_that(response.status_code, equal_to(200))
@@ -65,7 +70,13 @@ class AppTestCase(unittest.TestCase):
     def test_requires_authentication_continues_when_auth_on_upload_error(
             self,
             get_context_mock):
-        get_context_mock.return_value = {'user': {'email': 'test@example.com'}}
+        print "this test"
+        get_context_mock.return_value = {
+            'user': {
+                'email': 'test@example.com'
+            },
+            'environment': {}
+        }
         with HTTMock(performance_platform_status_mock):
             response = self.app.get("/upload-error")
         assert_that(response.status_code, equal_to(200))
