@@ -7,7 +7,7 @@
     {% include "includes.html" %}
 </head>
 
-<body class="environment-production">
+<body class="environment-{{environment.name}}">
     {% include "navbar/nav.html" %}
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
