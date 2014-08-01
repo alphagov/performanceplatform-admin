@@ -37,10 +37,10 @@
           <li>
             <h4>Some data group</h4>
             {% if data_sets %}
-              <ul class="list-unstyled">
+              <ul class="list-unstyled data-set-list">
                 {% for data_set in data_sets %}
                   <li>
-                  <strong>{{ data_set.name }}</strong>
+                  <strong class="data-set-name">{{ data_set.name }}</strong>
                     {% include "upload/form.html" %}
                   </li>
                 {% endfor %}
