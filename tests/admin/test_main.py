@@ -38,52 +38,6 @@ class AppTestCase(unittest.TestCase):
         assert_that(json.loads(response.data)['backdrop'],
                     equal_to({"status": "ok"}))
 
-    def test_requires_authentication_redirects_when_no_auth_on_data_sets(
-            self):
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/data-sets")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(
-            response.headers['Location'],
-            equal_to('http://localhost/'))
-
-    @patch('admin.main.get_context')
-    def test_requires_authentication_continues_when_auth_on_data_sets(
-            self,
-            get_context_mock):
-        get_context_mock.return_value = {
-            'user': {
-                'email': 'test@example.com'
-            },
-            'environment': {}
-        }
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/data-sets")
-        assert_that(response.status_code, equal_to(200))
-
-    def test_requires_authentication_redirects_when_no_auth_on_upload_error(
-            self):
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/upload-error")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(
-            response.headers['Location'],
-            equal_to('http://localhost/'))
-
-    @patch('admin.main.get_context')
-    def test_requires_authentication_continues_when_auth_on_upload_error(
-            self,
-            get_context_mock):
-        get_context_mock.return_value = {
-            'user': {
-                'email': 'test@example.com'
-            },
-            'environment': {}
-        }
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/upload-error")
-        assert_that(response.status_code, equal_to(200))
-
     def test_signout_redirects_properly(self):
         response = self.app.get("/sign-out")
         assert_that(response.status_code, equal_to(302))
