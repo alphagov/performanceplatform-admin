@@ -1,45 +1,7 @@
 from admin import app
+from admin.helpers import get_context, requires_authentication
 from flask import jsonify, render_template, session, redirect, url_for
 import requests
-from performanceplatform.client.admin import AdminAPI
-from functools import wraps
-from os import getenv
-
-GOVUK_ENV = getenv('GOVUK_ENV', 'development')
-
-
-def requires_authentication(f):
-    @wraps(f)
-    def verify_user_logged_in(*args, **kwargs):
-        session_context = get_context(session)
-        if 'user' not in session_context:
-            return redirect(url_for('root'))
-        kwargs['session_context'] = session_context
-        return f(*args, **kwargs)
-    return verify_user_logged_in
-
-
-# this is doing too much or should it have the signon_base_url stuff too
-def get_context(session):
-    context = dict()
-
-    if 'oauth_user' in session and 'oauth_token' in session:
-        admin_client = AdminAPI(app.config['STAGECRAFT_HOST'],
-                                session['oauth_token']['access_token'])
-        context = {
-            'user': session['oauth_user'],
-            'data_sets': admin_client.list_data_sets()
-        }
-    context['environment'] = environment_dict()
-
-    return context
-
-
-def environment_dict():
-    return {
-        'name': GOVUK_ENV,
-        'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
-    }
 
 
 @app.route("/sign-out")
