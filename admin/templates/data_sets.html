@@ -3,47 +3,48 @@
 {% block title %}Upload data{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <div class="row">
-      <div class="col-xs-4">
-        <h3>Upload data to the Performance Platform</h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xs-4">
-        <div class="callout callout-warning">
-          <strong>Make sure that the data you are providing:</strong>
-          <ul>
-            <li>contains no personal data of any kind</li>
-            <li>has been signed off by your Senior Information Risk Officer</li>
-            <li>does not exceed IL0 confidentiality</li>
-          </ul>
-        </div>
-        <small>
-          If your dataset isn't listed, email
-          <a href="mailto:performance@digital.cabinet-office.gov.uk">
-            performance@digital.cabinet-office.gov.uk
-          </a>
-        </small>
-      </div>
 
-      <div class="col-xs-8">
-        <hr>
-        {% if data_sets %}
-          <ul class="list-unstyled data-set-list">
-            {% for data_set in data_sets %}
-              <li>
-                <strong class="data-set-group-and-type">{{ data_set.data_group }} {{ data_set.data_type }}</strong>
-                {% include "upload/form.html" %}
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>You do not have access to any Performance Platform datasets.</p>
-        {% endif %}
-      </div>
+<div class="row">
+  <div class="col-xs-4">
+    <h3>Upload data to the Performance Platform</h3>
+  </div>
+</div>
 
+<div class="row">
+
+  <div class="col-xs-4">
+    <div class="callout callout-warning">
+      <strong>Make sure that the data you are providing:</strong>
+      <ul>
+        <li>contains no personal data of any kind</li>
+        <li>has been signed off by your Senior Information Risk Officer</li>
+        <li>does not exceed IL0 confidentiality</li>
+      </ul>
     </div>
+    <small>
+      If your dataset isn't listed, email
+      <a href="mailto:performance@digital.cabinet-office.gov.uk">
+        performance@digital.cabinet-office.gov.uk
+      </a>
+    </small>
+  </div>
+
+  <div class="col-xs-8">
+    <hr>
+    {% if data_sets %}
+      <ul class="list-unstyled data-set-list">
+        {% for data_set in data_sets %}
+          <li>
+            <strong class="data-set-group-and-type">{{ data_set.data_group }} {{ data_set.data_type }}</strong>
+            {% include "upload/form.html" %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>You do not have access to any Performance Platform datasets.</p>
+    {% endif %}
+  </div>
+
 </div>
 
 {% endblock %}
