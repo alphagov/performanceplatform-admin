@@ -1,12 +1,17 @@
 from flask import Flask
 from os import getenv, path
+from admin.core import log_handler
 
 app = Flask(__name__)
 from flask.ext.scss import Scss
 
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
+app.config['LOG_LEVEL'] = "INFO"
 app.config.from_object('admin.config.{0}'.format(GOVUK_ENV))
+
+log_handler.set_up_logging(app, GOVUK_ENV)
+
 app.secret_key = app.config['COOKIE_SECRET_KEY']
 
 import admin.main
