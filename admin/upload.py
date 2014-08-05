@@ -5,6 +5,7 @@ from flask import (abort, flash, render_template,
                    redirect, request, session, url_for)
 from performanceplatform.client.admin import AdminAPI
 from performanceplatform.client.data_set import DataSet
+from requests.exceptions import HTTPError
 
 
 @app.route('/upload-data', methods=['GET'])
@@ -16,42 +17,51 @@ def upload_list_data_sets(session_context=None):
 @app.route('/upload-data/<data_group>/<data_type>', methods=['POST'])
 @requires_authentication
 def upload_post(data_group, data_type, session_context=None):
-    data_set_config = get_data_set_config(data_group, data_type)
+    try:
+        data_set_config = get_data_set_config(data_group, data_type)
+    except HTTPError as err:
+        flash(build_http_flash(err, "Stagecraft"))
+        return redirect(url_for('upload_list_data_sets'))
 
     if data_set_config is None:
-        abort(403, 'User does not have access to upload this data set')
+        abort(
+            404,
+            'There is no data set of for data-group: {} and data-type: {}'
+            .format(data_group, data_type))
 
     html_file_identifier = '{0}-{1}-file'.format(data_group, data_type)
 
     problems = []
 
-    print "request.files::"
-    print request.files
-    print "FILE:"
-    print request.files[html_file_identifier]
-
-    #try:
     with Spreadsheet(request.files[html_file_identifier]) as spreadsheet:
-        print "SPREADSHEET"
         problems += spreadsheet.validate()
-        print problems
 
         if len(problems) == 0:
             print spreadsheet.as_json()
             url = '{0}/data/{1}/{2}'.format(app.config['BACKDROP_HOST'],
                                             data_group, data_type)
             data_set = DataSet(url, data_set_config['bearer_token'])
-            data_set.post(spreadsheet.as_json())
-    #except virus as err:
-    #except invalid as err:
-    #except http as err:
-        #problems.append(err.message)
+            try:
+                data_set.post(spreadsheet.as_json())
+            except HTTPError as err:
+                flash(build_http_flash(err, "Backdrop"))
+                return redirect(url_for('upload_list_data_sets'))
+    # except virus as err:
+    # except invalid as err:
+        # problems.append(err.message)
 
     session['upload_problems'] = problems
 
     return redirect(url_for('upload_done',
                             data_group=data_group,
                             data_type=data_type))
+
+
+def build_http_flash(err, app_name):
+    return '{} returned status code <{}> with json: {}'.format(
+        app_name,
+        err.response.status_code,
+        err.response.json())
 
 
 @app.route('/upload-data/<data_group>/<data_type>/done', methods=['GET'])
