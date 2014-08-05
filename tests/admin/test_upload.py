@@ -3,9 +3,6 @@ from hamcrest import assert_that, is_, equal_to, ends_with
 from mock import patch
 from StringIO import StringIO
 import unittest
-from os import path
-
-from pprint import pprint
 
 
 class UploadTestCase(unittest.TestCase):
@@ -25,7 +22,9 @@ class UploadTestCase(unittest.TestCase):
             get_data_set_config_patch,
             get_context_patch):
         is_virus_patch.return_value = False
-        get_context_patch.return_value = {'user': {'email': 'test@example.com'}}
+        get_context_patch.return_value = {
+            'user': {
+                'email': 'test@example.com'}}
         get_data_set_config_patch.return_value = {
             'bearer_token': 'abc123', 'foo': 'bar'
         }
@@ -54,8 +53,9 @@ class UploadTestCase(unittest.TestCase):
         get_context_patch.return_value = {
             'user': {'email': 'test@example.com'}}
         get_data_set_config_patch.return_value = None
-        response = self.app.post('/upload-data/carers-allowance/volumetrics',
-                                 data={'file': (StringIO('data'), 'file.xlsx')})
+        response = self.app.post(
+            '/upload-data/carers-allowance/volumetrics',
+            data={'file': (StringIO('data'), 'file.xlsx')})
 
         assert_that(response.status_code, equal_to(403))
 
