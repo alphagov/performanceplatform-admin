@@ -45,7 +45,7 @@ def environment_dict():
 @app.route("/sign-out")
 def oauth_sign_out():
     session.clear()
-    redirect(app.config['SIGNON_BASE_URL'] + '/users/sign_out')
+    return redirect(app.config['SIGNON_BASE_URL'] + '/users/sign_out')
 
 
 @app.route("/", methods=['GET'])

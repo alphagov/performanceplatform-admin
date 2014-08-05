@@ -43,7 +43,9 @@ class AppTestCase(unittest.TestCase):
         with HTTMock(performance_platform_status_mock):
             response = self.app.get("/data-sets")
         assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/'))
+        assert_that(
+            response.headers['Location'],
+            equal_to('http://localhost/'))
 
     @patch('admin.main.get_context')
     def test_requires_authentication_continues_when_auth_on_data_sets(
@@ -64,13 +66,14 @@ class AppTestCase(unittest.TestCase):
         with HTTMock(performance_platform_status_mock):
             response = self.app.get("/upload-error")
         assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/'))
+        assert_that(
+            response.headers['Location'],
+            equal_to('http://localhost/'))
 
     @patch('admin.main.get_context')
     def test_requires_authentication_continues_when_auth_on_upload_error(
             self,
             get_context_mock):
-        print "this test"
         get_context_mock.return_value = {
             'user': {
                 'email': 'test@example.com'
@@ -80,3 +83,8 @@ class AppTestCase(unittest.TestCase):
         with HTTMock(performance_platform_status_mock):
             response = self.app.get("/upload-error")
         assert_that(response.status_code, equal_to(200))
+
+    def test_signout_redirects_properly(self):
+        response = self.app.get("/sign-out")
+        assert_that(response.status_code, equal_to(302))
+        assert_that(response.headers['Location'], ends_with('/users/sign_out'))
