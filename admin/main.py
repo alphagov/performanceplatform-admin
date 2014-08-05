@@ -26,10 +26,14 @@ def get_context(session):
     if 'oauth_user' in session and 'oauth_token' in session:
         admin_client = AdminAPI(app.config['STAGECRAFT_HOST'],
                                 session['oauth_token']['access_token'])
-        context = {
-            'user': session['oauth_user'],
-            'data_sets': admin_client.list_data_sets()
-        }
+        try:
+            context = {
+                'user': session['oauth_user'],
+                'data_sets': admin_client.list_data_sets()
+            }
+        except requests.exceptions.RequestException as e:
+            if not e.response.status_code == 403:
+                raise
     context['environment'] = environment_dict()
 
     return context

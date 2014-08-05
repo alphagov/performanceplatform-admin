@@ -3,7 +3,9 @@ import unittest
 from admin import app
 from hamcrest import assert_that, equal_to, ends_with
 from httmock import urlmatch, HTTMock
-from mock import patch
+from mock import patch, Mock
+import requests
+from admin.main import get_context
 
 
 @urlmatch(netloc=r'[a-z]+\.development\.performance\.service\.gov\.uk$')
@@ -88,3 +90,40 @@ class AppTestCase(unittest.TestCase):
         response = self.app.get("/sign-out")
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], ends_with('/users/sign_out'))
+
+    @patch('requests.get')
+    def test_get_context_returns_no_user_or_datasets_on_403(
+            self,
+            mock_get_request):
+        bad_response = requests.Response()
+        bad_response.status_code = 403
+        mock_get_request.return_value = bad_response
+        session_context = get_context({
+            'oauth_token': {
+                'access_token': 'token'},
+            'oauth_user': 'a user'})
+        assert_that(session_context, equal_to({
+            'environment': {
+                'human_name': 'Development',
+                'name': 'development'}}))
+
+    @patch('requests.get')
+    def test_get_context_returns_user_and_datasets_on_200(
+            self,
+            mock_get_request):
+        good_response = requests.Response()
+        good_response.status_code = 200
+        mock_json = Mock()
+        mock_json.return_value = json.dumps({})
+        good_response.json = mock_json
+        mock_get_request.return_value = good_response
+        session_context = get_context({
+            'oauth_token': {
+                'access_token': 'token'},
+            'oauth_user': 'a user'})
+        assert_that(session_context, equal_to({
+            'environment': {
+                'human_name': 'Development',
+                'name': 'development'},
+            'data_sets': '{}',
+            'user': 'a user'}))
