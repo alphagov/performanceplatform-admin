@@ -70,8 +70,9 @@ def upload_error(data_group, data_type, session_context=None):
     problems = session['upload_problems']
     session_context.update({
         'problems': problems,
-        'data_group': data_group,
-        'data_type': data_type})
+        'data_set': {
+            'data_group': data_group,
+            'data_type': data_type}})
     return render_template('upload_error.html', **session_context)
 
 
