@@ -1,5 +1,4 @@
-{# Pre chosen file to be done in upload story#}
-<form class="custom-form-inline" action="upload" method="post" enctype="multipart/form-data" role="form">
+<form class="custom-form-inline" action="/upload-data/{{ data_set.data_group }}/{{ data_set.data_type }}" method="POST" enctype="multipart/form-data" role="form">
   <label class="sr-only" for="{{ data_set.data_group }}-{{ data_set.data_type }}-file">
     File to upload to {{ data_set.data_group }} {{ data_set.data_type }}
   </label>

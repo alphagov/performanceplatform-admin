@@ -9,14 +9,29 @@
         <h3>
           There’s a problem with your data
         </h3>
-        {#To be filled in in upload story#}
         <p>
           We tried to upload your data into the dataset 
-          <strong> vehicle-licensing volumetrics</strong>, 
-          but there was a problem. Make sure the format of your 
+          <strong>{{ data_set.data_group }} {{ data_set.data_type }}</strong>, 
+          {% if problems %}
+              but there were the following problems: 
+          {% else %}
+              but there was a problem.
+          {% endif %}
+        </p>
+        {% if problems %}
+          <div class="container">
+              <div class="row flashes">
+              {% for problem in problems %}
+                  <div class="alert alert-danger">{{ problem }}</div>
+              {% endfor %}
+              </div>
+          </div>
+        {% endif %}
+        <p>
+          Make sure the format of your 
           spreadsheet exactly matches any example you have received, 
           then try uploading again.
-          </p>
+        </p>
       </div>
     </div>
     <div class="row">
