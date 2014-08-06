@@ -134,7 +134,6 @@ class ParseCsvTestCase(unittest.TestCase):
 
         data = parse_csv(csv_stream)
 
-        print(list(data[0]))
         assert_that(data, only_contains(
             ["int", "float", "string"],
             [12, 12.1, "a string"],
