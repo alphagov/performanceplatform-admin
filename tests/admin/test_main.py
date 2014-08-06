@@ -16,15 +16,16 @@ class AppTestCase(unittest.TestCase):
         app.config['TESTING'] = True
         self.app = app.test_client()
 
-    @patch('admin.main.get_context')
-    def test_homepage_redirects_when_signed_in(self, get_context_mock):
-        get_context_mock.return_value = {'user': {'email': 'test@example.com'}}
+    @patch('admin.main.signed_in')
+    def test_homepage_redirects_when_signed_in(self, signed_in):
+        signed_in.return_value = True
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], ends_with('/data-sets'))
 
     def test_status_endpoint_returns_ok(self):
-        response = self.app.get("/_status")
+        with HTTMock(performance_platform_status_mock):
+            response = self.app.get("/_status")
         assert_that(response.status_code, equal_to(200))
         assert_that(json.loads(response.data)['admin'],
                     equal_to({"status": "ok"}))
@@ -40,49 +41,45 @@ class AppTestCase(unittest.TestCase):
 
     def test_requires_authentication_redirects_when_no_auth_on_data_sets(
             self):
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/data-sets")
+        response = self.app.get("/data-sets")
         assert_that(response.status_code, equal_to(302))
         assert_that(
             response.headers['Location'],
             equal_to('http://localhost/'))
 
-    @patch('admin.main.get_context')
+    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
     def test_requires_authentication_continues_when_auth_on_data_sets(
             self,
-            get_context_mock):
-        get_context_mock.return_value = {
-            'user': {
-                'email': 'test@example.com'
-            },
-            'environment': {}
-        }
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/data-sets")
-        assert_that(response.status_code, equal_to(200))
+            mock_data_set_list):
+        with self.app as client:
+            with client.session_transaction() as sess:
+                sess.update({
+                    'oauth_token': {
+                        'access_token': 'token'},
+                    'oauth_user': 'a user'})
+            response = client.get("/data-sets")
+            assert_that(response.status_code, equal_to(200))
 
     def test_requires_authentication_redirects_when_no_auth_on_upload_error(
             self):
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/upload-error")
+        response = self.app.get("/upload-error")
         assert_that(response.status_code, equal_to(302))
         assert_that(
             response.headers['Location'],
             equal_to('http://localhost/'))
 
-    @patch('admin.main.get_context')
+    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
     def test_requires_authentication_continues_when_auth_on_upload_error(
             self,
-            get_context_mock):
-        get_context_mock.return_value = {
-            'user': {
-                'email': 'test@example.com'
-            },
-            'environment': {}
-        }
-        with HTTMock(performance_platform_status_mock):
+            mock_data_set_list):
+        with self.app as client:
+            with client.session_transaction() as sess:
+                sess.update({
+                    'oauth_token': {
+                        'access_token': 'token'},
+                    'oauth_user': 'a user'})
             response = self.app.get("/upload-error")
-        assert_that(response.status_code, equal_to(200))
+            assert_that(response.status_code, equal_to(200))
 
     def test_signout_redirects_properly(self):
         response = self.app.get("/sign-out")
