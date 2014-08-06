@@ -1,5 +1,5 @@
 from admin import app
-from admin.helpers import get_context, requires_authentication
+from admin.helpers import get_context
 from flask import jsonify, render_template, session, redirect, url_for
 import requests
 
@@ -17,12 +17,6 @@ def root():
         return redirect(url_for('upload_list_data_sets'))
     else:
         return render_template('index.html', **session_context)
-
-
-@app.route("/upload-error", methods=['GET'])
-@requires_authentication
-def upload_error(session_context=None):
-    return render_template('upload_error.html', **session_context)
 
 
 @app.route("/_status", methods=['GET'])
