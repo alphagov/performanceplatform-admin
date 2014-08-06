@@ -42,6 +42,10 @@ def environment_dict():
     }
 
 
+def signed_in(session):
+    return 'oauth_user' in session and 'oauth_token' in session
+
+
 @app.route("/sign-out")
 def oauth_sign_out():
     session.clear()
