@@ -5,9 +5,13 @@
 {% block body %}
 
 <div class="row">
-  <div class="col-xs-4">
-    <h3>Upload data to the Performance Platform</h3>
-  </div>
+  {% if upload_okay_message %}
+    {% include "upload/upload_okay.html" %}
+  {% else %}
+    <div class="col-xs-4">
+      <h3>Upload data to the Performance Platform</h3>
+    </div>
+  {% endif %}
 </div>
 
 <div class="row">
