@@ -37,7 +37,7 @@ class UploadTestCase(FlaskAppTestCase):
         expected_post = [{u'_timestamp': u'2014-08-05T00:00:00Z', u'foo': 40}]
         data_set_post_patch.assert_called_once_with(expected_post)
 
-        upload_done_path = '/upload-data/carers-allowance/volumetrics/done'
+        upload_done_path = '/upload-data'
         assert_that(response.headers['Location'], ends_with(upload_done_path))
         assert_that(response.status_code, equal_to(302))
 
@@ -54,7 +54,6 @@ class UploadTestCase(FlaskAppTestCase):
             '/upload-data/carers-allowance/volumetrics',
             data={'file': (StringIO('data'), 'file.xlsx')})
 
-        # self.assert_flashes('Post added')
         assert_that(response.data, contains_string(
             'There is no data set of for data-group'))
         assert_that(response.status_code, equal_to(404))
@@ -124,17 +123,11 @@ class UploadTestCase(FlaskAppTestCase):
             contains_string(
                 'Backdrop returned status code &lt;401&gt; with json: {}'))
 
-    def test_validation_error_flashed_message(self):
+    def test_redirect_to_error_if_problems(self):
         pass
 
-    def test_nasty_virus_does_something(self):
+    def test_display_okay_if_success(self):
         pass
 
     def test_probem_in_spreadsheet_prevents_post_to_backdrop(self):
-        assert_that(1, is_(2))
-
-    def test_no_problems_after_post_flashes_success(self):
-        assert_that(1, is_(2))
-
-    def test_problems_after_post_flashes_erorr(self):
         assert_that(1, is_(2))

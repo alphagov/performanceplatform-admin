@@ -11,6 +11,8 @@ from requests.exceptions import HTTPError
 @app.route('/upload-data', methods=['GET'])
 @requires_authentication
 def upload_list_data_sets(session_context=None):
+    if 'upload_okay_message' in session:
+        session_context['upload_okay_message'] = session['upload_okay_message']
     return render_template('data_sets.html', **session_context)
 
 
@@ -37,24 +39,22 @@ def upload_post(data_group, data_type, session_context=None):
         problems += spreadsheet.validate()
 
         if len(problems) == 0:
-            print spreadsheet.as_json()
             url = '{0}/data/{1}/{2}'.format(app.config['BACKDROP_HOST'],
                                             data_group, data_type)
             data_set = DataSet(url, data_set_config['bearer_token'])
             try:
                 data_set.post(spreadsheet.as_json())
+                session['upload_okay_message'] = {
+                    'data_group': data_group,
+                    'data_type': data_type}
             except HTTPError as err:
                 flash(build_http_flash(err, "Backdrop"))
-                return redirect(url_for('upload_list_data_sets'))
-    # except virus as err:
-    # except invalid as err:
-        # problems.append(err.message)
-
-    session['upload_problems'] = problems
-
-    return redirect(url_for('upload_done',
-                            data_group=data_group,
-                            data_type=data_type))
+            return redirect(url_for('upload_list_data_sets'))
+        else:
+            session['upload_problems'] = problems
+            return redirect(url_for('upload_error',
+                                    data_group=data_group,
+                                    data_type=data_type))
 
 
 def build_http_flash(err, app_name):
@@ -64,30 +64,15 @@ def build_http_flash(err, app_name):
         err.response.json())
 
 
-@app.route('/upload-data/<data_group>/<data_type>/done', methods=['GET'])
+@app.route("/upload-data/<data_group>/<data_type>/error", methods=['GET'])
 @requires_authentication
-def upload_done(data_group, data_type, session_context=None):
+def upload_error(data_group, data_type, session_context=None):
     problems = session['upload_problems']
-
-    success_message = ' '.join([
-        'Your data uploaded successfully into the dataset',
-        '{0} {1}.'.format(data_group, data_type),
-        'In about 20 minutes your data will appear on your dashboard.',
-    ])
-
-    error_message = ' '.join([
-        'There\'s a problem with your data.',
-        'We tried to upload your data into the dataset',
-        '{0} {1},'.format(data_group, data_type),
-        'but there were the following problems:',
-    ] + problems)
-
-    if len(problems) == 0:
-        flash(success_message, 'success')
-    else:
-        flash(error_message, 'danger')
-
-    return redirect(url_for('upload_list_data_sets'))
+    session_context.update({
+        'problems': problems,
+        'data_group': data_group,
+        'data_type': data_type})
+    return render_template('upload_error.html', **session_context)
 
 
 def get_data_set_config(data_group, data_type):
