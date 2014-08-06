@@ -4,6 +4,7 @@ from admin import app
 from hamcrest import assert_that, equal_to, ends_with
 from httmock import urlmatch, HTTMock
 from mock import patch
+from admin.main import signed_in
 
 
 @urlmatch(netloc=r'[a-z]+\.development\.performance\.service\.gov\.uk$')
@@ -85,3 +86,16 @@ class AppTestCase(unittest.TestCase):
         response = self.app.get("/sign-out")
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], ends_with('/users/sign_out'))
+
+    def test_signed_in_is_true_when_user_has_partial_session(self):
+        assert_that(signed_in({
+            'oauth_token': {
+                'access_token': 'token'},
+            'oauth_user': 'a user'}), equal_to(True))
+
+    def test_signed_in_is_false_when_users_signed_in(self):
+        assert_that(signed_in({
+            'oauth_user': 'a user'}), equal_to(False))
+
+    def test_signed_in_is_false_when_user_not_signed_in(self):
+        assert_that(signed_in({}), equal_to(False))
