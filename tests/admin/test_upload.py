@@ -89,6 +89,33 @@ class UploadTestCase(FlaskAppTestCase):
 
     @patch('admin.helpers.signed_in')
     @patch('admin.helpers.get_admin_client')
+    @patch('performanceplatform.client.data_set.DataSet.post')
+    def test_ask_for_file_if_none_chosen(
+            self,
+            data_set_post_patch,
+            get_admin_client_patch,
+            signed_in_patch):
+        signed_in_patch.return_value = True
+        client_mock = Mock()
+        client_mock.get_data_set.return_value = {
+            'bearer_token': 'abc123', 'foo': 'bar'
+        }
+        get_admin_client_patch.return_value = client_mock
+
+        post_data = {
+            'carers-allowance-volumetrics-file': (None, "")
+        }
+        response = self.client.post(
+            '/upload-data/carers-allowance/volumetrics',
+            data=post_data, follow_redirects=True)
+
+        assert_that(
+            response.data,
+            contains_string(
+                'Please choose a file to upload'))
+
+    @patch('admin.helpers.signed_in')
+    @patch('admin.helpers.get_admin_client')
     @patch('admin.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_problem_in_spreadsheet_prevents_post_to_backdrop(
