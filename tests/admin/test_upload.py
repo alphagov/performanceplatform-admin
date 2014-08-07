@@ -83,6 +83,34 @@ class UploadTestCase(FlaskAppTestCase):
 
     @patch('admin.helpers.get_context')
     @patch('admin.upload.get_data_set_config')
+    @patch('performanceplatform.client.data_set.DataSet.post')
+    def test_ask_for_file_if_none_chosen(
+            self,
+            data_set_post_patch,
+            get_data_set_config_patch,
+            get_context_patch):
+        get_context_patch.return_value = {
+            'user': {
+                'email': 'test@example.com'},
+            'environment': {}}
+        get_data_set_config_patch.return_value = {
+            'bearer_token': 'abc123', 'foo': 'bar'
+        }
+
+        post_data = {
+            'carers-allowance-volumetrics-file': (None, "")
+        }
+        response = self.client.post(
+            '/upload-data/carers-allowance/volumetrics',
+            data=post_data, follow_redirects=True)
+
+        assert_that(
+            response.data,
+            contains_string(
+                'Please choose a file to upload'))
+
+    @patch('admin.helpers.get_context')
+    @patch('admin.upload.get_data_set_config')
     @patch('admin.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_probem_in_spreadsheet_prevents_post_to_backdrop(
