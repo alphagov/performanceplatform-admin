@@ -100,19 +100,26 @@ class UploadTestCase(FlaskAppTestCase):
         client_mock.get_data_set.return_value = {
             'bearer_token': 'abc123', 'foo': 'bar'
         }
+        client_mock.list_data_sets.return_value = [{}]
         get_admin_client_patch.return_value = client_mock
 
         post_data = {
             'carers-allowance-volumetrics-file': (None, "")
         }
-        response = self.client.post(
-            '/upload-data/carers-allowance/volumetrics',
-            data=post_data, follow_redirects=True)
+        with self.client as client:
+            with client.session_transaction() as sess:
+                sess.update({
+                    'oauth_token': {
+                        'access_token': 'token'},
+                    'oauth_user': 'a user'})
+            response = client.post(
+                '/upload-data/carers-allowance/volumetrics',
+                data=post_data, follow_redirects=True)
 
-        assert_that(
-            response.data,
-            contains_string(
-                'Please choose a file to upload'))
+            assert_that(
+                response.data,
+                contains_string(
+                    'Please choose a file to upload'))
 
     @patch('admin.helpers.signed_in')
     @patch('admin.helpers.get_admin_client')

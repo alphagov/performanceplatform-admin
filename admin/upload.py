@@ -23,7 +23,7 @@ def upload_list_data_sets(admin_client):
         'data_sets': data_sets
     })
     if 'upload_okay_message' in session:
-        upload_okay_message = session['upload_okay_message']
+        upload_okay_message = session.pop('upload_okay_message')
         template_context['upload_okay_message'] = upload_okay_message
     return render_template('data_sets.html', **template_context)
 
@@ -84,7 +84,7 @@ def build_http_flash(err, app_name):
 @app.route("/upload-data/<data_group>/<data_type>/error", methods=['GET'])
 @requires_authentication
 def upload_error(data_group, data_type, admin_client):
-    problems = session['upload_problems']
+    problems = session.pop('upload_problems')
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
