@@ -41,45 +41,9 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(response.headers['Location'], ends_with(upload_done_path))
         assert_that(response.status_code, equal_to(302))
 
-    # this could be rolled into the previous test
-    # if we can get inspecting flash and session working
-    # instead of checking rendered content
-    @patch('admin.helpers.get_context')
-    @patch('admin.upload.get_data_set_config')
-    @patch('admin.files.uploaded.UploadedFile.is_virus')
-    @patch('performanceplatform.client.data_set.DataSet.post')
-    def test_display_okay_if_success(
-            self,
-            data_set_post_patch,
-            is_virus_patch,
-            get_data_set_config_patch,
-            get_context_patch):
-        is_virus_patch.return_value = False
-        get_context_patch.return_value = {
-            'user': {
-                'email': 'test@example.com'},
-            'environment': {}}
-        get_data_set_config_patch.return_value = {
-            'bearer_token': 'abc123', 'foo': 'bar'
-        }
-
-        post_data = {
-            'carers-allowance-volumetrics-file':
-                (StringIO('_timestamp,foo\n2014-08-05T00:00:00Z,40'),
-                    'MYSPECIALFILE.csv')
-        }
-        response = self.client.post(
-            '/upload-data/carers-allowance/volumetrics',
-            data=post_data, follow_redirects=True)
-
-        assert_that(
-            response.data,
-            contains_string(
-                'carers-allowance volumetrics'))
-        assert_that(
-            response.data,
-            contains_string(
-                'Your data uploaded successfully into the dataset'))
+        self.assert_session_contains(
+            'upload_okay_message',
+            {u'data_type': u'volumetrics', u'data_group': u'carers-allowance'})
 
     @patch('admin.helpers.get_context')
     @patch('admin.upload.get_data_set_config')
@@ -102,41 +66,11 @@ class UploadTestCase(FlaskAppTestCase):
         }
         response = self.client.post(
             '/upload-data/carers-allowance/volumetrics',
-            data=post_data, follow_redirects=True)
-
-        assert_that(
-            response.data,
-            contains_string(
-                'Please choose a file to upload'))
-
-    @patch('admin.helpers.get_context')
-    @patch('admin.upload.get_data_set_config')
-    @patch('admin.files.uploaded.UploadedFile.validate')
-    @patch('performanceplatform.client.data_set.DataSet.post')
-    def test_probem_in_spreadsheet_prevents_post_to_backdrop(
-            self,
-            data_set_post_patch,
-            validate_patch,
-            get_data_set_config_patch,
-            get_context_patch):
-        validate_patch.return_value = ["99"]
-        get_data_set_config_patch.return_value = {
-            'bearer_token': 'abc123', 'foo': 'bar'
-        }
-
-        get_context_patch.return_value = {
-            'user':
-                {'email': 'test@example.com'},
-            'environment': {}}
-        post_data = {
-            'carers-allowance-volumetrics-file':
-                (StringIO('_timestamp,foo\n2014-08-05T00:00:00Z,40'),
-                    'MYSPECIALFILE.csv')
-        }
-        self.client.post(
-            '/upload-data/carers-allowance/volumetrics',
             data=post_data)
-        assert_that(data_set_post_patch.called, equal_to(False))
+
+        self.assert_flashes('Please choose a file to upload')
+        assert_that(response.headers['Location'], ends_with('/upload-data'))
+        assert_that(response.status_code, equal_to(302))
 
     @patch('admin.helpers.get_context')
     @patch('admin.upload.get_data_set_config')
@@ -224,7 +158,7 @@ class UploadTestCase(FlaskAppTestCase):
     @patch('admin.upload.get_data_set_config')
     @patch('admin.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
-    def test_redirect_to_error_if_problems(
+    def test_redirect_to_error_if_problems_and_prevent_post(
             self,
             data_set_post_patch,
             validate_patch,
@@ -246,16 +180,9 @@ class UploadTestCase(FlaskAppTestCase):
         }
         response = self.client.post(
             '/upload-data/carers-allowance/volumetrics',
-            data=post_data, follow_redirects=True)
+            data=post_data)
 
-        assert_that(
-            response.data,
-            contains_string(
-                'We tried to upload your data into the dataset'))
-        assert_that(
-            response.data,
-            contains_string(
-                'carers-allowance volumetrics'))
-        # doesn't work with follow redirects
-        # assert_that(response.headers['Location'], ends_with('/error'))
-        # assert_that(response.status_code, equal_to(302))
+        self.assert_session_contains('upload_problems', ['99'])
+        assert_that(response.headers['Location'], ends_with('/error'))
+        assert_that(response.status_code, equal_to(302))
+        assert_that(data_set_post_patch.called, equal_to(False))
