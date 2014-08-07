@@ -47,7 +47,12 @@ def upload_post(data_group, data_type, admin_client):
 
     problems = []
 
-    with Spreadsheet(request.files[html_file_identifier]) as spreadsheet:
+    file_data = request.files[html_file_identifier]
+    if len(file_data.filename) == 0:
+        flash("Please choose a file to upload")
+        return redirect(url_for('upload_list_data_sets'))
+
+    with Spreadsheet(file_data) as spreadsheet:
         problems += spreadsheet.validate()
 
         if len(problems) == 0:
