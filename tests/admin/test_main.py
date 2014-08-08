@@ -1,5 +1,5 @@
 import json
-import unittest
+from tests.admin.support.flask_app_test_case import FlaskAppTestCase
 from admin import app
 from hamcrest import assert_that, equal_to, ends_with
 from httmock import urlmatch, HTTMock
@@ -11,7 +11,7 @@ def performance_platform_status_mock(url, request):
     return json.dumps({'status': 'ok'})
 
 
-class AppTestCase(unittest.TestCase):
+class AppTestCase(FlaskAppTestCase):
     def setUp(self):
         app.config['TESTING'] = True
         self.app = app.test_client()
@@ -40,7 +40,17 @@ class AppTestCase(unittest.TestCase):
                     equal_to({"status": "ok"}))
 
     def test_signout_redirects_properly_and_clears_session(self):
-        response = self.app.get("/sign-out")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/users/sign_out'))
-        # add test for session clear
+        with self.client as client:
+            with client.session_transaction() as sess:
+                sess.update({
+                    'oauth_token': {
+                        'access_token': 'token'},
+                    'oauth_user': 'a user'})
+            response = client.get("/sign-out")
+            assert_that(response.status_code, equal_to(302))
+            assert_that(
+                response.headers['Location'], ends_with('/users/sign_out'))
+            with client.session_transaction() as sess:
+                assert_that(
+                    sess,
+                    equal_to({}))
