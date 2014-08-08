@@ -21,6 +21,19 @@ pip install -r requirements.txt
 
 [virtualenv]: http://virtualenv.readthedocs.org/
 
+[Redis][] is also required to run the application. It is already on the dev vm. If you prefer to install it locally:
+
+```bash
+brew install redis
+```
+
+To start run `redis-server`
+
+A good guide to adding redis to launchctl can be found [here][]
+
+[Redis]: http://redis.io/
+[here]: http://mac-dev-env.patrickbougie.com/redis/
+
 ### Getting set up with GOV.UK's single sign-on service
 
 1. Create a [signon application and user](https://github.com/alphagov/signonotron2#usage)
