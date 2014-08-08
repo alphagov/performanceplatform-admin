@@ -5,7 +5,7 @@ from performanceplatform.client.admin import AdminAPI
 from functools import wraps
 from os import getenv
 
-GOVUK_ENV = getenv('GOVUK_ENV', 'development')
+environment = getenv('INFRASTRUCTURE_ENV', 'development')
 
 
 def requires_authentication(f):
@@ -28,8 +28,8 @@ def get_admin_client(session):
 def base_template_context():
     return {
         'environment': {
-            'name': GOVUK_ENV,
-            'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
+            'name': environment,
+            'human_name': environment.capitalize()
         }
     }
 
