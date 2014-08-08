@@ -1,5 +1,7 @@
 import json
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase
+from tests.admin.support.flask_app_test_case import(
+    FlaskAppTestCase,
+    signed_in)
 from admin import app
 from hamcrest import assert_that, equal_to, ends_with
 from httmock import urlmatch, HTTMock
@@ -39,18 +41,13 @@ class AppTestCase(FlaskAppTestCase):
         assert_that(json.loads(response.data)['backdrop'],
                     equal_to({"status": "ok"}))
 
-    def test_signout_redirects_properly_and_clears_session(self):
-        with self.client as client:
-            with client.session_transaction() as sess:
-                sess.update({
-                    'oauth_token': {
-                        'access_token': 'token'},
-                    'oauth_user': 'a user'})
-            response = client.get("/sign-out")
-            assert_that(response.status_code, equal_to(302))
+    @signed_in
+    def test_signout_redirects_properly_and_clears_session(self, client):
+        response = client.get("/sign-out")
+        assert_that(response.status_code, equal_to(302))
+        assert_that(
+            response.headers['Location'], ends_with('/users/sign_out'))
+        with client.session_transaction() as session:
             assert_that(
-                response.headers['Location'], ends_with('/users/sign_out'))
-            with client.session_transaction() as sess:
-                assert_that(
-                    sess,
-                    equal_to({}))
+                session,
+                equal_to({}))

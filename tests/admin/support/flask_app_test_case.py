@@ -1,7 +1,23 @@
 from flask.ext.testing import TestCase
 from hamcrest import assert_that, equal_to
+from functools import wraps
 
 from admin import app
+
+
+def signed_in(f):
+    @wraps(f)
+    def set_session_signed_in(*args, **kwargs):
+        self = args[0]
+        with self.client as client:
+            with client.session_transaction() as sess:
+                sess.update({
+                    'oauth_token': {
+                        'access_token': 'token'},
+                    'oauth_user': 'a user'})
+            kwargs['client'] = client
+            return f(*args, **kwargs)
+    return set_session_signed_in
 
 
 class FlaskAppTestCase(TestCase):
