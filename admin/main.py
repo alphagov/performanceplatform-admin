@@ -11,35 +11,31 @@ GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 def requires_authentication(f):
     @wraps(f)
     def verify_user_logged_in(*args, **kwargs):
-        session_context = get_context(session)
-        if 'user' not in session_context:
+        if not signed_in(session):
             return redirect(url_for('root'))
-        kwargs['session_context'] = session_context
-        return f(*args, **kwargs)
+        else:
+            admin_client = get_admin_client(session)
+            kwargs['admin_client'] = admin_client
+            return f(*args, **kwargs)
     return verify_user_logged_in
 
 
-# this is doing too much or should it have the signon_base_url stuff too
-def get_context(session):
-    context = dict()
-
-    if 'oauth_user' in session and 'oauth_token' in session:
-        admin_client = AdminAPI(app.config['STAGECRAFT_HOST'],
-                                session['oauth_token']['access_token'])
-        context = {
-            'user': session['oauth_user'],
-            'data_sets': admin_client.list_data_sets()
-        }
-    context['environment'] = environment_dict()
-
-    return context
+def get_admin_client(session):
+    return AdminAPI(app.config['STAGECRAFT_HOST'],
+                    session['oauth_token']['access_token'])
 
 
-def environment_dict():
+def base_template_context():
     return {
-        'name': GOVUK_ENV,
-        'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
+        'environment': {
+            'name': GOVUK_ENV,
+            'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
+        }
     }
+
+
+def signed_in(session):
+    return 'oauth_user' in session and 'oauth_token' in session
 
 
 @app.route("/sign-out")
@@ -50,23 +46,38 @@ def oauth_sign_out():
 
 @app.route("/", methods=['GET'])
 def root():
-    session_context = get_context(session)
-    if 'user' in get_context(session):
+    if signed_in(session):
         return redirect(url_for('data_sets'))
     else:
-        return render_template('index.html', **session_context)
+        return render_template('index.html', **base_template_context())
 
 
 @app.route("/data-sets", methods=['GET'])
 @requires_authentication
-def data_sets(session_context=None):
-    return render_template('data_sets.html', **session_context)
+def data_sets(admin_client):
+    template_context = base_template_context()
+    try:
+        data_sets = admin_client.list_data_sets()
+    except requests.exceptions.HTTPError as err:
+        if err.response.status_code == 403:
+            return redirect(url_for('oauth_sign_out'))
+        else:
+            raise
+    template_context.update({
+        'user': session['oauth_user'],
+        'data_sets': data_sets
+    })
+    return render_template('data_sets.html', **template_context)
 
 
 @app.route("/upload-error", methods=['GET'])
 @requires_authentication
-def upload_error(session_context=None):
-    return render_template('upload_error.html', **session_context)
+def upload_error(admin_client):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user']
+    })
+    return render_template('upload_error.html', **template_context)
 
 
 @app.route("/_status", methods=['GET'])
