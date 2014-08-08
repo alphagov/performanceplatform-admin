@@ -4,13 +4,15 @@ from tests.admin.support.flask_app_test_case import(
     signed_in)
 from admin import app
 from hamcrest import assert_that, equal_to, ends_with
-from httmock import urlmatch, HTTMock
-from mock import patch
+from mock import patch, Mock
+import requests
 
 
-@urlmatch(netloc=r'[a-z]+\.development\.performance\.service\.gov\.uk$')
-def performance_platform_status_mock(url, request):
-    return json.dumps({'status': 'ok'})
+def okay_response():
+    response = requests.Response()
+    response.status_code = 200
+    response.json = Mock(return_value={'status': 'ok'})
+    return response
 
 
 class AppTestCase(FlaskAppTestCase):
@@ -25,16 +27,20 @@ class AppTestCase(FlaskAppTestCase):
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], ends_with('/upload-data'))
 
-    def test_status_endpoint_returns_ok(self):
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/_status")
+    @patch("requests.get")
+    def test_status_endpoint_returns_ok(self, get_patch):
+        get_patch.return_value = okay_response()
+
+        response = self.app.get("/_status")
         assert_that(response.status_code, equal_to(200))
         assert_that(json.loads(response.data)['admin'],
                     equal_to({"status": "ok"}))
 
-    def test_status_endpoint_returns_dependent_app_status(self):
-        with HTTMock(performance_platform_status_mock):
-            response = self.app.get("/_status")
+    @patch("requests.get")
+    def test_status_endpoint_returns_dependent_app_status(self, get_patch):
+        get_patch.return_value = okay_response()
+
+        response = self.app.get("/_status")
         assert_that(response.status_code, equal_to(200))
         assert_that(json.loads(response.data)['stagecraft'],
                     equal_to({"status": "ok"}))
