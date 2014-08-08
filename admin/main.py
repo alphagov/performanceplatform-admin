@@ -27,14 +27,10 @@ def get_admin_client(session):
 
 def base_template_context():
     return {
-        'environment': environment_dict()
-    }
-
-
-def environment_dict():
-    return {
-        'name': GOVUK_ENV,
-        'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
+        'environment': {
+            'name': GOVUK_ENV,
+            'human_name': GOVUK_ENV[:1].upper() + GOVUK_ENV[1:]
+        }
     }
 
 
