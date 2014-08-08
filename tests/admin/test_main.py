@@ -1,11 +1,9 @@
 import json
-import unittest
+from tests.admin.support.flask_app_test_case import FlaskAppTestCase
 from admin import app
 from hamcrest import assert_that, equal_to, ends_with
 from httmock import urlmatch, HTTMock
 from mock import patch
-from admin.main import signed_in
-import requests
 
 
 @urlmatch(netloc=r'[a-z]+\.development\.performance\.service\.gov\.uk$')
@@ -13,7 +11,7 @@ def performance_platform_status_mock(url, request):
     return json.dumps({'status': 'ok'})
 
 
-class AppTestCase(unittest.TestCase):
+class AppTestCase(FlaskAppTestCase):
     def setUp(self):
         app.config['TESTING'] = True
         self.app = app.test_client()
@@ -23,7 +21,7 @@ class AppTestCase(unittest.TestCase):
         signed_in.return_value = True
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/data-sets'))
+        assert_that(response.headers['Location'], ends_with('/upload-data'))
 
     def test_status_endpoint_returns_ok(self):
         with HTTMock(performance_platform_status_mock):
@@ -41,81 +39,18 @@ class AppTestCase(unittest.TestCase):
         assert_that(json.loads(response.data)['backdrop'],
                     equal_to({"status": "ok"}))
 
-    def test_requires_authentication_redirects_when_no_auth_on_data_sets(
-            self):
-        response = self.app.get("/data-sets")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(
-            response.headers['Location'],
-            equal_to('http://localhost/'))
-
-    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
-    def test_data_sets_redirects_to_sign_out_when_403_on_data_set_list(
-            self,
-            mock_data_set_list):
-        bad_response = requests.Response()
-        bad_response.status_code = 403
-        http_error = requests.exceptions.HTTPError()
-        http_error.response = bad_response
-        mock_data_set_list.side_effect = http_error
-        with self.app as client:
+    def test_signout_redirects_properly_and_clears_session(self):
+        with self.client as client:
             with client.session_transaction() as sess:
                 sess.update({
                     'oauth_token': {
                         'access_token': 'token'},
                     'oauth_user': 'a user'})
-            response = self.app.get("/data-sets")
+            response = client.get("/sign-out")
             assert_that(response.status_code, equal_to(302))
             assert_that(
-                response.headers['Location'],
-                ends_with('/sign-out'))
-
-    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
-    def test_requires_authentication_continues_when_auth_on_data_sets(
-            self,
-            mock_data_set_list):
-        with self.app as client:
+                response.headers['Location'], ends_with('/users/sign_out'))
             with client.session_transaction() as sess:
-                sess.update({
-                    'oauth_token': {
-                        'access_token': 'token'},
-                    'oauth_user': 'a user'})
-            response = client.get("/data-sets")
-            assert_that(response.status_code, equal_to(200))
-
-    def test_requires_authentication_redirects_when_no_auth_on_upload_error(
-            self):
-        response = self.app.get("/upload-error")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(
-            response.headers['Location'],
-            equal_to('http://localhost/'))
-
-    def test_requires_authentication_continues_when_auth_on_upload_error(
-            self):
-        with self.app as client:
-            with client.session_transaction() as sess:
-                sess.update({
-                    'oauth_token': {
-                        'access_token': 'token'},
-                    'oauth_user': 'a user'})
-            response = self.app.get("/upload-error")
-            assert_that(response.status_code, equal_to(200))
-
-    def test_signout_redirects_properly(self):
-        response = self.app.get("/sign-out")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/users/sign_out'))
-
-    def test_signed_in_is_true_when_user_has_partial_session(self):
-        assert_that(signed_in({
-            'oauth_token': {
-                'access_token': 'token'},
-            'oauth_user': 'a user'}), equal_to(True))
-
-    def test_signed_in_is_false_when_users_signed_in(self):
-        assert_that(signed_in({
-            'oauth_user': 'a user'}), equal_to(False))
-
-    def test_signed_in_is_false_when_user_not_signed_in(self):
-        assert_that(signed_in({}), equal_to(False))
+                assert_that(
+                    sess,
+                    equal_to({}))
