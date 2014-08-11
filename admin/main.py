@@ -1,7 +1,8 @@
 from admin import app
 from admin.helpers import (
     signed_in,
-    base_template_context
+    base_template_context,
+    signed_in_no_access
 )
 from flask import (
     jsonify, render_template, session, redirect,
@@ -20,8 +21,10 @@ def oauth_sign_out():
 def root():
     if signed_in(session):
         return redirect(url_for('upload_list_data_sets'))
-    else:
+    elif signed_in_no_access(session):
         return render_template('index.html', **base_template_context())
+    else:
+        return redirect(url_for('login'))
 
 
 def check_status(base_url):
