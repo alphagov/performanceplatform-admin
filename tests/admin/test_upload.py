@@ -168,12 +168,12 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in
     @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
-    def test_data_sets_redirects_to_sign_out_when_403_on_data_set_list(
+    def test_data_sets_redirects_to_sign_out_when_401_on_data_set_list(
             self,
             mock_data_set_list,
             client):
         bad_response = requests.Response()
-        bad_response.status_code = 403
+        bad_response.status_code = 401
         http_error = requests.exceptions.HTTPError()
         http_error.response = bad_response
         mock_data_set_list.side_effect = http_error
