@@ -33,8 +33,8 @@ class AppTestCase(FlaskAppTestCase):
 
         response = self.app.get("/_status")
         assert_that(response.status_code, equal_to(200))
-        assert_that(json.loads(response.data)['admin'],
-                    equal_to({"status": "ok"}))
+        assert_that(json.loads(response.data)['status'],
+                    equal_to('ok'))
 
     @patch("requests.get")
     def test_status_endpoint_returns_dependent_app_status(self, get_patch):
