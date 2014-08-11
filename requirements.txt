@@ -12,3 +12,5 @@ pytz==2014.4
 xlrd==0.9.3
 Flask-Scss==0.3
 redis==2.10.1
+raven==5.0.0
+blinker==1.3
