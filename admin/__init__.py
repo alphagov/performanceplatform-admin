@@ -9,10 +9,6 @@ from admin.redis_session import RedisSessionInterface
 
 app = Flask(__name__)
 
-# adds uncaught exception handlers to app and submits to sentry
-# this will only send when SENTRY_DSN is defined in config
-Sentry(app)
-
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
 app.config['LOG_LEVEL'] = "INFO"
@@ -25,6 +21,9 @@ app.redis_instance = Redis(
 app.session_interface = RedisSessionInterface(
     redis=app.redis_instance, prefix='admin_app:session:')
 
+# adds uncaught exception handlers to app and submits to sentry
+# this will only send when SENTRY_DSN is defined in config
+Sentry(app)
 
 log_handler.set_up_logging(app, GOVUK_ENV)
 
