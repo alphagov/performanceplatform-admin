@@ -1,6 +1,9 @@
 from admin import app
 from admin.files.spreadsheet import Spreadsheet
-from admin.helpers import requires_authentication, base_template_context
+from admin.helpers import(
+    requires_authentication,
+    base_template_context,
+    group_by_group)
 from flask import (abort, flash, render_template,
                    redirect, request, session, url_for)
 from performanceplatform.client.data_set import DataSet
@@ -12,7 +15,7 @@ from requests.exceptions import HTTPError
 def upload_list_data_sets(admin_client):
     template_context = base_template_context()
     try:
-        data_sets = admin_client.list_data_sets()
+        data_sets = group_by_group(admin_client.list_data_sets())
     except HTTPError as err:
         if err.response.status_code == 403:
             return redirect(url_for('oauth_sign_out'))
