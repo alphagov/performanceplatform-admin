@@ -3,7 +3,7 @@ from tests.admin.support.flask_app_test_case import(
     FlaskAppTestCase,
     signed_in)
 from admin import app
-from hamcrest import assert_that, equal_to, ends_with
+from hamcrest import assert_that, equal_to, ends_with, contains_string
 from mock import patch, Mock
 import requests
 
@@ -21,11 +21,28 @@ class AppTestCase(FlaskAppTestCase):
         self.app = app.test_client()
 
     @patch('admin.main.signed_in')
-    def test_homepage_redirects_when_signed_in(self, signed_in):
+    def test_homepage_redirects_to_upload_when_signed_in(self, signed_in):
         signed_in.return_value = True
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], ends_with('/upload-data'))
+
+    @patch('admin.main.signed_in_no_access')
+    def test_homepage_renders_index_when_no_access(self, signed_in_no_access):
+        signed_in_no_access.return_value = True
+        response = self.app.get('/')
+        assert_that(response.status_code, equal_to(200))
+        assert_that(response.data, contains_string(
+            'You do not currently have access to this application.'))
+
+    @patch('admin.main.signed_in_no_access')
+    def test_homepage_redirects_to_login_when_possible_access(
+            self,
+            signed_in_no_access):
+        signed_in_no_access.return_value = False
+        response = self.app.get('/')
+        assert_that(response.status_code, equal_to(302))
+        assert_that(response.headers['Location'], ends_with('/login'))
 
     @patch("requests.get")
     def test_status_endpoint_returns_ok(self, get_patch):
