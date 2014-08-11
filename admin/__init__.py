@@ -1,12 +1,17 @@
 from flask import Flask
 from flask.ext.scss import Scss
 from os import getenv, path
+from raven.contrib.flask import Sentry
 from redis import Redis
 
 from admin.core import log_handler
 from admin.redis_session import RedisSessionInterface
 
 app = Flask(__name__)
+
+# adds uncaught exception handlers to app and submits to sentry
+# this will only send when SENTRY_DSN is defined in config
+Sentry(app)
 
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
