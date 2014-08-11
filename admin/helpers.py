@@ -3,8 +3,6 @@ from flask import session, redirect, url_for
 from functools import wraps
 from os import getenv
 from performanceplatform.client.admin import AdminAPI
-from itertools import groupby
-from operator import itemgetter
 
 
 environment = getenv('INFRASTRUCTURE_ENV', 'development')
@@ -37,7 +35,24 @@ def base_template_context():
 
 
 def signed_in(session):
-    return 'oauth_user' in session and 'oauth_token' in session
+    return(has_user_with_token(session)
+           and not no_access(session['oauth_user']))
+
+
+def signed_in_no_access(session):
+    return(has_user_with_token(session)
+           and no_access(session['oauth_user']))
+
+
+def has_user_with_token(session):
+    return('oauth_token' in session
+           and 'access_token' in session['oauth_token']
+           and 'oauth_user' in session)
+
+
+def no_access(session_oauth_user):
+    return('permissions' not in session_oauth_user
+           or 'signin' not in session_oauth_user['permissions'])
 
 
 def group_by_group(data_sets):
