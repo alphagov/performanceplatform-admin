@@ -1,32 +1,32 @@
 from flask import Flask
+from flask.ext.scss import Scss
 from os import getenv, path
+from redis import Redis
+
 from admin.core import log_handler
+from admin.redis_session import RedisSessionInterface
 
 app = Flask(__name__)
-from flask.ext.scss import Scss
 
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
 app.config['LOG_LEVEL'] = "INFO"
 app.config.from_object('admin.config.{0}'.format(GOVUK_ENV))
-
-log_handler.set_up_logging(app, GOVUK_ENV)
-
 app.secret_key = app.config['COOKIE_SECRET_KEY']
-
-import admin.main
-import admin.authentication
-import admin.upload
-
-from redis import Redis
-from admin.redis_session import RedisSessionInterface
-
 app.redis_instance = Redis(
     host=app.config['REDIS_HOST'],
     port=app.config['REDIS_PORT']
 )
 app.session_interface = RedisSessionInterface(
     redis=app.redis_instance, prefix='admin_app:session:')
+
+
+log_handler.set_up_logging(app, GOVUK_ENV)
+
+
+import admin.main
+import admin.authentication
+import admin.upload
 
 
 def start(port):
