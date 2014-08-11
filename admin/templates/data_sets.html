@@ -44,7 +44,7 @@
         <ul class="list-unstyled data-set-list">
           {% for data_set in data_sets[group_name] %}
           <li>
-            <strong class="data-set-group-and-type">{{ data_set.data_group }} {{ data_set.data_type }}</strong>
+            <strong class="data-set-type">{{ data_set.data_type }}</strong>
             {% include "upload/form.html" %}
           </li>
           {% endfor %}
