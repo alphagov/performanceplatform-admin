@@ -28,11 +28,8 @@ def authorize():
     user = gds_session.get('{0}/user.json'.format(
         app.config['SIGNON_BASE_URL'])).json()
     if 'signin' in user['user']['permissions']:
-        session['oauth_user'] = user['user']
-        session['oauth_token'] = token
-
         flash("You have been successfully signed in")
-    else:
-        flash("You do not have access to this application.")
+    session['oauth_user'] = user['user']
+    session['oauth_token'] = token
 
     return redirect(url_for('root'))
