@@ -182,3 +182,46 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(
             response.headers['Location'],
             ends_with('/sign-out'))
+
+    @signed_in
+    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
+    def test_data_sets_renders_a_data_set_list_and_okay_message_on_success(
+            self,
+            mock_data_set_list,
+            client):
+        mock_data_set_list.return_value = [
+            {
+                'data_group': "group_1",
+                'data_type': "type1"
+            },
+            {
+                'data_group': "group_1",
+                'data_type': "type2"
+            },
+            {
+                'data_group': "group_2",
+                'data_type': "type3"
+            }
+        ]
+        with self.client.session_transaction() as session:
+            session['upload_okay_message'] = {
+                'data_group': 'group uploaded to',
+                'data_type': 'type uploaded to'
+            }
+        response = client.get("/upload-data")
+        assert_that(
+            response.data,
+            contains_string("group_1 type1"))
+        assert_that(
+            response.data,
+            contains_string("group_1 type2"))
+        assert_that(
+            response.data,
+            contains_string("group_2 type3"))
+        assert_that(
+            response.data,
+            contains_string(
+                "Your data uploaded successfully into the dataset"))
+        assert_that(
+            response.data,
+            contains_string("group uploaded to type uploaded to"))
