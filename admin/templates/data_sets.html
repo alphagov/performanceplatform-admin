@@ -36,12 +36,19 @@
   <div class="col-xs-8">
     <hr>
     {% if data_sets %}
-      <ul class="list-unstyled data-set-list">
-        {% for data_set in data_sets %}
+      <ul class="list-unstyled data-group-list">
+        {% for group_name in data_sets %}
+        <li>
+          <h3 class="data-group-name">{{ group_name }}</h3>
+        </li>
+        <ul class="list-unstyled data-set-list">
+          {% for data_set in data_sets[group_name] %}
           <li>
             <strong class="data-set-group-and-type">{{ data_set.data_group }} {{ data_set.data_type }}</strong>
             {% include "upload/form.html" %}
           </li>
+          {% endfor %}
+        </ul>
         {% endfor %}
       </ul>
     {% else %}
