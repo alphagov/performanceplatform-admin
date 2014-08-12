@@ -17,7 +17,7 @@ def upload_list_data_sets(admin_client):
     try:
         data_sets = group_by_group(admin_client.list_data_sets())
     except HTTPError as err:
-        if err.response.status_code == 403:
+        if err.response.status_code == 401:
             return redirect(url_for('oauth_sign_out'))
         else:
             raise
