@@ -27,13 +27,23 @@ class AppTestCase(FlaskAppTestCase):
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], ends_with('/upload-data'))
 
-    @patch('admin.main.signed_in_no_access')
-    def test_homepage_renders_index_when_no_access(self, signed_in_no_access):
-        signed_in_no_access.return_value = True
+    def test_homepage_renders_index_when_no_access(self):
+        with self.app.session_transaction() as sess:
+            sess.update({
+                'oauth_token': {
+                    'access_token': 'token'
+                },
+                'oauth_user': {
+                    'name': 'Dave',
+                    'permissions': []
+                }
+            })
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(200))
         assert_that(response.data, contains_string(
             'You do not currently have access to this application.'))
+        assert_that(response.data, contains_string(
+            'Hello, Dave'))
 
     @patch('admin.main.signed_in_no_access')
     def test_homepage_redirects_to_login_when_possible_access(
