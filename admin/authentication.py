@@ -3,15 +3,14 @@ from flask import redirect, request, session, url_for, flash
 from requests_oauthlib import OAuth2Session
 
 
-@app.route("/login", methods=['GET'])
-def login():
+def get_authorization_url(session):
     gds_session = OAuth2Session(app.config['SIGNON_OAUTH_ID'],
                                 redirect_uri='{0}/auth/gds/callback'.format(
                                     app.config['ADMIN_HOST']))
     authorization_url, state = gds_session.authorization_url(
         '{0}/oauth/authorize'.format(app.config['SIGNON_BASE_URL']))
     session['oauth_state'] = state
-    return redirect(authorization_url)
+    return authorization_url
 
 
 @app.route("/auth/gds/callback", methods=['GET'])
