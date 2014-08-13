@@ -9,6 +9,7 @@ from flask import (
     url_for, make_response
 )
 import requests
+from admin.authentication import get_authorization_url
 
 
 @app.route("/sign-out")
@@ -28,7 +29,7 @@ def root():
         })
         return render_template('index.html', **template_context)
     else:
-        return redirect(url_for('login'))
+        return redirect(get_authorization_url(session))
 
 
 def check_status(base_url):
