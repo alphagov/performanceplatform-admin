@@ -73,3 +73,17 @@ class TestMakeRecords(unittest.TestCase):
             {"name": "val1", "size": 123},
             {"name": "val2", "size": 456},
         ))
+
+    def test_processes_rows_containg_just_numbers_correctly(self):
+        rows = [
+            ['count'],
+            [818],
+            [602],
+        ]
+
+        records = list(make_dicts(rows))
+
+        assert_that(records, only_contains(
+            {'count': 818},
+            {'count': 602},
+        ))
