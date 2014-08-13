@@ -1,13 +1,16 @@
 from mock import patch, Mock
 from nose.tools import assert_equal
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase
+from admin.authentication import get_authorization_url
 
 
 @patch('requests_oauthlib.OAuth2Session.fetch_token')
 @patch('requests_oauthlib.OAuth2Session.get')
+@patch('requests_oauthlib.OAuth2Session.authorization_url')
 class AuthenticationTestCase(FlaskAppTestCase):
     def test_authorize_sets_correct_session_if_user_can_sign_in(
             self,
+            oauth_authorization_url_patch,
             oauth_get_patch,
             oauth_fetch_token_patch):
         token = "token_token"
@@ -33,6 +36,7 @@ class AuthenticationTestCase(FlaskAppTestCase):
 
     def test_authorize_does_not_sign_in_if_user_cannot_sign_in(
             self,
+            oauth_authorization_url_patch,
             oauth_get_patch,
             oauth_fetch_token_patch):
         token = "token_token"
@@ -55,3 +59,13 @@ class AuthenticationTestCase(FlaskAppTestCase):
         assert_equal(len(self.get_flashes()), 0)
         assert_equal(response.headers['Location'], 'http://localhost/')
         assert_equal(response.status_code, 302)
+
+    def test_get_authorization_url_sets_oauth_state_returns_url(
+            self,
+            oauth_authorization_url_patch,
+            oauth_get_patch,
+            oauth_fetch_token_patch):
+        oauth_authorization_url_patch.return_value = ('some url', 'state')
+        session = {}
+        assert_equal(get_authorization_url(session), 'some url')
+        assert_equal(session, {'oauth_state': 'state'})
