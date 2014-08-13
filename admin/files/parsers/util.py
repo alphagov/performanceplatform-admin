@@ -2,7 +2,11 @@ from admin.files.parsers import ParseError
 
 
 def remove_blanks(rows):
-    return filter(lambda r: not all(v is None or len(v) == 0 for v in r), rows)
+    def blank_filter(r):
+        return not all(v is None or
+                       (isinstance(v, basestring) and len(v) == 0) for v in r)
+
+    return filter(blank_filter, rows)
 
 
 def make_dicts(rows):
