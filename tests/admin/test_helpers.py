@@ -73,7 +73,6 @@ class HelpersTestCase(unittest.TestCase):
             'permissions': ['signin']
         }), equal_to(False))
 
-    ###
     @patch('admin.helpers.has_user_with_token')
     @patch('admin.helpers.no_access')
     def test_signed_in_true_when_has_user_with_token_and_not_no_access(

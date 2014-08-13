@@ -46,13 +46,17 @@ class AppTestCase(FlaskAppTestCase):
             'Hello, Dave'))
 
     @patch('admin.main.signed_in_no_access')
-    def test_homepage_redirects_to_login_when_possible_access(
+    @patch('admin.main.get_authorization_url')
+    def test_homepage_redirects_to_auth_url_when_possible_access(
             self,
+            get_authorization_url_patch,
             signed_in_no_access):
+        get_authorization_url_patch.return_value = "http://someurl.com"
         signed_in_no_access.return_value = False
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(302))
-        assert_that(response.headers['Location'], ends_with('/login'))
+        assert_that(response.headers['Location'], equal_to(
+            'http://someurl.com'))
 
     @patch("requests.get")
     def test_status_endpoint_returns_ok(self, get_patch):
