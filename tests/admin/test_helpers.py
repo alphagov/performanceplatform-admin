@@ -1,6 +1,12 @@
 import unittest
 from admin import app
-from admin.helpers import requires_authentication, signed_in, group_by_group
+from admin.helpers import(
+    requires_authentication,
+    signed_in,
+    group_by_group,
+    signed_in_no_access,
+    no_access,
+    has_user_with_token)
 from hamcrest import assert_that, equal_to
 from mock import patch
 
@@ -21,18 +27,108 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], equal_to('/'))
 
-    def test_signed_in_is_true_when_user_has_partial_session(self):
-        assert_that(signed_in({
+    def test_has_user_with_token_returns_true_when_session_has_token_and_user(
+            self):
+        assert_that(has_user_with_token({
             'oauth_token': {
-                'access_token': 'token'},
-            'oauth_user': 'a user'}), equal_to(True))
+                'access_token': 'token'
+            },
+            'oauth_user': "bleep_bloop_blarp"
+        }), equal_to(True))
 
-    def test_signed_in_is_false_when_users_signed_in(self):
-        assert_that(signed_in({
-            'oauth_user': 'a user'}), equal_to(False))
+    def test_has_user_with_token_false_when_session_has_no_token(self):
+        assert_that(has_user_with_token({
+            'oauth_user': "bleep_bloop_blarp"
+        }), equal_to(False))
 
-    def test_signed_in_is_false_when_user_not_signed_in(self):
-        assert_that(signed_in({}), equal_to(False))
+    def test_has_user_with_token_false_when_session_token_has_no_access_token(
+            self):
+        assert_that(has_user_with_token({
+            'oauth_token': {
+            },
+            'oauth_user': "bleep_bloop_blarp"
+        }), equal_to(False))
+
+    def test_has_user_with_token_is_false_when_session_has_no_user(self):
+        assert_that(has_user_with_token({
+            'oauth_token': {
+                'access_token': 'token'
+            }
+        }), equal_to(False))
+
+    def test_has_user_with_token_is_false_when_empty_session(self):
+        assert_that(has_user_with_token({}), equal_to(False))
+
+    def test_no_access_true_if_session_user_has_no_permissions(self):
+        assert_that(no_access({}), equal_to(True))
+
+    def test_no_access_true_if_session_user_hasnt_signin_permission(self):
+        assert_that(no_access({
+            'permissions': []
+        }), equal_to(True))
+
+    def test_no_access_false_if_session_user_has_signin_permission(
+            self):
+        assert_that(no_access({
+            'permissions': ['signin']
+        }), equal_to(False))
+
+    @patch('admin.helpers.has_user_with_token')
+    @patch('admin.helpers.no_access')
+    def test_signed_in_true_when_has_user_with_token_and_not_no_access(
+            self,
+            no_access_patch,
+            has_user_with_token_patch):
+        has_user_with_token_patch.return_value = True
+        no_access_patch.return_value = False
+        assert_that(signed_in({'oauth_user': 'user'}), equal_to(True))
+
+    @patch('admin.helpers.has_user_with_token')
+    def test_signed_in_false_when_hasnt_user_with_token(
+            self,
+            has_user_with_token_patch):
+        has_user_with_token_patch.return_value = False
+        assert_that(signed_in({'oauth_user': 'user'}), equal_to(False))
+
+    @patch('admin.helpers.has_user_with_token')
+    @patch('admin.helpers.no_access')
+    def test_signed_in_false_when_has_user_with_token_and_no_access(
+            self,
+            no_access_patch,
+            has_user_with_token_patch):
+        has_user_with_token_patch.return_value = True
+        no_access_patch.return_value = True
+        assert_that(signed_in({'oauth_user': 'user'}), equal_to(False))
+
+    @patch('admin.helpers.has_user_with_token')
+    @patch('admin.helpers.no_access')
+    def test_signed_in_no_access_false_if_signed_in_and_not_no_access(
+            self,
+            no_access_patch,
+            has_user_with_token_patch):
+        has_user_with_token_patch.return_value = True
+        no_access_patch.return_value = False
+        assert_that(signed_in_no_access(
+            {'oauth_user': 'user'}), equal_to(False))
+
+    @patch('admin.helpers.has_user_with_token')
+    def test_signed_in_no_access_false_when_hasnt_user_with_token(
+            self,
+            has_user_with_token_patch):
+        has_user_with_token_patch.return_value = False
+        assert_that(signed_in_no_access(
+            {'oauth_user': 'user'}), equal_to(False))
+
+    @patch('admin.helpers.has_user_with_token')
+    @patch('admin.helpers.no_access')
+    def test_signed_in_no_access_true_when_has_user_with_token_and_no_access(
+            self,
+            no_access_patch,
+            has_user_with_token_patch):
+        has_user_with_token_patch.return_value = True
+        no_access_patch.return_value = True
+        assert_that(signed_in_no_access(
+            {'oauth_user': 'user'}), equal_to(True))
 
     def test_group_by_group_groups_datasets_by_group(self):
         data_sets = [
