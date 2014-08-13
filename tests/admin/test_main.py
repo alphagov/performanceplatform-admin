@@ -41,7 +41,7 @@ class AppTestCase(FlaskAppTestCase):
         response = self.app.get('/')
         assert_that(response.status_code, equal_to(200))
         assert_that(response.data, contains_string(
-            'You do not currently have access to this application.'))
+            'You don\'t have access to this application.'))
         assert_that(response.data, contains_string(
             'Hello, Dave'))
 
