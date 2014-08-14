@@ -2,12 +2,13 @@ import unittest
 from admin import app
 from admin.helpers import(
     requires_authentication,
+    requires_permission,
     signed_in,
     group_by_group,
     signed_in_no_access,
     no_access,
     has_user_with_token)
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, is_
 from mock import patch
 
 
@@ -26,6 +27,63 @@ class HelpersTestCase(unittest.TestCase):
 
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], equal_to('/'))
+
+    @patch('admin.helpers.signed_in')
+    def test_requires_permission_allows_access(self, signed_in_mock):
+        signed_in_mock.return_value = True
+        func = lambda: 'Decorator exited successfully'
+        wrapped_app_method = requires_permission('special-permission')
+
+        with app.test_request_context('/protected', method='GET') as context:
+            context.session.update({
+                'oauth_user': {'permissions': ['special-permission']},
+            })
+            response = wrapped_app_method(func)()
+
+        assert_that(response, is_('Decorator exited successfully'))
+
+    @patch('admin.helpers.signed_in')
+    def test_requires_permission_raises_exception_for_invalid_decoration(
+            self, signed_in_mock):
+        signed_in_mock.return_value = True
+        func = lambda: 'Decorator exited successfully'
+        wrapped_app_method = requires_permission()
+
+        with app.test_request_context('/protected', method='GET') as context:
+            context.session.update({
+                'oauth_user': {'permissions': ['a-permission']},
+            })
+
+            self.assertRaises(Exception, wrapped_app_method(func))
+
+    @patch('admin.helpers.signed_in')
+    def test_requires_permission_redirects_when_not_signed_in(
+            self, signed_in_mock):
+        signed_in_mock.return_value = False
+        func = lambda: 'Decorator exited successfully'
+        wrapped_app_method = requires_permission('special-permission')
+
+        with app.test_request_context('/protected', method='GET') as context:
+            response = wrapped_app_method(func)()
+
+        assert_that(response.status_code, is_(302))
+        assert_that(response.headers['Location'], is_('/'))
+
+    @patch('admin.helpers.signed_in')
+    def test_requires_permission_redirects_for_bad_permissions(
+            self, signed_in_mock):
+        signed_in_mock.return_value = True
+        func = lambda: 'Decorator exited successfully'
+        wrapped_app_method = requires_permission('special-permission')
+
+        with app.test_request_context('/protected', method='GET') as context:
+            context.session.update({
+                'oauth_user': {'permissions': ['normal-permission']},
+            })
+            response = wrapped_app_method(func)()
+
+        assert_that(response.status_code, is_(302))
+        assert_that(response.headers['Location'], is_('/'))
 
     def test_has_user_with_token_returns_true_when_session_has_token_and_user(
             self):

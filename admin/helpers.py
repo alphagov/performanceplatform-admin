@@ -20,6 +20,29 @@ def requires_authentication(f):
     return verify_user_logged_in
 
 
+def requires_permission(permission=None):
+    def wrap(f):
+
+        @wraps(f)
+        def verify_user_has_permission(*args, **kwargs):
+            if permission is None:
+                raise Exception('@requires_permission needs an argument')
+
+            if not signed_in(session):
+                return redirect(url_for('root'))
+
+            user_permissions = session['oauth_user']['permissions']
+
+            if permission in user_permissions:
+                return f(*args, **kwargs)
+            else:
+                return redirect(url_for('root'))
+
+        return verify_user_has_permission
+
+    return wrap
+
+
 def get_admin_client(session):
     return AdminAPI(app.config['STAGECRAFT_HOST'],
                     session['oauth_token']['access_token'])
