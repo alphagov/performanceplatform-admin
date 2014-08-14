@@ -8,6 +8,15 @@ from performanceplatform.client.admin import AdminAPI
 environment = getenv('INFRASTRUCTURE_ENV', 'development')
 
 
+@app.context_processor
+def view_helpers():
+    def can_edit_dashboards(user):
+        return 'permissions' in user and \
+            'dashboard-editor' in user['permissions']
+
+    return dict(can_edit_dashboards=can_edit_dashboards)
+
+
 def requires_authentication(f):
     @wraps(f)
     def verify_user_logged_in(*args, **kwargs):

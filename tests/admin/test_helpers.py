@@ -7,7 +7,9 @@ from admin.helpers import(
     group_by_group,
     signed_in_no_access,
     no_access,
-    has_user_with_token)
+    has_user_with_token,
+    view_helpers,
+)
 from hamcrest import assert_that, equal_to, is_
 from mock import patch
 
@@ -16,6 +18,14 @@ class HelpersTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         self.app = app.test_client()
+
+    def test_view_helper_can_edit_dashboards(self):
+        can_edit_dashboards = view_helpers()['can_edit_dashboards']
+        assert_that(can_edit_dashboards({}), is_(False))
+        assert_that(can_edit_dashboards({'permissions': ['signin']}),
+                    is_(False))
+        assert_that(can_edit_dashboards({'permissions': ['dashboard-editor']}),
+                    is_(True))
 
     @patch('admin.helpers.signed_in')
     def test_requires_login_redirects_when_no_user(self, signed_in_mock):
