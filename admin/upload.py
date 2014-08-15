@@ -50,10 +50,7 @@ def upload_post(data_group, data_type, admin_client):
 
     problems, our_problem = upload_spreadsheet(data_set, request.files['file'])
     if len(problems) == 0:
-        messages = [
-            "Your data uploaded successfully. In about 20 minutes your data "
-            "will appear on the relevant dashboards"
-        ]
+        messages = []
         status = 200
     else:
         messages = problems
