@@ -12,12 +12,6 @@ import requests
 from admin.authentication import get_authorization_url
 
 
-@app.route("/sign-out")
-def oauth_sign_out():
-    session.clear()
-    return redirect(app.config['SIGNON_BASE_URL'] + '/users/sign_out')
-
-
 @app.route("/", methods=['GET'])
 def root():
     if signed_in(session):

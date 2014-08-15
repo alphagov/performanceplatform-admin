@@ -77,14 +77,3 @@ class AppTestCase(FlaskAppTestCase):
                     equal_to({"status": "ok"}))
         assert_that(json.loads(response.data)['backdrop'],
                     equal_to({"status": "ok"}))
-
-    @signed_in
-    def test_signout_redirects_properly_and_clears_session(self, client):
-        response = client.get("/sign-out")
-        assert_that(response.status_code, equal_to(302))
-        assert_that(
-            response.headers['Location'], ends_with('/users/sign_out'))
-        with client.session_transaction() as session:
-            assert_that(
-                session,
-                equal_to({}))

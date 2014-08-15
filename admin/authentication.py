@@ -13,6 +13,12 @@ def get_authorization_url(session):
     return authorization_url
 
 
+@app.route("/sign-out")
+def oauth_sign_out():
+    session.clear()
+    return redirect(app.config['SIGNON_BASE_URL'] + '/users/sign_out')
+
+
 @app.route("/auth/gds/callback", methods=['GET'])
 def authorize():
     gds_session = OAuth2Session(app.config['SIGNON_OAUTH_ID'],

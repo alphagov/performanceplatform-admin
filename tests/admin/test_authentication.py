@@ -1,6 +1,11 @@
 from mock import patch, Mock
 from nose.tools import assert_equal
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase
+from hamcrest import assert_that, equal_to, ends_with, contains_string
+
+from tests.admin.support.flask_app_test_case import(
+    FlaskAppTestCase,
+    signed_in)
+
 from admin.authentication import get_authorization_url
 
 
@@ -8,6 +13,22 @@ from admin.authentication import get_authorization_url
 @patch('requests_oauthlib.OAuth2Session.get')
 @patch('requests_oauthlib.OAuth2Session.authorization_url')
 class AuthenticationTestCase(FlaskAppTestCase):
+    @signed_in
+    def test_signout_redirects_properly_and_clears_session(
+            self,
+            oauth_authorization_url_patch,
+            oauth_get_patch,
+            oauth_fetch_token_patch,
+            client):
+        response = client.get("/sign-out")
+        assert_that(response.status_code, equal_to(302))
+        assert_that(
+            response.headers['Location'], ends_with('/users/sign_out'))
+        with client.session_transaction() as session:
+            assert_that(
+                session,
+                equal_to({}))
+
     def test_authorize_sets_correct_session_if_user_can_sign_in(
             self,
             oauth_authorization_url_patch,
