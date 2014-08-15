@@ -6,6 +6,7 @@ from tests.admin.support.flask_app_test_case import(
     FlaskAppTestCase,
     signed_in)
 
+from admin import app
 from admin.authentication import get_authorization_url
 
 
@@ -28,6 +29,23 @@ class AuthenticationTestCase(FlaskAppTestCase):
             assert_that(
                 session,
                 equal_to({}))
+
+    def test_signin_development_route(
+            self,
+            oauth_authorization_url_patch,
+            oauth_get_patch,
+            oauth_fetch_token_patch):
+        response = self.client.get("/sign-in")
+        assert_that(response.status_code, equal_to(302))
+        assert_that(
+            response.headers['Location'], ends_with('/'))
+        with self.client.session_transaction() as session:
+            assert_that(
+                session['oauth_token']['access_token'],
+                equal_to(app.config['FAKE_OAUTH_TOKEN']))
+            assert_that(
+                session['oauth_user'],
+                equal_to(app.config['FAKE_OAUTH_USER']))
 
     def test_authorize_sets_correct_session_if_user_can_sign_in(
             self,

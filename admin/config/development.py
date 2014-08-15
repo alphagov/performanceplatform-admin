@@ -11,6 +11,20 @@ SIGNON_BASE_URL = 'http://signon.dev.gov.uk'
 
 DEBUG = True
 
+FAKE_OAUTH_TOKEN = 'development-oauth-access-token'
+FAKE_OAUTH_USER = {
+    "email": "some.user@digital.cabinet-office.gov.uk",
+    "name": "Some User",
+    "organisation_slug": "cabinet-office",
+    "permissions": [
+        "signin",
+        "dataset",
+        "user",
+        "admin",
+    ],
+    "uid": "00000000-0000-0000-0000-000000000000"
+}
+
 # You can use development_local_overrides.py in this directory to set config
 # that is unique to your development environment, like OAuth IDs and secrets.
 # It is not in version control.

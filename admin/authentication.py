@@ -19,6 +19,17 @@ def oauth_sign_out():
     return redirect(app.config['SIGNON_BASE_URL'] + '/users/sign_out')
 
 
+if app.config['DEBUG']:
+    @app.route("/sign-in")
+    def fake_oath_sign_in():
+        session['oauth_user'] = app.config['FAKE_OAUTH_USER']
+        session['oauth_token'] = {
+            'access_token': app.config['FAKE_OAUTH_TOKEN']
+        }
+
+        return redirect(url_for('root'))
+
+
 @app.route("/auth/gds/callback", methods=['GET'])
 def authorize():
     gds_session = OAuth2Session(app.config['SIGNON_OAUTH_ID'],
