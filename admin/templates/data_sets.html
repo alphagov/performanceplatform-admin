@@ -45,13 +45,18 @@
             <li>
               {% include "upload/form.html" %}
               {% if upload_data and upload_data.data_group == data_set.data_group and upload_data.data_type == data_set.data_type %}
-              <ul class="list-unstyled">
-                {% for message in upload_data.payload %}
-                <li class="text-danger">{{message}}</li>
+                <div class="upload-messages">
+                {% if upload_data.payload|length == 0 %}
+                  <p>Your data uploaded successfully. In about 20 minutes your data will appear on the relevant dashboards</p>
                 {% else %}
-                <li>Your data uploaded successfully. In about 20 minutes your data will appear on the relevant dashboards</li>
-                {% endfor %}
-              </ul>
+                  <p class="text-danger">Upload failed - errors:</p>
+                  <ul class="upload-messages">
+                    {% for message in upload_data.payload %}
+                    <li class="text-danger">{{message}}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+                </div>
               {% endif %}
             </li>
             {% endfor %}
