@@ -1,11 +1,5 @@
 (function() {
 
-  function createListElement(text) {
-    var elem = document.createElement('li');
-    elem.textContent = text;
-    return elem;
-  }
-
   function setMessage(className) {
     return function (file, message) {
       var form = $(file.previewElement).parent(),
@@ -15,19 +9,26 @@
 
       this.disable();
 
+      messageList.className = 'list-unstyled';
+
+      function addToList(text) {
+        var elem = document.createElement('li');
+        elem.textContent = text;
+        messageList.appendChild(elem);
+      }
+
       if (message.payload) {
         if (message.payload.length) {
+          addToList('Failed to upload to ' + message.data_type + ':');
           for (var i = 0; i < message.payload.length; i++) {
-            messageList.appendChild(
-              createListElement(message.payload[i]));
+            addToList(message.payload[i]);
           }
         } else {
-            messageList.appendChild(
-              createListElement(message.payload));
+            addToList('Your data uploaded successfully to ' + message.data_type +
+                '. In about 20 minutes your data will appear on the relevant dashboards.');
         }
       } else {
-        messageList.appendChild(
-            createListElement(message));
+        addToList(message);
       }
 
       messageElem.empty().append(messageList);
