@@ -1,0 +1,29 @@
+.dropzone.dz-clickable,
+.dropzone.dz-started {
+  display: block;
+  font-size: $font-size-h4;
+  background-color: rgb(231,239,245);
+  color: rgb(156,182,213);
+  border: 3px dashed rgb(156,182,213);
+  padding: 12px;
+  margin-bottom: 12px;
+  &.dz-drag-hover {
+    background-color: rgb(192,215,233);
+    color: rgb(8,73,147);
+    border-color: rgb(8,73,147);
+  }
+  .dz-message {
+    display: block;
+  }
+  &.success {
+    background-color: green;
+  }
+  &.error {
+    background-color: red;
+  }
+}
+
+.dz-message {
+  display: none;
+}
+
