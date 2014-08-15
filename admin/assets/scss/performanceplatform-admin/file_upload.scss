@@ -7,25 +7,33 @@
   border: 3px dashed rgb(156,182,213);
   padding: 12px;
   margin-bottom: 12px;
-  &.dz-drag-hover {
+
+  &.dz-drag-hover,
+  &:hover {
     background-color: rgb(192,215,233);
     color: rgb(8,73,147);
     border-color: rgb(8,73,147);
+    cursor: pointer;
   }
+
   .dz-message {
     display: block;
   }
+
   &.success {
     background-color: #cce0d6;
     border-color: #7fb299;
     border-style: solid;
     color: #7fb299;
+    &:hover { cursor: default; }
   }
+
   &.error {
     background-color: #efcfd1;
     border-color: #d9888c;
     border-style: solid;
     color: #d9888c;
+    &:hover { cursor: default; }
   }
 }
 
