@@ -8,6 +8,15 @@ from performanceplatform.client.admin import AdminAPI
 environment = getenv('INFRASTRUCTURE_ENV', 'development')
 
 
+@app.context_processor
+def view_helpers():
+    def can_edit_dashboards(user):
+        return 'permissions' in user and \
+            'dashboard-editor' in user['permissions']
+
+    return dict(can_edit_dashboards=can_edit_dashboards)
+
+
 def requires_authentication(f):
     @wraps(f)
     def verify_user_logged_in(*args, **kwargs):
@@ -18,6 +27,29 @@ def requires_authentication(f):
             kwargs['admin_client'] = admin_client
             return f(*args, **kwargs)
     return verify_user_logged_in
+
+
+def requires_permission(permission=None):
+    def wrap(f):
+
+        @wraps(f)
+        def verify_user_has_permission(*args, **kwargs):
+            if permission is None:
+                raise Exception('@requires_permission needs an argument')
+
+            if not signed_in(session):
+                return redirect(url_for('root'))
+
+            user_permissions = session['oauth_user']['permissions']
+
+            if permission in user_permissions:
+                return f(*args, **kwargs)
+            else:
+                return redirect(url_for('root'))
+
+        return verify_user_has_permission
+
+    return wrap
 
 
 def get_admin_client(session):
