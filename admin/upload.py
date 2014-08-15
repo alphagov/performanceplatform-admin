@@ -4,8 +4,9 @@ from admin.helpers import(
     requires_authentication,
     base_template_context,
     group_by_group)
-from flask import (abort, flash, render_template,
+from flask import (abort, render_template,
                    redirect, request, session, url_for)
+from flask.json import jsonify
 from performanceplatform.client.data_set import DataSet
 from requests.exceptions import HTTPError
 
@@ -25,9 +26,9 @@ def upload_list_data_sets(admin_client):
         'user': session['oauth_user'],
         'data_sets': data_sets
     })
-    if 'upload_okay_message' in session:
-        upload_okay_message = session.pop('upload_okay_message')
-        template_context['upload_okay_message'] = upload_okay_message
+    if 'upload_data' in session:
+        upload_data = session.pop('upload_data')
+        template_context['upload_data'] = upload_data
     return render_template('data_sets.html', **template_context)
 
 
@@ -35,66 +36,75 @@ def upload_list_data_sets(admin_client):
 @requires_authentication
 def upload_post(data_group, data_type, admin_client):
     try:
-        data_set_config = admin_client.get_data_set(data_group, data_type)
+        data_set = admin_client.get_data_set(data_group, data_type)
     except HTTPError as err:
-        flash(build_http_flash(err, "Stagecraft"))
-        return redirect(url_for('upload_list_data_sets'))
+        return response(500, data_group, data_type,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())])
 
-    if data_set_config is None:
+    if data_set is None:
         abort(
             404,
             'There is no data set of for data-group: {} and data-type: {}'
             .format(data_group, data_type))
 
-    html_file_identifier = '{0}-{1}-file'.format(data_group, data_type)
+    problems, our_problem = upload_spreadsheet(data_set, request.files['file'])
+    if len(problems) == 0:
+        messages = [
+            "Your data uploaded successfully. In about 20 minutes your data "
+            "will appear on the relevant dashboards"
+        ]
+        status = 200
+    else:
+        messages = problems
+        status = 500 if our_problem else 400
 
+    return response(status, data_group, data_type, messages)
+
+
+def upload_spreadsheet(data_set, file_data):
     problems = []
+    our_problem = False
 
-    file_data = request.files[html_file_identifier]
     if len(file_data.filename) == 0:
-        flash("Please choose a file to upload")
-        return redirect(url_for('upload_list_data_sets'))
+        problems += ["Please choose a file to upload"]
+    else:
+        with Spreadsheet(file_data) as spreadsheet:
+            problems += spreadsheet.validate()
 
-    with Spreadsheet(file_data) as spreadsheet:
-        problems += spreadsheet.validate()
+            if len(problems) == 0:
+                url = '{0}/data/{1}/{2}'.format(app.config['BACKDROP_HOST'],
+                                                data_set['data_group'],
+                                                data_set['data_type'])
+                data_set = DataSet(url, data_set['bearer_token'])
+                try:
+                    data_set.post(spreadsheet.as_json())
+                except HTTPError as err:
+                    # only 400 errors are actually user errors, anything else
+                    # is our fault
+                    our_problem = err.response.status_code > 400
+                    problems += ['[{}] {}'.format(err.response.status_code,
+                                                  err.response.json())]
 
-        if len(problems) == 0:
-            url = '{0}/data/{1}/{2}'.format(app.config['BACKDROP_HOST'],
-                                            data_group, data_type)
-            data_set = DataSet(url, data_set_config['bearer_token'])
-            try:
-                data_set.post(spreadsheet.as_json())
-                session['upload_okay_message'] = {
-                    'data_group': data_group,
-                    'data_type': data_type}
-            except HTTPError as err:
-                flash(build_http_flash(err, "Backdrop"))
-            return redirect(url_for('upload_list_data_sets'))
-        else:
-            session['upload_problems'] = problems
-            return redirect(url_for('upload_error',
-                                    data_group=data_group,
-                                    data_type=data_type))
+    return problems, our_problem
 
 
-def build_http_flash(err, app_name):
-    return '{} returned status code <{}> with json: {}'.format(
-        app_name,
-        err.response.status_code,
-        err.response.json())
+def response(status_code, data_group, data_type, payload):
+    data = {
+        'data_group': data_group,
+        'data_type': data_type,
+        'payload': payload
+    }
+
+    if json_request(request):
+        r = jsonify(data)
+        r.status_code = status_code
+    else:
+        session['upload_data'] = data
+        r = redirect(url_for('upload_list_data_sets'))
+
+    return r
 
 
-@app.route("/upload-data/<data_group>/<data_type>/error", methods=['GET'])
-@requires_authentication
-def upload_error(data_group, data_type, admin_client):
-    problems = session.pop('upload_problems')
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-        'problems': problems,
-        'data_set': {
-            'data_group': data_group,
-            'data_type': data_type
-        }
-    })
-    return render_template('upload_error.html', **template_context)
+def json_request(request):
+    return request.headers.get('Accept', 'text/html') == 'application/json'

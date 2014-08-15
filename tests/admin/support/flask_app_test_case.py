@@ -30,6 +30,10 @@ class FlaskAppTestCase(TestCase):
         app.config['TESTING'] = True
         return app
 
+    def get_from_session(self, key):
+        with self.client.session_transaction() as session:
+            return session[key]
+
     def assert_flashes(self, expected_message, expected_category='message'):
         assert_that(
             self.get_first_flash()[1],
