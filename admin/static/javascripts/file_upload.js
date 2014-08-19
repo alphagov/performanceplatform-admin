@@ -19,7 +19,7 @@
 
       if (message.payload) {
         if (message.payload.length) {
-          addToList('Failed to upload to ' + message.data_type + ':');
+          addToList('Failed to upload to ' + message.data_type + '. Please refresh the page to try again:');
           for (var i = 0; i < message.payload.length; i++) {
             addToList(message.payload[i]);
           }
