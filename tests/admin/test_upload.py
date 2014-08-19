@@ -98,12 +98,7 @@ class UploadTestCase(FlaskAppTestCase):
             self,
             get_data_set_patch,
             client):
-        bad_response = requests.Response()
-        bad_response.status_code = 403
-        bad_response.json = Mock(return_value={})
-        http_error = requests.HTTPError()
-        http_error.response = bad_response
-        get_data_set_patch.side_effect = http_error
+        get_data_set_patch.side_effect = backdrop_response(403, {})
         response = client.post(
             '/upload-data/carers-allowance/volumetrics',
             data={'file': (StringIO('data'), 'file.xlsx')})
@@ -132,12 +127,7 @@ class UploadTestCase(FlaskAppTestCase):
             'bearer_token': 'abc123', 'foo': 'bar'
         }
 
-        bad_response = requests.Response()
-        bad_response.status_code = 401
-        bad_response.json = Mock(return_value={})
-        http_error = requests.HTTPError()
-        http_error.response = bad_response
-        data_set_post_patch.side_effect = http_error
+        data_set_post_patch.side_effect = backdrop_response(401, {})
         post_data = {
             'file':
                 (StringIO('_timestamp,foo\n2014-08-05T00:00:00Z,40'),
@@ -170,12 +160,7 @@ class UploadTestCase(FlaskAppTestCase):
             'bearer_token': 'abc123', 'foo': 'bar'
         }
 
-        bad_response = requests.Response()
-        bad_response.status_code = 401
-        bad_response.json = Mock(return_value={})
-        http_error = requests.HTTPError()
-        http_error.response = bad_response
-        data_set_post_patch.side_effect = http_error
+        data_set_post_patch.side_effect = backdrop_response(401, {})
         post_data = {
             'file':
                 (StringIO('_timestamp,foo\n2014-08-05T00:00:00Z,40'),
@@ -206,12 +191,7 @@ class UploadTestCase(FlaskAppTestCase):
             'bearer_token': 'abc123', 'foo': 'bar'
         }
 
-        bad_response = requests.Response()
-        bad_response.status_code = 400
-        bad_response.json = Mock(return_value={})
-        http_error = requests.HTTPError()
-        http_error.response = bad_response
-        data_set_post_patch.side_effect = http_error
+        data_set_post_patch.side_effect = backdrop_response(400, {})
         post_data = {
             'file':
                 (StringIO('_timestamp,foo\n2014-08-05T00:00:00Z,40'),
@@ -265,7 +245,6 @@ class UploadTestCase(FlaskAppTestCase):
             equal_to(['message_1', 'message_2'])
         )
         assert_that(response.status_code, equal_to(400))
-
 
     @signed_in
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
