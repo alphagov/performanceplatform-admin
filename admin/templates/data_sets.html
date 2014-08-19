@@ -43,8 +43,21 @@
           <ul class="list-unstyled data-set-list">
             {% for data_set in data_sets[group_name] %}
             <li>
-              <strong class="data-set-type">{{ data_set.data_type }}</strong>
               {% include "upload/form.html" %}
+              {% if upload_data and upload_data.data_group == data_set.data_group and upload_data.data_type == data_set.data_type %}
+                <div class="upload-messages">
+                {% if upload_data.payload|length == 0 %}
+                  <p>Your data uploaded successfully. In about 20 minutes your data will appear on the relevant dashboards</p>
+                {% else %}
+                  <p class="text-danger">Upload failed - errors:</p>
+                  <ul class="upload-messages">
+                    {% for message in upload_data.payload %}
+                    <li class="text-danger">{{message}}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+                </div>
+              {% endif %}
             </li>
             {% endfor %}
           </ul>
@@ -58,4 +71,9 @@
 
 </div>
 
+{% endblock %}
+
+{% block footer_javascripts %}
+<script src='static/javascripts/dropzone-3.10.2/dropzone.min.js'></script>
+<script src='static/javascripts/file_upload.js'> </script>
 {% endblock %}

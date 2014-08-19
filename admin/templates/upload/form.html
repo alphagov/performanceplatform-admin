@@ -1,10 +1,15 @@
-<form class="custom-form-inline" action="/upload-data/{{ data_set.data_group }}/{{ data_set.data_type }}" method="POST" enctype="multipart/form-data" role="form">
-  <label class="sr-only" for="{{ data_set.data_group }}-{{ data_set.data_type }}-file">
-    File to upload to {{ data_set.data_group }} {{ data_set.data_type }}
-  </label>
-  <span class="btn-file">
-    Choose spreadsheet<input id="{{ data_set.data_group }}-{{ data_set.data_type }}-file" type="file" name="{{ data_set.data_group }}-{{ data_set.data_type }}-file">
-  </span>
-
-  <button class="btn btn-primary btn-xs" type="submit">Upload</button>
+<form id="{{ data_set.data_group }}-{{ data_set.data_type }}-form" class="dropzone" action="/upload-data/{{ data_set.data_group }}/{{ data_set.data_type }}" method="POST" enctype="multipart/form-data" role="form">
+  <div class="fallback">
+    <h4 class="data-set-type">{{ data_set.data_type }}</h4>
+    <div class="form-group">
+      <label for="{{ data_set.data_group }}-{{ data_set.data_type }}-file">
+        File to upload to {{ data_set.data_type }}
+      </label>
+      <input id="{{ data_set.data_group }}-{{ data_set.data_type }}-file" type="file" name="file">
+    </div>
+    <button class="btn btn-primary btn-xs" type="submit">Upload</button>
+  </div>
+  <div class="dz-message">
+    Drop or select a spreadsheet to upload to {{ data_set.data_type }}
+  </div>
 </form>
