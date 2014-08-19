@@ -227,6 +227,48 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
+    @patch('admin.files.uploaded.UploadedFile.is_virus')
+    @patch('performanceplatform.client.data_set.DataSet.post')
+    def test_validation_error_from_backdrop_json(
+            self,
+            data_set_post_patch,
+            is_virus_patch,
+            get_data_set_patch,
+            client):
+
+        is_virus_patch.return_value = False
+        get_data_set_patch.return_value = {
+            'data_group': 'carers-allowance',
+            'data_type': 'volumetrics',
+            'bearer_token': 'abc123', 'foo': 'bar'
+        }
+
+        data_set_post_patch.side_effect = backdrop_response(
+            400,
+            {
+                "messages": ['message_1', 'message_2']
+            }
+        )
+        post_data = {
+            'file':
+                (StringIO('_timestamp,foo\n2014-08-05T00:00:00Z,40'),
+                    'MYSPECIALFILE.csv')
+        }
+        response = client.post(
+            '/upload-data/carers-allowance/volumetrics',
+            data=post_data,
+            headers={'Accept': 'application/json'},
+        )
+
+        assert_that(
+            response.json['payload'],
+            equal_to(['message_1', 'message_2'])
+        )
+        assert_that(response.status_code, equal_to(400))
+
+
+    @signed_in
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_redirect_to_error_if_problems_and_prevent_post(
@@ -346,3 +388,12 @@ class UploadTestCase(FlaskAppTestCase):
             response.data,
             contains_string(
                 "Your data uploaded successfully"))
+
+
+def backdrop_response(status_code, return_value):
+    bad_response = requests.Response()
+    bad_response.status_code = status_code
+    bad_response.json = Mock(return_value=return_value)
+    http_error = requests.HTTPError()
+    http_error.response = bad_response
+    return http_error
