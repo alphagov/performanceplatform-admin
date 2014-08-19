@@ -9,6 +9,7 @@ from flask import (abort, render_template,
 from flask.json import jsonify
 from performanceplatform.client.data_set import DataSet
 from requests.exceptions import HTTPError
+import json
 
 
 @app.route('/upload-data', methods=['GET'])
@@ -80,8 +81,17 @@ def upload_spreadsheet(data_set, file_data):
                     # only 400 errors are actually user errors, anything else
                     # is our fault
                     our_problem = err.response.status_code > 400
-                    problems += ['[{}] {}'.format(err.response.status_code,
-                                                  err.response.json())]
+                    if err.response.status_code == 400:
+                        json_error = err.response.json()
+                        if 'messages' in json_error:
+                            problems += json_error['messages']
+                        else:
+                            problems += 'Unknown validation error: {}'.format(
+                                json_error
+                            )
+                    else:
+                        problems += ['[{}] {}'.format(err.response.status_code,
+                                                      err.response.json())]
 
     return problems, our_problem
 
