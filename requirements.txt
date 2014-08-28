@@ -5,6 +5,7 @@ Flask-Scss==0.3
 gunicorn==18.0
 logstash_formatter==0.5.7
 ndg-httpsclient==0.3.2
+odfpy==0.9.6
 performanceplatform-client==0.0.6
 pyasn1==0.1.7
 pyOpenSSL==0.14
