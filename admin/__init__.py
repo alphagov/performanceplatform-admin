@@ -1,5 +1,6 @@
 from flask import Flask
 from flask.ext.scss import Scss
+from flask_wtf.csrf import CsrfProtect
 from os import getenv, path
 from raven.contrib.flask import Sentry
 
@@ -16,6 +17,8 @@ app.secret_key = app.config['COOKIE_SECRET_KEY']
 # adds uncaught exception handlers to app and submits to sentry
 # this will only send when SENTRY_DSN is defined in config
 Sentry(app)
+
+CsrfProtect(app)
 
 log_handler.set_up_logging(app, GOVUK_ENV)
 
