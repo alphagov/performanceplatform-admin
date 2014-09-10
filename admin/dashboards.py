@@ -9,7 +9,7 @@ from flask import render_template, session
 
 @app.route('/administer-dashboards', methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard-editor')
+@requires_permission('dashboard')
 def dashboard_admin_index(admin_client):
     template_context = base_template_context()
     template_context.update({
