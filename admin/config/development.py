@@ -20,6 +20,7 @@ FAKE_OAUTH_USER = {
         "signin",
         "user",
         "admin",
+        "dashboard",
     ],
     "uid": "00000000-0000-0000-0000-000000000000"
 }
