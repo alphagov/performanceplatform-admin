@@ -41,10 +41,15 @@ class FlaskAppTestCase(TestCase):
                 expected_category))
 
     def assert_session_contains(self, key, value):
-        assert_that(
-            self.get_from_session(key),
-            equal_to(
-                value))
+        try:
+            session_item = self.get_from_session(key)
+        except KeyError:
+            raise AssertionError('Nothing in session for <{}> key'.format(key))
+
+        assert_that(session_item, equal_to(value))
+
+    def assert_session_does_not_contain(self, key):
+        self.assertRaises(KeyError, self.get_from_session, key)
 
     def get_first_flash(self):
         try:
@@ -61,8 +66,4 @@ class FlaskAppTestCase(TestCase):
 
     def get_from_session(self, key):
         with self.client.session_transaction() as session:
-            try:
-                return session[key]
-            except KeyError:
-                raise AssertionError('nothing in session for <{}> key'.format(
-                    key))
+            return session[key]
