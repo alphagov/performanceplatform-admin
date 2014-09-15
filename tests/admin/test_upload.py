@@ -10,6 +10,9 @@ import requests
 
 class UploadTestCase(FlaskAppTestCase):
 
+    def setUp(self):
+        self.app.config['WTF_CSRF_ENABLED'] = False
+
     @signed_in
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.is_virus')

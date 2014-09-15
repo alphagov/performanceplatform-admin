@@ -24,7 +24,7 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(can_edit_dashboards({}), is_(False))
         assert_that(can_edit_dashboards({'permissions': ['signin']}),
                     is_(False))
-        assert_that(can_edit_dashboards({'permissions': ['dashboard-editor']}),
+        assert_that(can_edit_dashboards({'permissions': ['dashboard']}),
                     is_(True))
 
     @patch('admin.helpers.signed_in')
