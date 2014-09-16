@@ -1,6 +1,8 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase
 from admin import app
-from hamcrest import assert_that, contains_string, ends_with, equal_to
+from admin.dashboards import parse_modules_from_session
+from hamcrest import (assert_that, contains, contains_string,
+                      ends_with, equal_to)
 from mock import patch, Mock
 
 import json
@@ -11,6 +13,20 @@ class DashboardTestCase(FlaskAppTestCase):
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
         self.app = app.test_client()
+
+    def test_parsing_of_modules_in_session(self):
+        dashboard_in_session = {
+            'slug': 'random-slug',
+            'modules-1-slug': 'another-slug',
+            'modules-0-slug': 'a-slug',
+            'modules-1-title': 'Another title',
+            'modules-0-title': 'A title',
+        }
+
+        assert_that(parse_modules_from_session(dashboard_in_session),
+                    contains(equal_to({'slug': 'a-slug', 'title': 'A title'}),
+                             equal_to({'slug': 'another-slug',
+                                       'title': 'Another title'})))
 
     def test_create_form_uses_pending_dashboard_if_stored(self):
         with self.app as admin_app:

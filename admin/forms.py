@@ -1,4 +1,38 @@
-from wtforms import Form, TextField, SelectField
+from admin import app
+from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
+                     SelectField)
+
+import requests
+
+
+def get_module_choices():
+    # FIXME: If Stagecraft isn't running when it tries to make this request,
+    #        the list of available modules will be empty.
+    module_path = '{0}/module-type'.format(app.config['STAGECRAFT_HOST'])
+    modules = requests.get(module_path)
+
+    if modules.status_code == 200:
+        module_json = modules.json()
+        default_list = [('', '')]
+        module_list = [(module['id'], module['name']) for module in module_json]
+        return default_list + module_list
+    else:
+        return [('', '')]
+
+
+class ModuleForm(Form):
+    module_type = SelectField('Module type', choices=get_module_choices())
+
+    data_group = TextField('Data group')
+    data_type = TextField('Data type')
+
+    slug = TextField('Slug')
+    title = TextField('Title')
+    module_description = TextField('Description')
+    info = TextField('Info')
+
+    query_parameters = TextAreaField('Query parameters', default='{}')
+    options = TextAreaField('Options', default='{}')
 
 
 class DashboardCreationForm(Form):
@@ -38,3 +72,5 @@ class DashboardCreationForm(Form):
 
     transaction_title = TextField('Transaction action')
     transaction_link = TextField('Transaction link')
+
+    modules = FieldList(FormField(ModuleForm), min_entries=0)

@@ -5,6 +5,7 @@ from admin.helpers import (
     requires_authentication,
     requires_permission,
 )
+from collections import defaultdict
 from flask import (
     flash, redirect, render_template, request,
     session, url_for
@@ -15,6 +16,16 @@ import requests
 
 
 DASHBOARD_ROUTE = '/administer-dashboards'
+
+
+def parse_modules_from_session(form):
+    modules = {k: v for k, v in form.items() if k.startswith('modules-')}
+    output = defaultdict(dict)
+    for form_key, value in modules.items():
+        split_key = form_key.split('-')
+        output[split_key[1]][split_key[2]] = value
+
+    return [v for k, v in sorted(output.items())]
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
@@ -38,9 +49,17 @@ def dashboard_admin_create(admin_client):
     })
 
     if 'pending_dashboard' in session:
-        form = DashboardCreationForm(data=session['pending_dashboard'])
+        modules = parse_modules_from_session(session['pending_dashboard'])
+        form = DashboardCreationForm(data=session['pending_dashboard'],
+                                     modules=modules)
     else:
         form = DashboardCreationForm(request.form)
+
+    if request.args.get('modules'):
+        total_modules = int(request.args.get('modules'))
+        modules_required = total_modules - len(form.modules)
+        for i in range(modules_required):
+            form.modules.append_entry()
 
     return render_template('dashboards/create.html',
                            form=form,
@@ -51,7 +70,30 @@ def dashboard_admin_create(admin_client):
 @requires_authentication
 @requires_permission('dashboard')
 def dashboard_admin_create_post(admin_client):
+    if 'add_module' in request.form:
+        session['pending_dashboard'] = request.form
+        current_modules = len(
+            parse_modules_from_session(session['pending_dashboard']))
+        return redirect(url_for('dashboard_admin_create',
+                                modules=current_modules+1))
+
     form = DashboardCreationForm(request.form)
+
+    parsed_modules = []
+
+    for (index, module) in enumerate(form.modules.entries, start=1):
+        parsed_modules.append({
+            'type_id': module.module_type.data,
+            'data_group': module.data_group.data,
+            'data_type': module.data_type.data,
+            'slug': module.slug.data,
+            'title': module.title.data,
+            'description': module.module_description.data,
+            'info': module.info.data.split("\n"),
+            'options': json.loads(module.options.data),
+            'query_parameters': json.loads(module.query_parameters.data),
+            'order': index,
+        })
 
     access_token = session['oauth_token']['access_token']
     dashboard_url = "{0}/dashboard".format(app.config['STAGECRAFT_HOST'])
@@ -69,7 +111,8 @@ def dashboard_admin_create_post(admin_client):
             'title': form.transaction_title.data,
             'url': form.transaction_link.data,
             'type': 'transaction',
-        }]
+        }],
+        'modules': parsed_modules,
     }
     headers = {
         'Authorization': 'Bearer {0}'.format(access_token),
