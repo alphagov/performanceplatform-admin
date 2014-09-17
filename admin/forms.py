@@ -14,7 +14,8 @@ def get_module_choices():
     if modules.status_code == 200:
         module_json = modules.json()
         default_list = [('', '')]
-        module_list = [(module['id'], module['name']) for module in module_json]
+        module_list = [
+            (module['id'], module['name']) for module in module_json]
         return default_list + module_list
     else:
         return [('', '')]
