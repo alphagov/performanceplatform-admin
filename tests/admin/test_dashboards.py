@@ -85,8 +85,8 @@ class DashboardTestCase(FlaskAppTestCase):
             }
             session['pending_dashboard'] = dashboard_data
 
-        resp = self.client.post('/administer-dashboards/create',
-                                data=dashboard_data)
+        self.client.post('/administer-dashboards/create',
+                         data=dashboard_data)
 
         self.assert_session_does_not_contain('pending_dashboard')
         self.assert_flashes('Created the valid-slug dashboard', 'success')
@@ -106,8 +106,8 @@ class DashboardTestCase(FlaskAppTestCase):
                 'permissions': ['signin', 'dashboard']
             }
 
-        resp = self.client.post('/administer-dashboards/create',
-                                data={'slug': 'foo'})
+        self.client.post('/administer-dashboards/create',
+                         data={'slug': 'foo'})
 
         self.assert_session_contains('pending_dashboard', {'slug': 'foo'})
         self.assert_flashes('Error creating the foo dashboard: Error message',
