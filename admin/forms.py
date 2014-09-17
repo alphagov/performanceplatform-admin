@@ -6,19 +6,22 @@ import requests
 
 
 def get_module_choices():
-    # FIXME: If Stagecraft isn't running when it tries to make this request,
-    #        the list of available modules will be empty.
-    module_path = '{0}/module-type'.format(app.config['STAGECRAFT_HOST'])
-    modules = requests.get(module_path)
+    choices = [('', '')]
+    try:
+        # FIXME: If Stagecraft isn't running when it tries to make this
+        # request, the list of available modules will be empty.
+        module_path = '{0}/module-type'.format(app.config['STAGECRAFT_HOST'])
+        modules = requests.get(module_path)
 
-    if modules.status_code == 200:
-        module_json = modules.json()
-        default_list = [('', '')]
-        module_list = [
-            (module['id'], module['name']) for module in module_json]
-        return default_list + module_list
-    else:
-        return [('', '')]
+        if modules.status_code == 200:
+            module_json = modules.json()
+            choices += [
+                (module['id'], module['name']) for module in module_json]
+    except requests.ConnectionError:
+        if not app.config['DEBUG']:
+            raise
+
+    return choices
 
 
 class ModuleForm(Form):
