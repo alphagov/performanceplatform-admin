@@ -10,22 +10,13 @@ from flask import (
     flash, redirect, render_template, request,
     session, url_for
 )
+from werkzeug.datastructures import MultiDict
 
 import json
 import requests
 
 
 DASHBOARD_ROUTE = '/administer-dashboards'
-
-
-def parse_modules_from_session(form):
-    modules = {k: v for k, v in form.items() if k.startswith('modules-')}
-    output = defaultdict(dict)
-    for form_key, value in modules.items():
-        split_key = form_key.split('-')
-        output[split_key[1]][split_key[2]] = value
-
-    return [v for k, v in sorted(output.items())]
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
@@ -49,9 +40,7 @@ def dashboard_admin_create(admin_client):
     })
 
     if 'pending_dashboard' in session:
-        modules = parse_modules_from_session(session['pending_dashboard'])
-        form = DashboardCreationForm(data=session['pending_dashboard'],
-                                     modules=modules)
+        form = DashboardCreationForm(MultiDict(session['pending_dashboard']))
     else:
         form = DashboardCreationForm(request.form)
 
@@ -73,7 +62,7 @@ def dashboard_admin_create_post(admin_client):
     if 'add_module' in request.form:
         session['pending_dashboard'] = request.form
         current_modules = len(
-            parse_modules_from_session(session['pending_dashboard']))
+            DashboardCreationForm(MultiDict(session['pending_dashboard'])))
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
