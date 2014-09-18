@@ -1,26 +1,24 @@
 from admin import app
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
                      SelectField)
-
+from performanceplatform.client import AdminAPI
 import requests
+from os import getenv
 
 
 def get_module_choices():
     choices = [('', '')]
-    try:
-        # FIXME: If Stagecraft isn't running when it tries to make this
-        # request, the list of available modules will be empty.
-        module_path = '{0}/module-type'.format(app.config['STAGECRAFT_HOST'])
-        modules = requests.get(module_path)
 
-        if modules.status_code == 200:
-            module_json = modules.json()
+    if not getenv('TESTING', False):
+        try:
+            # Create an unauthenticated client
+            admin_client = AdminAPI(app.config['STAGECRAFT_HOST'], None)
+            module_types = admin_client.list_module_types()
             choices += [
-                (module['id'], module['name']) for module in module_json]
-    except requests.ConnectionError:
-        if not app.config['DEBUG']:
-            raise
-
+                (module['id'], module['name']) for module in module_types]
+        except requests.ConnectionError:
+            if not app.config['DEBUG']:
+                raise
     return choices
 
 

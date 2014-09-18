@@ -25,12 +25,8 @@ class DashboardTestCase(FlaskAppTestCase):
 
             assert_that(resp.data, contains_string('value="my-valid-slug"'))
 
-    @patch("requests.post")
-    def test_create_post_sends_a_post_to_stagecraft(self, post_patch):
-        successful_post = requests.Response()
-        successful_post.status_code = 200
-        post_patch.return_value = successful_post
-
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    def test_create_post_sends_a_post_to_stagecraft(self, create_dashboard):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -41,23 +37,13 @@ class DashboardTestCase(FlaskAppTestCase):
             resp = admin_app.post('/administer-dashboards/create',
                                   data={'slug': 'valid-slug'})
 
-        post_headers = {
-            'Content-type': 'application/json',
-            'Authorization': 'Bearer token',
-        }
-        post_json = json.loads(post_patch.call_args[1]['data'])
+        post_json = create_dashboard.call_args[0][0]
 
-        assert_that(post_patch.call_args[0][0], ends_with('/dashboard'))
-        assert_that(post_patch.call_args[1]['headers'], equal_to(post_headers))
         assert_that(post_json['slug'], equal_to('valid-slug'))
         assert_that(resp.status_code, equal_to(302))
 
-    @patch("requests.post")
-    def test_creating_dashboard_deletes_from_session(self, post_patch):
-        successful_post = requests.Response()
-        successful_post.status_code = 200
-        post_patch.return_value = successful_post
-
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    def test_creating_dashboard_deletes_from_session(self, create_dashboard):
         dashboard_data = {
             'slug': 'valid-slug',
         }
@@ -75,14 +61,16 @@ class DashboardTestCase(FlaskAppTestCase):
         self.assert_session_does_not_contain('pending_dashboard')
         self.assert_flashes('Created the valid-slug dashboard', 'success')
 
-    @patch("requests.post")
-    def test_failed_dashboard_creation_stored_in_session(self, post_patch):
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    def test_failed_dashboard_creation_stored_in_session(self,
+                                                         create_dashboard):
         response_json_mock = Mock()
         response_json_mock.return_value = {'message': 'Error message'}
-        successful_post = requests.Response()
-        successful_post.status_code = 400
-        successful_post.json = response_json_mock
-        post_patch.return_value = successful_post
+        response = requests.Response()
+        response.status_code = 400
+        response.json = response_json_mock
+        error = requests.HTTPError('Error message', response=response)
+        create_dashboard.side_effect = error
 
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}

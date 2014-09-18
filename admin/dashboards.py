@@ -84,8 +84,6 @@ def dashboard_admin_create_post(admin_client):
             'order': index,
         })
 
-    access_token = session['oauth_token']['access_token']
-    dashboard_url = "{0}/dashboard".format(app.config['STAGECRAFT_HOST'])
     data = {
         'published': False,
         'page-type': 'dashboard',
@@ -103,24 +101,16 @@ def dashboard_admin_create_post(admin_client):
         }],
         'modules': parsed_modules,
     }
-    headers = {
-        'Authorization': 'Bearer {0}'.format(access_token),
-        'Content-type': 'application/json',
-    }
 
-    create_dashboard = requests.post(dashboard_url,
-                                     data=json.dumps(data),
-                                     headers=headers)
-
-    if create_dashboard.status_code == 200:
+    try:
+        admin_client.create_dashboard(data)
         if 'pending_dashboard' in session:
             del session['pending_dashboard']
-        flash('Created the {0} dashboard'.format(form.slug.data), 'success')
+        flash('Created the {} dashboard'.format(form.slug.data), 'success')
         return redirect(url_for('dashboard_admin_index'))
-    else:
+    except requests.HTTPError as e:
         session['pending_dashboard'] = request.form
-        stagecraft_message = create_dashboard.json()['message']
-        formatted_error = 'Error creating the {0} dashboard: {1}'.format(
-            form.slug.data, stagecraft_message)
+        formatted_error = 'Error creating the {} dashboard: {}'.format(
+            form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
         return redirect(url_for('dashboard_admin_create'))
