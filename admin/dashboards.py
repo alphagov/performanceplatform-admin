@@ -62,7 +62,8 @@ def dashboard_admin_create_post(admin_client):
     if 'add_module' in request.form:
         session['pending_dashboard'] = request.form
         current_modules = len(
-            DashboardCreationForm(MultiDict(session['pending_dashboard'])))
+            DashboardCreationForm(
+                MultiDict(session['pending_dashboard'])).modules)
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 

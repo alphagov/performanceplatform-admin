@@ -3,7 +3,6 @@ from admin import app
 from hamcrest import assert_that, contains_string, ends_with, equal_to
 from mock import patch, Mock
 
-import json
 import requests
 
 
@@ -84,3 +83,21 @@ class DashboardTestCase(FlaskAppTestCase):
         self.assert_session_contains('pending_dashboard', {'slug': 'foo'})
         self.assert_flashes('Error creating the foo dashboard: Error message',
                             'danger')
+
+    def test_add_module_redirects_back_to_the_form(self):
+        dashboard_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+        }
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+            session['pending_dashboard'] = dashboard_data
+
+        resp = self.client.post('/administer-dashboards/create',
+                                data={'add_module': 1})
+
+        assert_that(resp.status_code, equal_to(302))
