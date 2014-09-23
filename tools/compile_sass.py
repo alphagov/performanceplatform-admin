@@ -21,4 +21,4 @@ css_path = path.join(
     'admin/static/css/performanceplatform-admin.css')
 
 with open(css_path, 'w') as file:
-    file.write(compiled_css_from_file)
+    file.write(compiled_css_from_file.encode('utf-8'))
