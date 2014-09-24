@@ -1,6 +1,6 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase
 from admin import app
-from hamcrest import assert_that, contains_string, ends_with, equal_to
+from hamcrest import assert_that, contains_string, equal_to, has_entries
 from mock import patch, Mock
 
 import requests
@@ -10,6 +10,37 @@ class DashboardTestCase(FlaskAppTestCase):
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
         self.app = app.test_client()
+
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    def test_creating_dashboard_with_a_module(self, create_dashboard):
+        with self.app as admin_app:
+            with admin_app.session_transaction() as session:
+                session['oauth_token'] = {'access_token': 'token'}
+                session['oauth_user'] = {
+                    'permissions': ['signin', 'dashboard']
+                }
+
+            data = {
+                'slug': 'my-valid-slug',
+                'title': 'My valid title',
+                'modules-0-slug': 'carers-realtime',
+                'modules-0-data_group': 'carers-allowance',
+                'modules-0-data_type': 'realtime',
+                'modules-0-options': '{}',
+                'modules-0-query_parameters': '{}',
+            }
+
+            admin_app.post('/administer-dashboards/create', data=data)
+
+        post_json = create_dashboard.call_args[0][0]
+
+        assert_that(post_json['modules'][0], has_entries({
+            'slug': 'carers-realtime',
+            'data_group': 'carers-allowance',
+            'data_type': 'realtime',
+            'options': {},
+            'query_parameters': {},
+        }))
 
     def test_create_form_uses_pending_dashboard_if_stored(self):
         with self.app as admin_app:
