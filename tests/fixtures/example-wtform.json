@@ -1,0 +1,211 @@
+{
+ "description_extra": "", 
+ "strapline": "Dashboard", 
+ "description": "Applications by foreign nationals for visas to reside in the UK on a temporary or permanent basis.", 
+ "links": [
+  {
+   "url": "https://www.gov.uk/uk-visa", 
+   "title": "Visa applications"
+  }
+ ], 
+ "title": "Visa applications", 
+ "tagline": "", 
+ "organisation": {
+  "abbreviation": "Home Office", 
+  "type": {
+   "id": "c39e1d2d-45fc-4c83-9017-ac5f82a6061d", 
+   "name": "department"
+  }, 
+  "id": "85762a05-80a1-45a3-b1e2-013bee3c447d", 
+  "parent": null, 
+  "name": "Home Office"
+ }, 
+ "modules": [
+  {
+   "info": [
+    "Data source: Home Office"
+   ], 
+   "options": {
+    "classes": "cols3", 
+    "value-attribute": "number_of_transactions", 
+    "format": {
+     "sigfigs": 3, 
+     "magnitude": true, 
+     "type": "number"
+    }
+   }, 
+   "dashboard": {
+    "id": "06c12e24-852a-40a9-979b-27306166275f"
+   }, 
+   "title": "Transactions per year", 
+   "data_set": {
+    "id": 86
+   }, 
+   "description": "", 
+   "query_parameters": {
+    "sort_by": "_timestamp:descending", 
+    "filter_by": [
+     "service_id:home-office-visas-immigration-applications", 
+     "type:seasonally-adjusted"
+    ]
+   }, 
+   "type": {
+    "id": "fa406502-a323-49c7-9069-0bf3cc2fcfc2"
+   }, 
+   "id": "63f40cfc-f232-4537-ae39-4e80aee51368", 
+   "slug": "transactions-per-year"
+  }, 
+  {
+   "info": [
+    "This figure represents the overall cost of processing a decision for a visa. To ensure that the service that we provide is of the highest value to the public this involves a large amount of work that can not yet be done digitally, such as identity verification, interviews and background checks, all of which increase costs. Although some aspects of the process are done online it is not possible to provide a completely digital service. Jan-Dec 2012 figures calculated using financial year 2011-2012 cost data. Apr 2012-Mar 2013, Jul 2012-Jun 2013, Oct 2012-Sep 2013 and Jan 2013-Dec 2013 figures calculated using financial year 2012-2013 cost data.", 
+    "<br />", 
+    "Data source: Home Office", 
+    "Total cost is the overall cost per year of providing a service, including staff, IT and accommodation costs; the total cost is automatically calculated from volume and cost per transaction figures, and some rounding errors may occur."
+   ], 
+   "options": {
+    "classes": "cols3", 
+    "value-attribute": "total_cost", 
+    "format": {
+     "sigfigs": 3, 
+     "magnitude": true, 
+     "type": "currency"
+    }
+   }, 
+   "dashboard": {
+    "id": "06c12e24-852a-40a9-979b-27306166275f"
+   }, 
+   "title": "Total cost", 
+   "data_set": {
+    "id": 86
+   }, 
+   "description": "", 
+   "query_parameters": {
+    "sort_by": "_timestamp:descending", 
+    "filter_by": [
+     "service_id:home-office-visas-immigration-applications", 
+     "type:seasonally-adjusted"
+    ]
+   }, 
+   "type": {
+    "id": "fa406502-a323-49c7-9069-0bf3cc2fcfc2"
+   }, 
+   "id": "937e2ad2-e8db-4a2d-8ea9-55da181067ee", 
+   "slug": "total-cost"
+  }, 
+  {
+   "info": [
+    "This figure represents the overall cost of processing a decision for a visa. To ensure that the service that we provide is of the highest value to the public this involves a large amount of work that can not yet be done digitally, such as identity verification, interviews and background checks, all of which increase costs. Although some aspects of the process are done online it is not possible to provide a completely digital service. Jan-Dec 2012 figures calculated using financial year 2011-2012 cost data. Apr 2012-Mar 2013, Jul 2012-Jun 2013, Oct 2012-Sep 2013 and Jan 2013-Dec 2013 figures calculated using financial year 2012-2013 cost data.", 
+    "<br />", 
+    "Data source: Home Office", 
+    "<a href=\"https://www.gov.uk/service-manual/measurement/cost-per-transaction.html\">Cost per transaction</a> is the average cost of providing each successfully completed transaction, across all channels. Staff, IT and accommodation costs should be included."
+   ], 
+   "options": {
+    "classes": "cols3", 
+    "value-attribute": "cost_per_transaction", 
+    "format": {
+     "pence": true, 
+     "type": "currency"
+    }
+   }, 
+   "dashboard": {
+    "id": "06c12e24-852a-40a9-979b-27306166275f"
+   }, 
+   "title": "Cost per transaction", 
+   "data_set": {
+    "id": 86
+   }, 
+   "description": "", 
+   "query_parameters": {
+    "sort_by": "_timestamp:descending", 
+    "filter_by": [
+     "service_id:home-office-visas-immigration-applications", 
+     "type:seasonally-adjusted"
+    ]
+   }, 
+   "type": {
+    "id": "fa406502-a323-49c7-9069-0bf3cc2fcfc2"
+   }, 
+   "id": "428b6fde-7628-43f5-b57a-9556e9ba7ede", 
+   "slug": "cost-per-transaction"
+  }, 
+  {
+   "info": [
+    "Data source: Home Office"
+   ], 
+   "options": {
+    "value-attribute": "number_of_transactions", 
+    "axis-period": "quarter"
+   }, 
+   "dashboard": {
+    "id": "06c12e24-852a-40a9-979b-27306166275f"
+   }, 
+   "title": "Transactions per quarter", 
+   "data_set": {
+    "id": 86
+   }, 
+   "description": "Total number of transactions each quarter", 
+   "query_parameters": {
+    "sort_by": "_timestamp:ascending", 
+    "filter_by": [
+     "service_id:home-office-visas-immigration-applications", 
+     "type:quarterly"
+    ]
+   }, 
+   "type": {
+    "id": "a73379e9-bf12-41e1-b3d5-18855eadc698"
+   }, 
+   "id": "2712fdea-aeac-4245-a355-f06ac333f81e", 
+   "slug": "transactions-per-quarter"
+  }, 
+  {
+   "info": [
+    "Data source: Home Office", 
+    "<a href=\"https://www.gov.uk/service-manual/measurement/digital-takeup.html\">Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."
+   ], 
+   "options": {
+    "value-attribute": "digital_takeup", 
+    "axis-period": "quarter", 
+    "axes": {
+     "y": [
+      {
+       "label": "Percentage digital take-up"
+      }
+     ]
+    }, 
+    "format": {
+     "type": "percent"
+    }
+   }, 
+   "dashboard": {
+    "id": "06c12e24-852a-40a9-979b-27306166275f"
+   }, 
+   "title": "Digital take-up", 
+   "data_set": {
+    "id": 86
+   }, 
+   "description": "Digital take-up rates each quarter", 
+   "query_parameters": {
+    "sort_by": "_timestamp:ascending", 
+    "filter_by": [
+     "service_id:home-office-visas-immigration-applications", 
+     "type:quarterly"
+    ]
+   }, 
+   "type": {
+    "id": "a73379e9-bf12-41e1-b3d5-18855eadc698"
+   }, 
+   "id": "c15045dd-5b6e-4535-b949-923522e2a26c", 
+   "slug": "digital-take-up-per-quarter"
+  }
+ ], 
+ "dashboard_type": "high-volume-transaction", 
+ "slug": "home-office-visas-immigration-applications", 
+ "improve_dashboard_message": true, 
+ "customer_type": "Individuals", 
+ "costs": "This figure represents the overall cost of processing a decision for a visa. To ensure that the service that we provide is of the highest value to the public this involves a large amount of work that can not yet be done digitally, such as identity verification, interviews and background checks, all of which increase costs. Although some aspects of the process are done online it is not possible to provide a completely digital service. Jan-Dec 2012 figures calculated using financial year 2011-2012 cost data. Apr 2012-Mar 2013, Jul 2012-Jun 2013, Oct 2012-Sep 2013 and Jan 2013-Dec 2013 figures calculated using financial year 2012-2013 cost data.", 
+ "page_type": "dashboard", 
+ "published": true, 
+ "business_model": "Fees and charges", 
+ "id": "06c12e24-852a-40a9-979b-27306166275f", 
+ "other_notes": "Includes Visit, Family, Employment, Study, Visit, Sponsor, Accession, Settlement, Nationality and Euro applications. It also includes withdrawn applications and applications where the applicant has been non-co-operative. Nationality applications may include some cases counted under the Applications for naturalisation as a British citizen. Asylum applications are excluded.<br>Transactions per year - total applications for UK destinations only, doesn't include channel islands.<br>Digital transactions per year - includes all destinations."
+}

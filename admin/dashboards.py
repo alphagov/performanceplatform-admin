@@ -19,6 +19,17 @@ import requests
 DASHBOARD_ROUTE = '/administer-dashboards'
 
 
+@app.route('{0}/edit/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def edit_dashboard(admin_client, uuid):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
+    return render_template('dashboards/index.html', **template_context)
+
+
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
@@ -44,6 +55,8 @@ def dashboard_admin_create(admin_client):
     else:
         form = DashboardCreationForm(request.form)
 
+    print(request.form)
+
     if request.args.get('modules'):
         total_modules = int(request.args.get('modules'))
         modules_required = total_modules - len(form.modules)
@@ -67,6 +80,7 @@ def dashboard_admin_create_post(admin_client):
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
+    print(request.form)
     form = DashboardCreationForm(request.form)
 
     parsed_modules = []
