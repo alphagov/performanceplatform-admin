@@ -6,6 +6,10 @@ import requests
 from os import getenv
 
 
+def convert_to_dashboard_form(dashboard_dict):
+    return DashboardCreationForm(data=dashboard_dict)
+
+
 def get_module_choices():
     choices = [('', '')]
 
