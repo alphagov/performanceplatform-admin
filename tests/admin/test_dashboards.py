@@ -4,6 +4,8 @@ from hamcrest import assert_that, contains_string, equal_to, has_entries
 from mock import patch, Mock
 
 import requests
+import os
+import json
 
 
 class DashboardTestCase(FlaskAppTestCase):
@@ -132,3 +134,24 @@ class DashboardTestCase(FlaskAppTestCase):
                                 data={'add_module': 1})
 
         assert_that(resp.status_code, equal_to(302))
+
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_editing_existing_dashboard(self, update_patch):
+        pass
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    def test_rendering_edit_page(self, mock_get):
+        with open(os.path.join(
+                  os.path.dirname(__file__),
+                  '../fixtures/example-dashboard.json')) as file:
+            dashboard_json = file.read()
+        dashboard_dict = json.loads(dashboard_json)
+        mock_get.return_value = dashboard_json
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+
+        resp = self.client.get('/administer-dashboards/edit/uuid')
+        assert_that(resp.status_code, equal_to(200))
