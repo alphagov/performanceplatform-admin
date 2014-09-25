@@ -140,13 +140,15 @@ class DashboardTestCase(FlaskAppTestCase):
         pass
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    def test_rendering_edit_page(self, mock_get):
+    @patch("admin.dashboards.render_template")
+    def test_rendering_edit_page(self, mock_render, mock_get):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
             dashboard_json = file.read()
         dashboard_dict = json.loads(dashboard_json)
-        mock_get.return_value = dashboard_json
+        mock_render.return_value = ''
+        mock_get.return_value = dashboard_dict
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
@@ -154,4 +156,7 @@ class DashboardTestCase(FlaskAppTestCase):
             }
 
         resp = self.client.get('/administer-dashboards/edit/uuid')
+        mock_get.assert_called_once_with('uuid')
+        import pdb; pdb.set_trace()
+        mock_render.assert_has_calls()
         assert_that(resp.status_code, equal_to(200))
