@@ -1,7 +1,8 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase
 from admin import app
-from hamcrest import assert_that, contains_string, ends_with, equal_to
+from hamcrest import assert_that, contains_string, ends_with, equal_to, instance_of
 from mock import patch, Mock
+from admin.forms import DashboardCreationForm
 
 import requests
 import os
@@ -126,6 +127,8 @@ class DashboardTestCase(FlaskAppTestCase):
 
         resp = self.client.get('/administer-dashboards/edit/uuid')
         mock_get.assert_called_once_with('uuid')
-        import pdb; pdb.set_trace()
-        mock_render.assert_has_calls()
+        rendered_template = 'dashboards/create.html'
+        assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
+        kwargs = mock_render.call_args[1]
+        assert_that(kwargs['form'], instance_of(DashboardCreationForm))
         assert_that(resp.status_code, equal_to(200))
