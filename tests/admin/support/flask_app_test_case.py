@@ -5,10 +5,15 @@ from functools import wraps
 from admin import app
 
 
-def signed_in(f):
+def signed_in(f, permissions=None):
     @wraps(f)
     def set_session_signed_in(*args, **kwargs):
         self = args[0]
+        permissions = args[1]
+
+        if permissions is None:
+            permissions = ['signin']
+
         with self.client as client:
             with client.session_transaction() as sess:
                 sess.update({
@@ -16,7 +21,7 @@ def signed_in(f):
                         'access_token': 'token'
                     },
                     'oauth_user': {
-                        'permissions': ['signin']
+                        'permissions': permissions
                     }
                 })
             kwargs['client'] = client

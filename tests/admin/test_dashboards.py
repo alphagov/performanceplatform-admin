@@ -8,6 +8,89 @@ import requests
 import os
 import json
 
+class DashboardIndexTestCase(FlaskAppTestCase):
+    def setUp(self):
+        self.app = app.test_client()
+
+    @patch('requests.get')
+    def test_index_page_shows_list_of_dashboards(self, get_patch):
+        dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=dashboards)
+        get_patch.return_value = response
+
+        with self.app as admin_app:
+            with admin_app.session_transaction() as session:
+                session['oauth_token'] = {'access_token': 'token'}
+                session['oauth_user'] = {
+                    'permissions': ['signin', 'dashboard']
+                }
+
+            resp = admin_app.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            '<li><a href="/administer-dashboards/edit/uuid">'
+            'Name of service</a></li>'
+        ))
+
+    @patch('requests.get')
+    def test_index_page_with_stagecraft_down_or_0_dashboards_shows_errors(
+            self, get_patch):
+        response = requests.Response()
+        response.status_code = 500
+        get_patch.return_value = response
+
+        with self.app as admin_app:
+            with admin_app.session_transaction() as session:
+                session['oauth_token'] = {'access_token': 'token'}
+                session['oauth_user'] = {
+                    'permissions': ['signin', 'dashboard']
+                }
+
+            resp = admin_app.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            'Could not retrieve the list of dashboards'
+        ))
+
+        response.status_code = 200
+        response.json = Mock(return_value={'dashboards': []})
+        get_patch.return_value = response
+
+        resp = admin_app.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            'No dashboards stored'
+        ))
+
+    @patch('requests.get')
+    def test_index_page_with_stagecraft_down_shows_errors(self, get_patch):
+        response = requests.Response()
+        response.status_code = 500
+        get_patch.return_value = response
+
+        with self.app as admin_app:
+            with admin_app.session_transaction() as session:
+                session['oauth_token'] = {'access_token': 'token'}
+                session['oauth_user'] = {
+                    'permissions': ['signin', 'dashboard']
+                }
+
+            resp = admin_app.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            'Could not retrieve the list of dashboards'
+        ))
+
 
 class DashboardTestCase(FlaskAppTestCase):
     def setUp(self):
