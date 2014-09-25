@@ -11,6 +11,7 @@ from flask import (
     session, url_for
 )
 from werkzeug.datastructures import MultiDict
+from admin.forms import convert_to_dashboard_form
 
 import json
 import requests
@@ -27,7 +28,11 @@ def edit_dashboard(admin_client, uuid):
     template_context.update({
         'user': session['oauth_user'],
     })
-    return render_template('dashboards/index.html', **template_context)
+    dashboard_dict = admin_client.get_dashboard(uuid)
+    form = convert_to_dashboard_form(dashboard_dict)
+    return render_template('dashboards/create.html',
+                           form=form,
+                           **template_context)
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
