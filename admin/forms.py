@@ -1,4 +1,40 @@
-from wtforms import Form, TextField, SelectField
+from admin import app
+from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
+                     SelectField)
+from performanceplatform.client import AdminAPI
+import requests
+from os import getenv
+
+
+def get_module_choices():
+    choices = [('', '')]
+
+    if not getenv('TESTING', False):
+        try:
+            # Create an unauthenticated client
+            admin_client = AdminAPI(app.config['STAGECRAFT_HOST'], None)
+            module_types = admin_client.list_module_types()
+            choices += [
+                (module['id'], module['name']) for module in module_types]
+        except requests.ConnectionError:
+            if not app.config['DEBUG']:
+                raise
+    return choices
+
+
+class ModuleForm(Form):
+    module_type = SelectField('Module type', choices=get_module_choices())
+
+    data_group = TextField('Data group')
+    data_type = TextField('Data type')
+
+    slug = TextField('Slug')
+    title = TextField('Title')
+    module_description = TextField('Description')
+    info = TextField('Info')
+
+    query_parameters = TextAreaField('Query parameters', default='{}')
+    options = TextAreaField('Options', default='{}')
 
 
 class DashboardCreationForm(Form):
@@ -38,3 +74,5 @@ class DashboardCreationForm(Form):
 
     transaction_title = TextField('Transaction action')
     transaction_link = TextField('Transaction link')
+
+    modules = FieldList(FormField(ModuleForm), min_entries=0)
