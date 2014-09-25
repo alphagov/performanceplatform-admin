@@ -4,9 +4,16 @@ from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
 from performanceplatform.client import AdminAPI
 import requests
 from os import getenv
+import json
 
 
 def convert_to_dashboard_form(dashboard_dict):
+    #temp_dashboard_dict = dashboard_dict
+    for module in dashboard_dict['modules']:
+        module['info'] = json.dumps(module['info'])
+        module['query_parameters'] = json.dumps(module['query_parameters'])
+        module['options'] = json.dumps(module['options'])
+
     return DashboardCreationForm(data=dashboard_dict)
 
 

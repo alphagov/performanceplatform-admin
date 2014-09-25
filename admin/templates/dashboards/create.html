@@ -4,7 +4,11 @@
 
 <h1>Create a dashboard</h1>
 
+{% if uuid %}
+<form method="post" action="{{ url_for('dashboard_admin_update_put', uuid=uuid) }}" role="form" class="form-horizontal">
+{% else %}
 <form method="post" action="{{ url_for('dashboard_admin_create_post') }}" role="form" class="form-horizontal">
+{% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
     <div class="well">
