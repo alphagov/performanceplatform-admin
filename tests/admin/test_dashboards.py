@@ -152,23 +152,15 @@ class DashboardTestCase(FlaskAppTestCase):
         self.assert_flashes('Error creating the foo dashboard: Error message',
                             'danger')
 
-    def test_add_module_redirects_back_to_the_form(self):
-        dashboard_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-        }
-        with self.client.session_transaction() as session:
-            session['oauth_token'] = {'access_token': 'token'}
-            session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
-            }
-            session['pending_dashboard'] = dashboard_data
-
-        resp = self.client.post('/administer-dashboards/create',
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_add_module_redirects_back_to_the_form(self, client):
+        resp = client.post('/administer-dashboards/create',
                                 data={'add_module': 1})
 
         assert_that(resp.status_code, equal_to(302))
+        assert_that(resp.headers['location'],
+            contains_string('administer-dashboards/create?modules=1')
+        )
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_editing_existing_dashboard(self, update_patch):
