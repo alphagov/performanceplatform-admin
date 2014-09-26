@@ -1,4 +1,4 @@
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase
+from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
 from admin import app
 from hamcrest import assert_that, contains_string, ends_with, equal_to, instance_of
 from mock import patch, Mock
@@ -12,8 +12,9 @@ class DashboardIndexTestCase(FlaskAppTestCase):
     def setUp(self):
         self.app = app.test_client()
 
+    @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')
-    def test_index_page_shows_list_of_dashboards(self, get_patch):
+    def test_index_page_shows_list_of_dashboards(self, get_patch, client):
         dashboards = {'dashboards': [
             {
                 'url': 'http://stagecraft/dashboard/uuid',
@@ -28,35 +29,22 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         response.json = Mock(return_value=dashboards)
         get_patch.return_value = response
 
-        with self.app as admin_app:
-            with admin_app.session_transaction() as session:
-                session['oauth_token'] = {'access_token': 'token'}
-                session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
-                }
-
-            resp = admin_app.get('/administer-dashboards')
+        resp = client.get('/administer-dashboards')
 
         assert_that(resp.data, contains_string(
             '<li><a href="/administer-dashboards/edit/uuid">'
             'Name of service</a></li>'
         ))
 
+    @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')
     def test_index_page_with_stagecraft_down_or_0_dashboards_shows_errors(
-            self, get_patch):
+            self, get_patch, client):
         response = requests.Response()
         response.status_code = 500
         get_patch.return_value = response
 
-        with self.app as admin_app:
-            with admin_app.session_transaction() as session:
-                session['oauth_token'] = {'access_token': 'token'}
-                session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
-                }
-
-            resp = admin_app.get('/administer-dashboards')
+        resp = client.get('/administer-dashboards')
 
         assert_that(resp.data, contains_string(
             'Could not retrieve the list of dashboards'
@@ -66,26 +54,20 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         response.json = Mock(return_value={'dashboards': []})
         get_patch.return_value = response
 
-        resp = admin_app.get('/administer-dashboards')
+        resp = client.get('/administer-dashboards')
 
         assert_that(resp.data, contains_string(
             'No dashboards stored'
         ))
 
+    @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')
-    def test_index_page_with_stagecraft_down_shows_errors(self, get_patch):
+    def test_index_page_with_stagecraft_down_shows_errors(self, get_patch, client):
         response = requests.Response()
         response.status_code = 500
         get_patch.return_value = response
 
-        with self.app as admin_app:
-            with admin_app.session_transaction() as session:
-                session['oauth_token'] = {'access_token': 'token'}
-                session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
-                }
-
-            resp = admin_app.get('/administer-dashboards')
+        resp = client.get('/administer-dashboards')
 
         assert_that(resp.data, contains_string(
             'Could not retrieve the list of dashboards'
