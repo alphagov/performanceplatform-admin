@@ -5,7 +5,6 @@ from admin.helpers import (
     requires_authentication,
     requires_permission,
 )
-from collections import defaultdict
 from flask import (
     flash, redirect, render_template, request,
     session, url_for
@@ -59,15 +58,29 @@ def dashboard_admin_create(admin_client):
 @requires_authentication
 @requires_permission('dashboard')
 def dashboard_admin_create_post(admin_client):
+    def remove_module_prefix(form):
+        field_prefix = 'remove_module_'
+        for field in form.keys():
+            if field.startswith(field_prefix):
+                return 'modules-{}-'.format(field.replace(field_prefix, ''))
+
+    session['pending_dashboard'] = request.form
+    form = DashboardCreationForm(request.form)
+
     if 'add_module' in request.form:
-        session['pending_dashboard'] = request.form
         current_modules = len(
             DashboardCreationForm(
                 MultiDict(session['pending_dashboard'])).modules)
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
-    form = DashboardCreationForm(request.form)
+    prefix = remove_module_prefix(request.form)
+    if prefix is not None:
+        session['pending_dashboard'] = {
+            key: value for key, value in session['pending_dashboard'].items()
+            if not key.startswith(prefix)
+        }
+        return redirect(url_for('dashboard_admin_create'))
 
     parsed_modules = []
 
@@ -110,7 +123,6 @@ def dashboard_admin_create_post(admin_client):
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         return redirect(url_for('dashboard_admin_index'))
     except requests.HTTPError as e:
-        session['pending_dashboard'] = request.form
         formatted_error = 'Error creating the {} dashboard: {}'.format(
             form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
