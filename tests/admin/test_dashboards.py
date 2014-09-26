@@ -1,7 +1,7 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
 from admin import app
 from hamcrest import (assert_that, contains_string, equal_to, has_entries,
-                      ends_with, instance_of)
+                      ends_with, instance_of, is_not, has_key)
 from mock import patch, Mock
 from admin.forms import DashboardCreationForm
 
@@ -335,3 +335,21 @@ class DashboardTestCase(FlaskAppTestCase):
         kwargs = mock_render.call_args[1]
         assert_that(kwargs['form'], instance_of(DashboardCreationForm))
         assert_that(resp.status_code, equal_to(200))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_remove_module_after_adding(self, client):
+        dashboard_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+        }
+
+        with client.session_transaction() as session:
+            session['pending_dashboard'] = dashboard_data
+
+        client.post('/administer-dashboards/create',
+                    data={'remove_module_0': 'remove'})
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard'],
+                        is_not(has_key('modules-0-module_type')))
