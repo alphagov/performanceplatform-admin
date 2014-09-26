@@ -30,14 +30,14 @@ def edit_dashboard(admin_client, uuid):
         'user': session['oauth_user'],
         'uuid': uuid
     })
-#=========================
-    with open(os.path.join(
-              os.path.dirname(__file__),
-              '../tests/fixtures/example-dashboard.json')) as file:
-        dashboard_json = file.read()
-    dashboard_dict = json.loads(dashboard_json)
-#=========================
-    #dashboard_dict = admin_client.get_dashboard(uuid)
+# =========================
+    # with open(os.path.join(
+    #           os.path.dirname(__file__),
+    #           '../tests/fixtures/example-dashboard.json')) as file:
+    #     dashboard_json = file.read()
+    # dashboard_dict = json.loads(dashboard_json)
+# #=========================
+    dashboard_dict = admin_client.get_dashboard(uuid)
     form = convert_to_dashboard_form(dashboard_dict)
     return render_template('dashboards/create.html',
                            form=form,
@@ -54,10 +54,14 @@ def dashboard_admin_update_put(admin_client, uuid):
     })
     form = DashboardCreationForm(request.form)
     the_dict = build_dict_for_post(form)
-    with open(os.path.join(
-              os.path.dirname(__file__),
-              '../tests/fixtures/example-dashboard-after-form.json'), "w") as file:
-        file.write(json.dumps(the_dict, indent=2))
+    import json
+    # with open(os.path.join(
+    #     os.path.dirname(__file__),
+    #         '../tests/fixtures/form_post.json'), 'w') as file:
+    #         # dashboard_dict = json.dumps(the_dict)
+    #         dashboard_json = file.write(dashboard_dict)
+    # print json.dumps(the_dict)
+    admin_client.update_dashboard(uuid, the_dict)
     return render_template('dashboards/index.html', **template_context)
 
 
@@ -132,6 +136,7 @@ def build_dict_for_post(form):
 
     for (index, module) in enumerate(form.modules.entries, start=1):
         parsed_modules.append({
+            'uuid': module.uuid.data,
             'type_id': module.module_type.data,
             'data_group': module.data_group.data,
             'data_type': module.data_type.data,

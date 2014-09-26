@@ -138,8 +138,34 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
-    def test_editing_existing_dashboard(self, update_patch):
-        pass
+    def test_editing_existing_dashboard(self, update_mock):
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+        data = {
+            'slug': 'my-valid-slug',
+            'title': 'My valid title',
+            'modules-0-slug': 'carers-realtime',
+            'modules-0-data_group': 'carers-allowance',
+            'modules-0-data_type': 'realtime',
+            'modules-0-options': '{}',
+            'modules-0-query_parameters': '{}',
+            'modules-0-uuid': 'module-uuid',
+        }
+
+        self.client.post('/administer-dashboards/update/uuid', data=data)
+        post_json = update_mock.call_args[0][1]
+        assert_that(post_json['modules'][0], has_entries({
+            'slug': 'carers-realtime',
+            'data_group': 'carers-allowance',
+            'data_type': 'realtime',
+            'options': {},
+            'query_parameters': {},
+            'uuid': 'module-uuid',
+        }))
+        assert_that(update_mock.call_args[0][0], equal_to('uuid'))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
     @patch("admin.dashboards.render_template")

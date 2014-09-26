@@ -1,6 +1,6 @@
 from admin import app
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     SelectField)
+                     SelectField, HiddenField)
 from performanceplatform.client import AdminAPI
 import requests
 from os import getenv
@@ -34,6 +34,7 @@ def get_module_choices():
 
 
 class ModuleForm(Form):
+    uuid = HiddenField('UUID')
     module_type = SelectField('Module type', choices=get_module_choices())
 
     data_group = TextField('Data group')
