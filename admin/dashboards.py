@@ -9,7 +9,6 @@ from flask import (
     flash, redirect, render_template, request,
     session, url_for
 )
-from werkzeug.datastructures import MultiDict
 
 import json
 import requests
@@ -39,7 +38,7 @@ def dashboard_admin_create(admin_client):
     })
 
     if 'pending_dashboard' in session:
-        form = DashboardCreationForm(MultiDict(session['pending_dashboard']))
+        form = DashboardCreationForm(data=session['pending_dashboard'])
     else:
         form = DashboardCreationForm(request.form)
 
@@ -58,33 +57,26 @@ def dashboard_admin_create(admin_client):
 @requires_authentication
 @requires_permission('dashboard')
 def dashboard_admin_create_post(admin_client):
-    def module_button_prefix(field_prefix, form):
+    def get_module_index(field_prefix, form):
         for field in form.keys():
             if field.startswith(field_prefix):
-                module_index = field.replace(field_prefix, '')
-                return {
-                    'form_prefix': 'modules-{}-'.format(module_index),
-                    'module_index': int(module_index),
-                }
+                return int(field.replace(field_prefix, ''))
 
         return None
 
-    session['pending_dashboard'] = request.form
     form = DashboardCreationForm(request.form)
+    session['pending_dashboard'] = form.data
 
     if 'add_module' in request.form:
         current_modules = len(
             DashboardCreationForm(
-                MultiDict(session['pending_dashboard'])).modules)
+                data=session['pending_dashboard']).modules)
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
-    remove_module_prefix = module_button_prefix('remove_module_', request.form)
-    if remove_module_prefix is not None:
-        session['pending_dashboard'] = {
-            key: value for key, value in session['pending_dashboard'].items()
-            if not key.startswith(remove_module_prefix['form_prefix'])
-        }
+    index = get_module_index('remove_module_', request.form)
+    if index is not None:
+        session['pending_dashboard']['modules'].pop(index)
         return redirect(url_for('dashboard_admin_create'))
 
     parsed_modules = []

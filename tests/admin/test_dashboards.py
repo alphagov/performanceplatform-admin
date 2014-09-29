@@ -1,7 +1,7 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
 from admin import app
 from hamcrest import assert_that, contains_string, equal_to, has_entries, \
-    is_not, has_key
+    has_key, has_entry
 from mock import patch, Mock
 
 import requests
@@ -112,42 +112,53 @@ class DashboardTestCase(FlaskAppTestCase):
         self.client.post('/administer-dashboards/create',
                          data={'slug': 'foo'})
 
-        self.assert_session_contains('pending_dashboard', {'slug': 'foo'})
+        self.assert_session_contains('pending_dashboard',
+                                     has_entry('slug', 'foo'))
         self.assert_flashes('Error creating the foo dashboard: Error message',
                             'danger')
 
-    def test_add_module_redirects_back_to_the_form(self):
-        dashboard_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-        }
-        with self.client.session_transaction() as session:
-            session['oauth_token'] = {'access_token': 'token'}
-            session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
-            }
-            session['pending_dashboard'] = dashboard_data
-
-        resp = self.client.post('/administer-dashboards/create',
-                                data={'add_module': 1})
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_add_module_redirects_back_to_the_form(self, client):
+        resp = client.post('/administer-dashboards/create',
+                           data={'add_module': 1})
 
         assert_that(resp.status_code, equal_to(302))
 
     @signed_in(permissions=['signin', 'dashboard'])
     def test_remove_module_after_adding(self, client):
-        dashboard_data = {
+        form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
             'modules-0-slug': 'foo',
+            'remove_module_0': 'remove',
         }
 
-        with client.session_transaction() as session:
-            session['pending_dashboard'] = dashboard_data
-
         client.post('/administer-dashboards/create',
-                    data={'remove_module_0': 'remove'})
+                    data=form_data)
 
         with client.session_transaction() as session:
             assert_that(session['pending_dashboard'],
-                        is_not(has_key('modules-0-module_type')))
+                        has_key('slug'))
+            assert_that(len(session['pending_dashboard']['modules']),
+                        equal_to(0))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_remove_middle_module(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'remove_module_0': 'remove',
+        }
+
+        client.post('/administer-dashboards/create',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(len(session['pending_dashboard']['modules']),
+                        equal_to(1))
+            assert_that(session['pending_dashboard']['modules'][0]['slug'],
+                        equal_to('bar'))
