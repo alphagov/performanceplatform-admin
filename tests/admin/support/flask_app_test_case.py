@@ -1,5 +1,6 @@
 from flask.ext.testing import TestCase
 from hamcrest import assert_that, equal_to
+from hamcrest.core.matcher import Matcher
 from functools import wraps
 
 from admin import app
@@ -52,8 +53,10 @@ class FlaskAppTestCase(TestCase):
             session_item = self.get_from_session(key)
         except KeyError:
             raise AssertionError('Nothing in session for <{}> key'.format(key))
+        if not isinstance(value, Matcher):
+            value = equal_to(value)
 
-        assert_that(session_item, equal_to(value))
+        assert_that(session_item, value)
 
     def assert_session_does_not_contain(self, key):
         self.assertRaises(KeyError, self.get_from_session, key)
