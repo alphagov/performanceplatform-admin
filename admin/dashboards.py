@@ -123,6 +123,7 @@ def dashboard_admin_create_post(admin_client):
     form = DashboardCreationForm(request.form)
     session['pending_dashboard'] = form.data
 
+    # Add a new empty module
     if 'add_module' in request.form:
         current_modules = len(
             DashboardCreationForm(
@@ -130,9 +131,28 @@ def dashboard_admin_create_post(admin_client):
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
+    # Remove a module from the list
     index = get_module_index('remove_module_', request.form)
     if index is not None:
         session['pending_dashboard']['modules'].pop(index)
+        return redirect(url_for('dashboard_admin_create'))
+
+    # Move a module down in the list (increment it's index number)
+    index = get_module_index('move_module_down_', request.form)
+    if index is not None:
+        modules = session['pending_dashboard']['modules']
+        if index < len(modules) - 1:
+            modules[index], modules[index+1] = modules[index+1], modules[index]
+            session['pending_dashboard']['modules'] = modules
+        return redirect(url_for('dashboard_admin_create'))
+
+    # Move a module up in the list (decrement it's index number)
+    index = get_module_index('move_module_up_', request.form)
+    if index is not None:
+        modules = session['pending_dashboard']['modules']
+        if index > 0:
+            modules[index], modules[index-1] = modules[index-1], modules[index]
+            session['pending_dashboard']['modules'] = modules
         return redirect(url_for('dashboard_admin_create'))
 
     try:
