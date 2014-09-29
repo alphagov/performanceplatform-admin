@@ -58,11 +58,16 @@ def dashboard_admin_create(admin_client):
 @requires_authentication
 @requires_permission('dashboard')
 def dashboard_admin_create_post(admin_client):
-    def remove_module_prefix(form):
-        field_prefix = 'remove_module_'
+    def module_button_prefix(field_prefix, form):
         for field in form.keys():
             if field.startswith(field_prefix):
-                return 'modules-{}-'.format(field.replace(field_prefix, ''))
+                module_index = field.replace(field_prefix, '')
+                return {
+                    'form_prefix': 'modules-{}-'.format(module_index),
+                    'module_index': int(module_index),
+                }
+
+        return None
 
     session['pending_dashboard'] = request.form
     form = DashboardCreationForm(request.form)
@@ -74,11 +79,11 @@ def dashboard_admin_create_post(admin_client):
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
-    prefix = remove_module_prefix(request.form)
-    if prefix is not None:
+    remove_module_prefix = module_button_prefix('remove_module_', request.form)
+    if remove_module_prefix is not None:
         session['pending_dashboard'] = {
             key: value for key, value in session['pending_dashboard'].items()
-            if not key.startswith(prefix)
+            if not key.startswith(remove_module_prefix['form_prefix'])
         }
         return redirect(url_for('dashboard_admin_create'))
 
