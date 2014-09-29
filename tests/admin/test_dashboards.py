@@ -162,3 +162,87 @@ class DashboardTestCase(FlaskAppTestCase):
                         equal_to(1))
             assert_that(session['pending_dashboard']['modules'][0]['slug'],
                         equal_to('bar'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_first_module_down(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_down_0': 'move',
+        }
+
+        client.post('/administer-dashboards/create',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'bar'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'foo'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_last_module_down(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_down_1': 'move',
+        }
+
+        client.post('/administer-dashboards/create',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'bar'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_last_module_up(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_up_1': 'move',
+        }
+
+        client.post('/administer-dashboards/create',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'bar'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'foo'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_first_module_up(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_up_0': 'move',
+        }
+
+        client.post('/administer-dashboards/create',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'bar'))
