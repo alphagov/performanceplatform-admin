@@ -5,12 +5,10 @@ from admin.helpers import (
     requires_authentication,
     requires_permission,
 )
-from collections import defaultdict
 from flask import (
     flash, redirect, render_template, request,
     session, url_for
 )
-from werkzeug.datastructures import MultiDict
 
 import json
 import requests
@@ -40,7 +38,7 @@ def dashboard_admin_create(admin_client):
     })
 
     if 'pending_dashboard' in session:
-        form = DashboardCreationForm(MultiDict(session['pending_dashboard']))
+        form = DashboardCreationForm(data=session['pending_dashboard'])
     else:
         form = DashboardCreationForm(request.form)
 
@@ -59,15 +57,47 @@ def dashboard_admin_create(admin_client):
 @requires_authentication
 @requires_permission('dashboard')
 def dashboard_admin_create_post(admin_client):
+    def get_module_index(field_prefix, form):
+        for field in form.keys():
+            if field.startswith(field_prefix):
+                return int(field.replace(field_prefix, ''))
+
+        return None
+
+    form = DashboardCreationForm(request.form)
+    session['pending_dashboard'] = form.data
+
+    # Add a new empty module
     if 'add_module' in request.form:
-        session['pending_dashboard'] = request.form
         current_modules = len(
             DashboardCreationForm(
-                MultiDict(session['pending_dashboard'])).modules)
+                data=session['pending_dashboard']).modules)
         return redirect(url_for('dashboard_admin_create',
                                 modules=current_modules+1))
 
-    form = DashboardCreationForm(request.form)
+    # Remove a module from the list
+    index = get_module_index('remove_module_', request.form)
+    if index is not None:
+        session['pending_dashboard']['modules'].pop(index)
+        return redirect(url_for('dashboard_admin_create'))
+
+    # Move a module down in the list (increment it's index number)
+    index = get_module_index('move_module_down_', request.form)
+    if index is not None:
+        modules = session['pending_dashboard']['modules']
+        if index < len(modules) - 1:
+            modules[index], modules[index+1] = modules[index+1], modules[index]
+            session['pending_dashboard']['modules'] = modules
+        return redirect(url_for('dashboard_admin_create'))
+
+    # Move a module up in the list (decrement it's index number)
+    index = get_module_index('move_module_up_', request.form)
+    if index is not None:
+        modules = session['pending_dashboard']['modules']
+        if index > 0:
+            modules[index], modules[index-1] = modules[index-1], modules[index]
+            session['pending_dashboard']['modules'] = modules
+        return redirect(url_for('dashboard_admin_create'))
 
     parsed_modules = []
 
@@ -110,7 +140,6 @@ def dashboard_admin_create_post(admin_client):
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         return redirect(url_for('dashboard_admin_index'))
     except requests.HTTPError as e:
-        session['pending_dashboard'] = request.form
         formatted_error = 'Error creating the {} dashboard: {}'.format(
             form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
