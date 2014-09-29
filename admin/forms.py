@@ -13,6 +13,7 @@ def convert_to_dashboard_form(dashboard_dict):
         module['info'] = json.dumps(module['info'])
         module['query_parameters'] = json.dumps(module['query_parameters'])
         module['options'] = json.dumps(module['options'])
+        module['module_type'] = module['type']['id']
 
     return DashboardCreationForm(data=dashboard_dict)
 
