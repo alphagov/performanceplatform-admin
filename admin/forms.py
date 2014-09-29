@@ -14,6 +14,7 @@ def convert_to_dashboard_form(dashboard_dict):
         module['query_parameters'] = json.dumps(module['query_parameters'])
         module['options'] = json.dumps(module['options'])
         module['module_type'] = module['type']['id']
+        module['uuid'] = module['id']
 
     return DashboardCreationForm(data=dashboard_dict)
 
@@ -35,7 +36,7 @@ def get_module_choices():
 
 
 class ModuleForm(Form):
-    uuid = HiddenField('UUID')
+    id = HiddenField('UUID')
     module_type = SelectField('Module type', choices=get_module_choices())
 
     data_group = TextField('Data group')

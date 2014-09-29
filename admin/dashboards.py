@@ -136,7 +136,9 @@ def build_dict_for_post(form):
 
     for (index, module) in enumerate(form.modules.entries, start=1):
         parsed_modules.append({
-            'uuid': module.uuid.data,
+            # module.id ends up being the id of the subform, so we cant use the
+            # magic method
+            'id': module.data['id'],
             'type_id': module.module_type.data,
             'data_group': module.data_group.data,
             'data_type': module.data_type.data,

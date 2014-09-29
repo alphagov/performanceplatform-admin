@@ -112,6 +112,7 @@
       <h2>Modules</h2>
 
       {% for module in form.modules %}
+	{{ module.form['id'] }}
         <div class="module">
           <div class="form-group">
             {{ module.module_type.label(class='col-sm-2 control-label') }}
