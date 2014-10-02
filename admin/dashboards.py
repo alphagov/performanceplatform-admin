@@ -19,6 +19,14 @@ import requests
 DASHBOARD_ROUTE = '/administer-dashboards'
 
 
+@app.route('{0}/edit/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def edit_dashboard(admin_client, uuid):
+    template_context = base_template_context()
+    return render_template('blank.html', **template_context)
+
+
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
@@ -27,7 +35,26 @@ def dashboard_admin_index(admin_client):
     template_context.update({
         'user': session['oauth_user'],
     })
-    return render_template('dashboards/index.html', **template_context)
+
+    dashboards_url = '{0}/dashboards'.format(app.config['STAGECRAFT_HOST'])
+    access_token = session['oauth_token']['access_token']
+    headers = {
+        'Authorization': 'Bearer {0}'.format(access_token),
+    }
+
+    dashboard_response = requests.get(dashboards_url, headers=headers)
+
+    if dashboard_response.status_code == 200:
+        dashboards = dashboard_response.json()['dashboards']
+        if len(dashboards) == 0:
+            flash('No dashboards stored', 'info')
+    else:
+        flash('Could not retrieve the list of dashboards', 'danger')
+        dashboards = None
+
+    return render_template('dashboards/index.html',
+                           dashboards=dashboards,
+                           **template_context)
 
 
 @app.route('{0}/create'.format(DASHBOARD_ROUTE), methods=['GET'])

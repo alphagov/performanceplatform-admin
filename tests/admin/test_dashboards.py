@@ -1,9 +1,75 @@
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase
+from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
 from admin import app
 from hamcrest import assert_that, contains_string, equal_to, has_entries
 from mock import patch, Mock
 
 import requests
+
+
+class DashboardIndexTestCase(FlaskAppTestCase):
+    def setUp(self):
+        self.app = app.test_client()
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_index_page_shows_list_of_dashboards(self, get_patch, client):
+        dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=dashboards)
+        get_patch.return_value = response
+
+        resp = client.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            '<li><a href="/administer-dashboards/edit/uuid">'
+            'Name of service</a></li>'
+        ))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_index_page_with_stagecraft_down_or_0_dashboards_shows_errors(
+            self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 500
+        get_patch.return_value = response
+
+        resp = client.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            'Could not retrieve the list of dashboards'
+        ))
+
+        response.status_code = 200
+        response.json = Mock(return_value={'dashboards': []})
+        get_patch.return_value = response
+
+        resp = client.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            'No dashboards stored'
+        ))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_index_page_with_stagecraft_down_errors(self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 500
+        get_patch.return_value = response
+
+        resp = client.get('/administer-dashboards')
+
+        assert_that(resp.data, contains_string(
+            'Could not retrieve the list of dashboards'
+        ))
 
 
 class DashboardTestCase(FlaskAppTestCase):
@@ -115,20 +181,13 @@ class DashboardTestCase(FlaskAppTestCase):
         self.assert_flashes('Error creating the foo dashboard: Error message',
                             'danger')
 
-    def test_add_module_redirects_back_to_the_form(self):
-        dashboard_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-        }
-        with self.client.session_transaction() as session:
-            session['oauth_token'] = {'access_token': 'token'}
-            session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
-            }
-            session['pending_dashboard'] = dashboard_data
-
-        resp = self.client.post('/administer-dashboards/create',
-                                data={'add_module': 1})
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_add_module_redirects_back_to_the_form(self, client):
+        resp = client.post(
+            '/administer-dashboards/create', data={'add_module': 1})
 
         assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['location'],
+            contains_string('administer-dashboards/create?modules=1')
+        )
