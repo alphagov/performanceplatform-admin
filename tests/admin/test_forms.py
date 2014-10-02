@@ -33,3 +33,5 @@ class DashboardTestCase(TestCase):
         assert_that(
             dict_for_post['modules'][0]['id'],
             equal_to(dashboard_dict['modules'][0]['id']))
+        assert_that(
+            dict_for_post['links'], equal_to(dashboard_dict['links']))

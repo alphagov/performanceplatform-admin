@@ -14,6 +14,14 @@ def convert_to_dashboard_form(dashboard_dict):
         module['options'] = json.dumps(module['options'])
         module['module_type'] = module['type']['id']
         module['uuid'] = module['id']
+    transaction_link = [link for link
+                        in dashboard_dict['links']
+                        if link['type'] == 'transaction']
+    if len(transaction_link) > 1:
+        raise ValueError('Dashboards cannot have more than 1 transaction link')
+    elif len(transaction_link) == 1:
+        dashboard_dict['transaction_link'] = transaction_link[0]['url']
+        dashboard_dict['transaction_title'] = transaction_link[0]['title']
 
     return DashboardCreationForm(data=dashboard_dict)
 
