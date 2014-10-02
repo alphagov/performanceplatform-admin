@@ -30,13 +30,6 @@ def edit_dashboard(admin_client, uuid):
         'user': session['oauth_user'],
         'uuid': uuid
     })
-# =========================
-    # with open(os.path.join(
-    #           os.path.dirname(__file__),
-    #           '../tests/fixtures/example-dashboard.json')) as file:
-    #     dashboard_json = file.read()
-    # dashboard_dict = json.loads(dashboard_json)
-# #=========================
     dashboard_dict = admin_client.get_dashboard(uuid)
     form = convert_to_dashboard_form(dashboard_dict)
     return render_template('dashboards/create.html',
@@ -54,15 +47,14 @@ def dashboard_admin_update_put(admin_client, uuid):
     })
     form = DashboardCreationForm(request.form)
     the_dict = build_dict_for_post(form)
-    import json
-    # with open(os.path.join(
-    #     os.path.dirname(__file__),
-    #         '../tests/fixtures/form_post.json'), 'w') as file:
-    #         # dashboard_dict = json.dumps(the_dict)
-    #         dashboard_json = file.write(dashboard_dict)
-    # print json.dumps(the_dict)
-    admin_client.update_dashboard(uuid, the_dict)
-    return render_template('dashboards/index.html', **template_context)
+    try:
+        admin_client.update_dashboard(uuid, the_dict)
+        flash('Created the {} dashboard'.format(form.slug.data), 'success')
+    except requests.HTTPError as e:
+        formatted_error = 'Error creating the {} dashboard: {}'.format(
+            form.slug.data, e.response.json()['message'])
+        flash(formatted_error, 'danger')
+    return redirect(url_for('edit_dashboard', uuid=uuid))
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
@@ -89,8 +81,6 @@ def dashboard_admin_create(admin_client):
         form = DashboardCreationForm(MultiDict(session['pending_dashboard']))
     else:
         form = DashboardCreationForm(request.form)
-
-    print(request.form)
 
     if request.args.get('modules'):
         total_modules = int(request.args.get('modules'))

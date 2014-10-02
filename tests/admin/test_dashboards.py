@@ -152,10 +152,11 @@ class DashboardTestCase(FlaskAppTestCase):
             'modules-0-data_type': 'realtime',
             'modules-0-options': '{}',
             'modules-0-query_parameters': '{}',
-            'modules-0-uuid': 'module-uuid',
+            'modules-0-id': 'module-uuid',
         }
 
-        self.client.post('/administer-dashboards/update/uuid', data=data)
+        resp = self.client.post(
+            '/administer-dashboards/update/uuid', data=data)
         post_json = update_mock.call_args[0][1]
         assert_that(post_json['modules'][0], has_entries({
             'slug': 'carers-realtime',
@@ -163,9 +164,13 @@ class DashboardTestCase(FlaskAppTestCase):
             'data_type': 'realtime',
             'options': {},
             'query_parameters': {},
-            'uuid': 'module-uuid',
+            'id': 'module-uuid',
         }))
         assert_that(update_mock.call_args[0][0], equal_to('uuid'))
+        assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['Location'],
+            ends_with('/administer-dashboards/edit/uuid'))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
     @patch("admin.dashboards.render_template")
