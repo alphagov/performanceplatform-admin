@@ -168,7 +168,7 @@ def build_dict_for_post(form):
             'data_type': module.data_type.data,
             'slug': module.slug.data,
             'title': module.title.data,
-            'description': module.module_description.data,
+            'description': module.data['description'],
             'info': info,
             'options': json.loads(module.options.data),
             'query_parameters': json.loads(module.query_parameters.data),

@@ -23,7 +23,7 @@
  }, 
  "modules": [
   {
-   "description": "", 
+   "description": "description",
    "data_type": "summaries", 
    "id": "18e2ce49-c5d9-4546-b391-093f78344dea", 
    "data_group": "transactional-services", 

@@ -51,7 +51,7 @@ class ModuleForm(Form):
 
     slug = TextField('Slug')
     title = TextField('Title')
-    module_description = TextField('Description')
+    description = TextField('Description')
     info = TextField('Info')
 
     query_parameters = TextAreaField('Query parameters', default='{}')
