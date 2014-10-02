@@ -49,9 +49,9 @@ def dashboard_admin_update_put(admin_client, uuid):
     the_dict = build_dict_for_post(form)
     try:
         admin_client.update_dashboard(uuid, the_dict)
-        flash('Created the {} dashboard'.format(form.slug.data), 'success')
+        flash('Updated the {} dashboard'.format(form.slug.data), 'success')
     except requests.HTTPError as e:
-        formatted_error = 'Error creating the {} dashboard: {}'.format(
+        formatted_error = 'Error updating the {} dashboard: {}'.format(
             form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
     return redirect(url_for('edit_dashboard', uuid=uuid))

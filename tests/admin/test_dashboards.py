@@ -172,7 +172,7 @@ class DashboardTestCase(FlaskAppTestCase):
             resp.headers['Location'],
             ends_with('/administer-dashboards/edit/uuid'))
         self.assert_flashes(
-            'Created the my-valid-slug dashboard', expected_category='success')
+            'Updated the my-valid-slug dashboard', expected_category='success')
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_failing_updating_existing_dashboard_flashes_error(
@@ -207,7 +207,7 @@ class DashboardTestCase(FlaskAppTestCase):
             resp.headers['Location'],
             ends_with('/administer-dashboards/edit/uuid'))
         self.assert_flashes(
-            'Error creating the my-valid-slug dashboard: Error message',
+            'Error updating the my-valid-slug dashboard: Error message',
             expected_category='danger')
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
