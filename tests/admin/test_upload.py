@@ -13,7 +13,7 @@ class UploadTestCase(FlaskAppTestCase):
     def setUp(self):
         self.app.config['WTF_CSRF_ENABLED'] = False
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -53,7 +53,7 @@ class UploadTestCase(FlaskAppTestCase):
                 u'data_group': u'carers-allowance'
             }))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_ask_for_file_if_none_chosen(
@@ -80,7 +80,7 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(response.headers['Location'], ends_with('/upload-data'))
         assert_that(response.status_code, equal_to(302))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     def test_no_data_set_config_returns_error(
             self,
@@ -95,7 +95,7 @@ class UploadTestCase(FlaskAppTestCase):
             'There is no data set of for data-group'))
         assert_that(response.status_code, equal_to(404))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     def test_http_error_from_stagecraft_flashes_message(
             self,
@@ -113,7 +113,7 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(response.headers['Location'], ends_with('/upload-data'))
         assert_that(response.status_code, equal_to(302))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -146,7 +146,7 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(response.headers['Location'], ends_with('/upload-data'))
         assert_that(response.status_code, equal_to(302))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -177,7 +177,7 @@ class UploadTestCase(FlaskAppTestCase):
 
         assert_that(response.status_code, equal_to(500))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -208,7 +208,7 @@ class UploadTestCase(FlaskAppTestCase):
 
         assert_that(response.status_code, equal_to(400))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -249,7 +249,7 @@ class UploadTestCase(FlaskAppTestCase):
         )
         assert_that(response.status_code, equal_to(400))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -282,7 +282,7 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(response.status_code, equal_to(302))
         assert_that(data_set_post_patch.called, equal_to(False))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('admin.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
@@ -313,7 +313,7 @@ class UploadTestCase(FlaskAppTestCase):
         assert_that(response.status_code, equal_to(400))
         assert_that(data_set_post_patch.called, equal_to(False))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
     def test_data_sets_redirects_to_sign_out_when_401_on_data_set_list(
             self,
@@ -330,7 +330,7 @@ class UploadTestCase(FlaskAppTestCase):
             response.headers['Location'],
             ends_with('/sign-out'))
 
-    @signed_in
+    @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
     def test_data_sets_renders_a_data_set_list_and_okay_message_on_success(
             self,
