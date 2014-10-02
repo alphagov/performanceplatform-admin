@@ -138,12 +138,27 @@ def dashboard_admin_create_post(admin_client):
             form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
         return redirect(url_for('dashboard_admin_create'))
+    except ValueError as e:
+        session['pending_dashboard'] = request.form
+        formatted_error = 'Error validating the {} dashboard: {}'.format(
+            form.slug.data, e.message)
+        flash(formatted_error, 'danger')
+        return redirect(url_for('dashboard_admin_create'))
 
 
 def build_dict_for_post(form):
     parsed_modules = []
 
     for (index, module) in enumerate(form.modules.entries, start=1):
+        if module.info.data.strip():
+            info = json.loads(module.info.data)
+        else:
+            info = []
+        if not isinstance(info, list):
+            raise ValueError("Info must be a list")
+        for item in info:
+            if not isinstance(item, basestring):
+                raise ValueError("Info must all be strings")
         parsed_modules.append({
             # module.id ends up being the id of the subform, so we cant use the
             # magic method
@@ -154,7 +169,7 @@ def build_dict_for_post(form):
             'slug': module.slug.data,
             'title': module.title.data,
             'description': module.module_description.data,
-            'info': module.info.data.split("\n"),
+            'info': info,
             'options': json.loads(module.options.data),
             'query_parameters': json.loads(module.query_parameters.data),
             'order': index,

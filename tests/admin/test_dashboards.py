@@ -98,6 +98,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'modules-0-data_type': 'realtime',
                 'modules-0-options': '{}',
                 'modules-0-query_parameters': '{}',
+                'modules-0-info': '["Foo", "Bar"]',
             }
 
             admin_app.post('/administer-dashboards/create', data=data)
@@ -110,7 +111,49 @@ class DashboardTestCase(FlaskAppTestCase):
             'data_type': 'realtime',
             'options': {},
             'query_parameters': {},
+            'info': ["Foo", "Bar"],
         }))
+
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    def test_info_many_paths(self, create_dashboard):
+        info_tests = [
+            ('asdas',        False, 'Not valid JSON'),
+            ('{}',      False, 'Not an array'),
+            ('[123]',   False, 'An array containing a non-string'),
+            ('[]',      True,  'An empty list'),
+            ('',        True,  'An empty field'),
+            (' ',       True,  'Whitespace should be stripped'),
+            ('["Foo"]', True,  'A list with a string'),
+        ]
+        for info, success, message in info_tests:
+            with self.app as admin_app:
+                with admin_app.session_transaction() as session:
+                    session['oauth_token'] = {'access_token': 'token'}
+                    session['oauth_user'] = {
+                        'permissions': ['signin', 'dashboard']
+                    }
+
+                data = {
+                    'slug': 'my-valid-slug',
+                    'title': 'My valid title',
+                    'modules-0-slug': 'carers-realtime',
+                    'modules-0-data_group': 'carers-allowance',
+                    'modules-0-data_type': 'realtime',
+                    'modules-0-options': '{}',
+                    'modules-0-query_parameters': '{}',
+                    'modules-0-info': info
+                }
+
+                admin_app.post('/administer-dashboards/create', data=data)
+
+                with admin_app.session_transaction() as session:
+                    flash_status = session['_flashes'][0][0]
+                    if success:
+                        assert_that(flash_status, equal_to('success'), message)
+                    else:
+                        assert_that(flash_status, equal_to('danger'), message)
+                    # reset flashes
+                    session['_flashes'] = []
 
     def test_create_form_uses_pending_dashboard_if_stored(self):
         with self.app as admin_app:
