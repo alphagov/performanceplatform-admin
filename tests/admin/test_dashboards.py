@@ -5,6 +5,7 @@ from mock import patch, Mock
 
 import requests
 
+
 class DashboardIndexTestCase(FlaskAppTestCase):
     def setUp(self):
         self.app = app.test_client()
@@ -59,7 +60,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')
-    def test_index_page_with_stagecraft_down_shows_errors(self, get_patch, client):
+    def test_index_page_with_stagecraft_down_errors(self, get_patch, client):
         response = requests.Response()
         response.status_code = 500
         get_patch.return_value = response
