@@ -138,7 +138,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
-    def test_editing_existing_dashboard(self, update_mock):
+    def test_updating_existing_dashboard(self, update_mock):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
@@ -171,6 +171,44 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(
             resp.headers['Location'],
             ends_with('/administer-dashboards/edit/uuid'))
+        self.assert_flashes(
+            'Created the my-valid-slug dashboard', expected_category='success')
+
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_failing_updating_existing_dashboard_flashes_error(
+            self, update_mock):
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+        data = {
+            'slug': 'my-valid-slug',
+            'title': 'My valid title',
+            'modules-0-slug': 'carers-realtime',
+            'modules-0-data_group': 'carers-allowance',
+            'modules-0-data_type': 'realtime',
+            'modules-0-options': '{}',
+            'modules-0-query_parameters': '{}',
+            'modules-0-id': 'module-uuid',
+        }
+        response_json_mock = Mock()
+        response_json_mock.return_value = {'message': 'Error message'}
+        response = requests.Response()
+        response.status_code = 400
+        response.json = response_json_mock
+        error = requests.HTTPError('Error message', response=response)
+        update_mock.side_effect = error
+
+        resp = self.client.post(
+            '/administer-dashboards/update/uuid', data=data)
+        assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['Location'],
+            ends_with('/administer-dashboards/edit/uuid'))
+        self.assert_flashes(
+            'Error creating the my-valid-slug dashboard: Error message',
+            expected_category='danger')
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
     @patch("admin.dashboards.render_template")
