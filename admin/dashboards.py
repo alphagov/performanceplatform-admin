@@ -17,6 +17,12 @@ import requests
 
 
 DASHBOARD_ROUTE = '/administer-dashboards'
+@app.route('{0}/edit/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def edit_dashboard(admin_client, uuid):
+    template_context = base_template_context()
+    return render_template('blank.html', **template_context)
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
