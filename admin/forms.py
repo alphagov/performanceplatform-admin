@@ -1,9 +1,29 @@
 from admin import app
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     SelectField)
+                     SelectField, HiddenField)
 from performanceplatform.client import AdminAPI
 import requests
 from os import getenv
+import json
+
+
+def convert_to_dashboard_form(dashboard_dict):
+    for module in dashboard_dict['modules']:
+        module['info'] = json.dumps(module['info'])
+        module['query_parameters'] = json.dumps(module['query_parameters'])
+        module['options'] = json.dumps(module['options'])
+        module['module_type'] = module['type']['id']
+        module['uuid'] = module['id']
+    transaction_link = [link for link
+                        in dashboard_dict['links']
+                        if link['type'] == 'transaction']
+    if len(transaction_link) > 1:
+        raise ValueError('Dashboards cannot have more than 1 transaction link')
+    elif len(transaction_link) == 1:
+        dashboard_dict['transaction_link'] = transaction_link[0]['url']
+        dashboard_dict['transaction_title'] = transaction_link[0]['title']
+
+    return DashboardCreationForm(data=dashboard_dict)
 
 
 def get_module_choices():
@@ -23,6 +43,7 @@ def get_module_choices():
 
 
 class ModuleForm(Form):
+    id = HiddenField('UUID')
     module_type = SelectField('Module type', choices=get_module_choices())
 
     data_group = TextField('Data group')
