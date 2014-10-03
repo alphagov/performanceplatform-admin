@@ -97,3 +97,4 @@ class DashboardCreationForm(Form):
     transaction_link = TextField('Transaction link')
 
     modules = FieldList(FormField(ModuleForm), min_entries=0)
+    published = HiddenField('published', default=False)
