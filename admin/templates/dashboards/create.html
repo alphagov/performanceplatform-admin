@@ -11,6 +11,7 @@
   <form method="post" action="{{ url_for('dashboard_admin_create_post') }}" role="form" class="form-horizontal">
 {% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    {{ form.published() }}
 
     <div class="well">
 

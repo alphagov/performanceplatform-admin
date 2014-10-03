@@ -174,9 +174,8 @@ def build_dict_for_post(form):
             'query_parameters': json.loads(module.query_parameters.data),
             'order': index,
         })
-
     return {
-        'published': False,
+        'published': form.published.data,
         'page-type': 'dashboard',
         'dashboard-type': form.dashboard_type.data,
         'slug': form.slug.data,
