@@ -19,5 +19,3 @@ branches:
     - /^deployed-to.*$/
 notifications:
   email: false
-services:
-  - redis-server
