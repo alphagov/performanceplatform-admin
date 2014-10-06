@@ -273,7 +273,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['Location'],
-            ends_with('/administer-dashboards/uuid'))
+            ends_with('/administer-dashboards'))
         self.assert_flashes(
             'Updated the my-valid-slug dashboard', expected_category='success')
 
@@ -356,6 +356,29 @@ class DashboardTestCase(FlaskAppTestCase):
                         equal_to(0))
 
     @signed_in(permissions=['signin', 'dashboard'])
+    def test_remove_module_from_existing_dashboard(self, client):
+        data = {
+            'slug': 'my-valid-slug',
+            'title': 'My valid title',
+            'modules-0-slug': 'carers-realtime',
+            'modules-0-data_group': 'carers-allowance',
+            'modules-0-data_type': 'realtime',
+            'modules-0-options': '{}',
+            'modules-0-query_parameters': '{}',
+            'modules-0-id': 'module-uuid',
+            'remove_module_0': 'remove',
+        }
+
+        client.post(
+            '/administer-dashboards/uuid', data=data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard'],
+                        has_key('slug'))
+            assert_that(len(session['pending_dashboard']['modules']),
+                        equal_to(0))
+
+    @signed_in(permissions=['signin', 'dashboard'])
     def test_remove_middle_module(self, client):
         form_data = {
             'slug': 'valid-slug',
@@ -410,6 +433,27 @@ class DashboardTestCase(FlaskAppTestCase):
         }
 
         client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'bar'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_last_module_down_on_existing_dashboard(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_down_1': 'move',
+        }
+
+        client.post('/administer-dashboards/uuid',
                     data=form_data)
 
         with client.session_transaction() as session:
