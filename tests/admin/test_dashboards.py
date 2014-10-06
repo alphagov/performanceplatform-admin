@@ -34,7 +34,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         resp = client.get('/administer-dashboards')
 
         assert_that(resp.data, contains_string(
-            '<li><a href="/administer-dashboards/edit/uuid">'
+            '<li><a href="/administer-dashboards/uuid">'
             'Name of service</a></li>'
         ))
 
@@ -101,7 +101,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'modules-0-info': '["Foo", "Bar"]',
             }
 
-            admin_app.post('/administer-dashboards/create', data=data)
+            admin_app.post('/administer-dashboards', data=data)
 
         post_json = create_dashboard.call_args[0][0]
 
@@ -144,7 +144,7 @@ class DashboardTestCase(FlaskAppTestCase):
                     'modules-0-info': info
                 }
 
-                admin_app.post('/administer-dashboards/create', data=data)
+                admin_app.post('/administer-dashboards', data=data)
 
                 with admin_app.session_transaction() as session:
                     flash_status = session['_flashes'][0][0]
@@ -164,7 +164,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 }
                 session['pending_dashboard'] = {'slug': 'my-valid-slug'}
 
-            resp = admin_app.get('/administer-dashboards/create')
+            resp = admin_app.get('/administer-dashboards/new')
 
             assert_that(resp.data, contains_string('value="my-valid-slug"'))
 
@@ -177,7 +177,7 @@ class DashboardTestCase(FlaskAppTestCase):
                     'permissions': ['signin', 'dashboard']
                 }
 
-            resp = admin_app.post('/administer-dashboards/create',
+            resp = admin_app.post('/administer-dashboards',
                                   data={'slug': 'valid-slug'})
 
         post_json = create_dashboard.call_args[0][0]
@@ -198,7 +198,7 @@ class DashboardTestCase(FlaskAppTestCase):
             }
             session['pending_dashboard'] = dashboard_data
 
-        self.client.post('/administer-dashboards/create',
+        self.client.post('/administer-dashboards',
                          data=dashboard_data)
 
         self.assert_session_does_not_contain('pending_dashboard')
@@ -221,7 +221,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'permissions': ['signin', 'dashboard']
             }
 
-        self.client.post('/administer-dashboards/create',
+        self.client.post('/administer-dashboards',
                          data={'slug': 'foo'})
 
         self.assert_session_contains('pending_dashboard',
@@ -231,13 +231,13 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     def test_add_module_redirects_back_to_the_form(self, client):
-        resp = client.post('/administer-dashboards/create',
+        resp = client.post('/administer-dashboards',
                            data={'add_module': 1})
 
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['location'],
-            contains_string('administer-dashboards/create?modules=1')
+            contains_string('administer-dashboards/new?modules=1')
         )
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
@@ -259,7 +259,7 @@ class DashboardTestCase(FlaskAppTestCase):
         }
 
         resp = self.client.post(
-            '/administer-dashboards/update/uuid', data=data)
+            '/administer-dashboards/uuid', data=data)
         post_json = update_mock.call_args[0][1]
         assert_that(post_json['modules'][0], has_entries({
             'slug': 'carers-realtime',
@@ -273,7 +273,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['Location'],
-            ends_with('/administer-dashboards/edit/uuid'))
+            ends_with('/administer-dashboards/uuid'))
         self.assert_flashes(
             'Updated the my-valid-slug dashboard', expected_category='success')
 
@@ -304,11 +304,11 @@ class DashboardTestCase(FlaskAppTestCase):
         update_mock.side_effect = error
 
         resp = self.client.post(
-            '/administer-dashboards/update/uuid', data=data)
+            '/administer-dashboards/uuid', data=data)
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['Location'],
-            ends_with('/administer-dashboards/edit/uuid'))
+            ends_with('/administer-dashboards/uuid'))
         self.assert_flashes(
             'Error updating the my-valid-slug dashboard: Error message',
             expected_category='danger')
@@ -329,7 +329,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'permissions': ['signin', 'dashboard']
             }
 
-        resp = self.client.get('/administer-dashboards/edit/uuid')
+        resp = self.client.get('/administer-dashboards/uuid')
         mock_get.assert_called_once_with('uuid')
         rendered_template = 'dashboards/create.html'
         assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
@@ -346,7 +346,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'remove_module_0': 'remove',
         }
 
-        client.post('/administer-dashboards/create',
+        client.post('/administer-dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
@@ -367,7 +367,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'remove_module_0': 'remove',
         }
 
-        client.post('/administer-dashboards/create',
+        client.post('/administer-dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
@@ -388,7 +388,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'move_module_down_0': 'move',
         }
 
-        client.post('/administer-dashboards/create',
+        client.post('/administer-dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
@@ -409,7 +409,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'move_module_down_1': 'move',
         }
 
-        client.post('/administer-dashboards/create',
+        client.post('/administer-dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
@@ -430,7 +430,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'move_module_up_1': 'move',
         }
 
-        client.post('/administer-dashboards/create',
+        client.post('/administer-dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
@@ -451,7 +451,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'move_module_up_0': 'move',
         }
 
-        client.post('/administer-dashboards/create',
+        client.post('/administer-dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
