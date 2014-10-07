@@ -4,14 +4,14 @@
 
 <h1>Administer dashboards</h1>
 
-<a href="{{ url_for('dashboard_admin_create') }}" class="btn btn-primary" role="button">Create a dashboard</a>
+<a href="{{ url_for('dashboard_form') }}" class="btn btn-primary" role="button">Create a dashboard</a>
 
 {% if dashboards %}
   <h2>Dashboards</h2>
 
   <ul>
     {% for dashboard in dashboards %}
-      <li><a href="{{ url_for('edit_dashboard', uuid=dashboard.id) }}">{{ dashboard.title }}</a></li>
+      <li><a href="{{ url_for('dashboard_form', uuid=dashboard.id) }}">{{ dashboard.title }}</a></li>
     {% endfor %}
   </ul>
 {% endif %}

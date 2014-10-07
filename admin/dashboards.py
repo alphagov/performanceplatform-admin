@@ -49,18 +49,28 @@ def dashboard_admin_index(admin_client):
 
 
 @app.route('{0}/new'.format(DASHBOARD_ROUTE), methods=['GET'])
+@app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
-def dashboard_admin_create(admin_client):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-    })
+def dashboard_form(admin_client, uuid=None):
+    def should_use_session(session, uuid):
+        if 'pending_dashboard' not in session:
+            return False
+        if uuid is None:
+            return True
+        if session['pending_dashboard'].get('uuid') == uuid:
+            return True
+        return False
 
-    if 'pending_dashboard' in session:
+    template_context = base_template_context()
+    template_context['user'] = session['oauth_user']
+    if should_use_session(session, uuid):
         form = DashboardCreationForm(data=session['pending_dashboard'])
-    else:
+    elif uuid is None:
         form = DashboardCreationForm(request.form)
+    else:
+        dashboard_dict = admin_client.get_dashboard(uuid)
+        form = convert_to_dashboard_form(dashboard_dict)
 
     if request.args.get('modules'):
         total_modules = int(request.args.get('modules'))
@@ -80,7 +90,7 @@ def dashboard_admin_create_post(admin_client):
     form = DashboardCreationForm(request.form)
     session['pending_dashboard'] = form.data
 
-    result = move_or_remove(request.form, session, 'dashboard_admin_create')
+    result = move_or_remove(request.form, session, 'dashboard_form')
     if result is not None:
         return result
 
@@ -95,38 +105,12 @@ def dashboard_admin_create_post(admin_client):
         formatted_error = 'Error creating the {} dashboard: {}'.format(
             form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
-        return redirect(url_for('dashboard_admin_create'))
+        return redirect(url_for('dashboard_form'))
     except ValueError as e:
         formatted_error = 'Error validating the {} dashboard: {}'.format(
             form.slug.data, e.message)
         flash(formatted_error, 'danger')
-        return redirect(url_for('dashboard_admin_create'))
-
-
-@app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
-@requires_authentication
-@requires_permission('dashboard')
-def edit_dashboard(admin_client, uuid):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-        'uuid': uuid
-    })
-    if session.get('pending_dashboard', {}).get('uuid') == uuid:
-        form = DashboardCreationForm(data=session['pending_dashboard'])
-    else:
-        dashboard_dict = admin_client.get_dashboard(uuid)
-        form = convert_to_dashboard_form(dashboard_dict)
-
-    if request.args.get('modules'):
-        total_modules = int(request.args.get('modules'))
-        modules_required = total_modules - len(form.modules)
-        for i in range(modules_required):
-            form.modules.append_entry()
-
-    return render_template('dashboards/create.html',
-                           form=form,
-                           **template_context)
+        return redirect(url_for('dashboard_form'))
 
 
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['POST'])
@@ -137,7 +121,7 @@ def dashboard_admin_update_put(admin_client, uuid):
     session['pending_dashboard'] = form.data
     session['pending_dashboard']['uuid'] = uuid
 
-    result = move_or_remove(request.form, session, 'edit_dashboard', uuid=uuid)
+    result = move_or_remove(request.form, session, 'dashboard_form', uuid=uuid)
     if result is not None:
         return result
 
@@ -152,12 +136,12 @@ def dashboard_admin_update_put(admin_client, uuid):
         formatted_error = 'Error updating the {} dashboard: {}'.format(
             form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
-        return redirect(url_for('edit_dashboard', uuid=uuid))
+        return redirect(url_for('dashboard_form', uuid=uuid))
     except ValueError as e:
         formatted_error = 'Error validating the {} dashboard: {}'.format(
             form.slug.data, e.message)
         flash(formatted_error, 'danger')
-        return redirect(url_for('edit_dashboard', uuid=uuid))
+        return redirect(url_for('dashboard_form', uuid=uuid))
 
 
 def build_dict_for_post(form):
