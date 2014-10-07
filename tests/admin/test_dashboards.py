@@ -117,7 +117,7 @@ class DashboardTestCase(FlaskAppTestCase):
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
     def test_info_many_paths(self, create_dashboard):
         info_tests = [
-            ('asdas',        False, 'Not valid JSON'),
+            ('asdas',   False, 'Not valid JSON'),
             ('{}',      False, 'Not an array'),
             ('[123]',   False, 'An array containing a non-string'),
             ('[]',      True,  'An empty list'),

@@ -64,6 +64,10 @@ def dashboard_form(admin_client, uuid=None):
 
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
+    # TODO: is this ever used?
+    if uuid is not None:
+        template_context['uuid'] = uuid
+
     if should_use_session(session, uuid):
         form = DashboardCreationForm(data=session['pending_dashboard'])
     elif uuid is None:
@@ -84,42 +88,15 @@ def dashboard_form(admin_client, uuid=None):
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['POST'])
-@requires_authentication
-@requires_permission('dashboard')
-def dashboard_admin_create_post(admin_client):
-    form = DashboardCreationForm(request.form)
-    session['pending_dashboard'] = form.data
-
-    result = move_or_remove(request.form, session, 'dashboard_form')
-    if result is not None:
-        return result
-
-    try:
-        dict_for_post = build_dict_for_post(form)
-        admin_client.create_dashboard(dict_for_post)
-        if 'pending_dashboard' in session:
-            del session['pending_dashboard']
-        flash('Created the {} dashboard'.format(form.slug.data), 'success')
-        return redirect(url_for('dashboard_admin_index'))
-    except requests.HTTPError as e:
-        formatted_error = 'Error creating the {} dashboard: {}'.format(
-            form.slug.data, e.response.json()['message'])
-        flash(formatted_error, 'danger')
-        return redirect(url_for('dashboard_form'))
-    except ValueError as e:
-        formatted_error = 'Error validating the {} dashboard: {}'.format(
-            form.slug.data, e.message)
-        flash(formatted_error, 'danger')
-        return redirect(url_for('dashboard_form'))
-
-
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['POST'])
 @requires_authentication
 @requires_permission('dashboard')
-def dashboard_admin_update_put(admin_client, uuid):
+def dashboard_create_or_update(admin_client, uuid=None):
     form = DashboardCreationForm(request.form)
     session['pending_dashboard'] = form.data
-    session['pending_dashboard']['uuid'] = uuid
+    # TODO: is this ever used?
+    if uuid is not None:
+        session['pending_dashboard']['uuid'] = uuid
 
     result = move_or_remove(request.form, session, 'dashboard_form', uuid=uuid)
     if result is not None:
@@ -127,14 +104,18 @@ def dashboard_admin_update_put(admin_client, uuid):
 
     try:
         dict_for_post = build_dict_for_post(form)
-        admin_client.update_dashboard(uuid, dict_for_post)
-        if 'pending_dashboard' in session:
-            del session['pending_dashboard']
-        flash('Updated the {} dashboard'.format(form.slug.data), 'success')
+        if uuid is None:
+            admin_client.create_dashboard(dict_for_post)
+            flash('Created the {} dashboard'.format(form.slug.data), 'success')
+        else:
+            admin_client.update_dashboard(uuid, dict_for_post)
+            flash('Updated the {} dashboard'.format(form.slug.data), 'success')
+        del session['pending_dashboard']
         return redirect(url_for('dashboard_admin_index'))
     except requests.HTTPError as e:
-        formatted_error = 'Error updating the {} dashboard: {}'.format(
-            form.slug.data, e.response.json()['message'])
+        verb = 'creating' if uuid is None else 'updating'
+        formatted_error = 'Error {} the {} dashboard: {}'.format(
+            verb, form.slug.data, e.response.json()['message'])
         flash(formatted_error, 'danger')
         return redirect(url_for('dashboard_form', uuid=uuid))
     except ValueError as e:
@@ -144,19 +125,27 @@ def dashboard_admin_update_put(admin_client, uuid):
         return redirect(url_for('dashboard_form', uuid=uuid))
 
 
+def load_json_if_present(data, default):
+    if data:
+        return json.loads(data)
+    else:
+        return default
+
+
 def build_dict_for_post(form):
     parsed_modules = []
 
     for (index, module) in enumerate(form.modules.entries, start=1):
-        if module.info.data.strip():
-            info = json.loads(module.info.data)
-        else:
-            info = []
+        # TODO: add some indication of which field failed
+        info = load_json_if_present(module.info.data.strip(), [])
         if not isinstance(info, list):
             raise ValueError("Info must be a list")
         for item in info:
             if not isinstance(item, basestring):
                 raise ValueError("Info must all be strings")
+        options = load_json_if_present(module.options.data.strip(), {})
+        query_parameters = load_json_if_present(
+            module.query_parameters.data.strip(), {})
         parsed_modules.append({
             # module.id ends up being the id of the subform, so we cant use the
             # magic method
@@ -168,8 +157,8 @@ def build_dict_for_post(form):
             'title': module.title.data,
             'description': module.data['description'],
             'info': info,
-            'options': json.loads(module.options.data),
-            'query_parameters': json.loads(module.query_parameters.data),
+            'options': options,
+            'query_parameters': query_parameters,
             'order': index,
         })
     return {
