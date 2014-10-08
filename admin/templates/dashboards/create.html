@@ -5,10 +5,11 @@
 
 {% if uuid %}
   <h1>Update a dashboard</h1>
+  <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
 {% else %}
   <h1>Create a dashboard</h1>
+  <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
 {% endif %}
-  <form method="post" action="{{ url_for('dashboard_create_or_update', uuid=uuid) }}" role="form" class="form-horizontal">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     {{ form.published() }}
 
