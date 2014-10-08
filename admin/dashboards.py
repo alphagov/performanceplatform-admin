@@ -64,7 +64,6 @@ def dashboard_form(admin_client, uuid=None):
 
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
-    # TODO: is this ever used?
     if uuid is not None:
         template_context['uuid'] = uuid
 
@@ -94,7 +93,6 @@ def dashboard_form(admin_client, uuid=None):
 def dashboard_create_or_update(admin_client, uuid=None):
     form = DashboardCreationForm(request.form)
     session['pending_dashboard'] = form.data
-    # TODO: is this ever used?
     if uuid is not None:
         session['pending_dashboard']['uuid'] = uuid
 
@@ -136,7 +134,6 @@ def build_dict_for_post(form):
     parsed_modules = []
 
     for (index, module) in enumerate(form.modules.entries, start=1):
-        # TODO: add some indication of which field failed
         info = load_json_if_present(module.info.data.strip(), [])
         if not isinstance(info, list):
             raise ValueError("Info must be a list")
