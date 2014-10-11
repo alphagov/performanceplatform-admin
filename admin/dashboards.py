@@ -100,6 +100,8 @@ def dashboard_form(admin_client, uuid=None):
     else:
         dashboard_dict = admin_client.get_dashboard(uuid)
         form = convert_to_dashboard_form(dashboard_dict)
+    if 'pending_dashboard' in session:
+        del session['pending_dashboard']
 
     if request.args.get('modules'):
         total_modules = int(request.args.get('modules'))
