@@ -2,219 +2,229 @@
 
 {% block body %}
 
-
-{% if uuid %}
-  <h1>Update a dashboard</h1>
-  <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
-{% else %}
-  <h1>Create a dashboard</h1>
-  <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
-{% endif %}
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    {{ form.published() }}
-
-    <div class="well">
-
-      <div class="form-group">
-        {{ form.title.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.title(class='form-control', placeholder='Carer\'s Allowance') }}
-          <p class="help-block">
-            The title displayed at the top of the dashboard.
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.description.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.description(class='form-control') }}
-          <p class="help-block">
-            A short piece of text describing the service.
-            It's shown at the bottom of the dashboard.
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.dashboard_type.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.dashboard_type(class='form-control') }}
-          <p class="help-block">
-            What kind of service this dashboard is describing. If you're unsure,
-            just leave this as the default option.
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.strapline.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.strapline(class='form-control') }}
-          <p class="help-block">
-            A couple of words describing the dashboard. Shown at the top of the page.
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.slug.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.slug(class='form-control', placeholder='carers-allowance') }}
-          <p class="help-block">
-            The location of your dashboard under <code>https://www.gov.uk/performance/</code>.
-            All lowercase with words separated by hyphens.
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.customer_type.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.customer_type(class='form-control') }}
-          <p class="help-block">
-            Who the service is designed for.
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.business_model.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.business_model(class='form-control') }}
-          <p class="help-block">
-            How the service is paid for.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="well">
-      <div class="form-group">
-        {{ form.transaction_title.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.transaction_title(class='form-control', placeholder='Apply for Carer\'s Allowance') }}
-          <p class="help-block">
-            An action that describes the service, like "Apply for Carer's Allowance".
-          </p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        {{ form.transaction_link.label(class='col-sm-2 control-label') }}
-        <div class="col-sm-10">
-          {{ form.transaction_link(class='form-control', placeholder='https://www.gov.uk/carers-allowance') }}
-          <p class="help-block">
-            The URL for the service on GOV.UK.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="well">
-      <h2>Modules</h2>
-
-      {% for module in form.modules %}
-      	{{ module.form['id'] }}
-        <fieldset class="module">
-
-          <div class="form-group">
-            <div class="col-sm-12">
-              <div class="pull-right">
-		{% if loop.index0 > 0 %}
-                  <button type="submit" class="btn btn-default" name="move_module_up_{{ loop.index0 }}">
-                    <span class="glyphicon glyphicon-arrow-up"></span> Move module up
-                  </button>
-                {% endif %}
-                {% if form.modules|length > loop.index %}
-                  <button type="submit" class="btn btn-default" name="move_module_down_{{ loop.index0 }}">
-                    <span class="glyphicon glyphicon-arrow-down"></span> Move module down
-                  </button>
-                {% endif %}
-                <button type="submit" class="btn btn-danger" name="remove_module_{{ loop.index0 }}">
-                  <span class="glyphicon glyphicon-remove"></span> Remove module
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.module_type.label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.module_type(class='form-control') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-sm-2 control-label">Data source</label>
-            <div class="col-sm-5">
-              {{ module.data_group.label(class='sr-only') }}
-              {{ module.data_group(class='form-control', placeholder='carers-allowance') }}
-              <p class="help-block">This data group and data type must already exist</p>
-            </div>
-            <div class="col-sm-5">
-              {{ module.data_type.label(class='sr-only') }}
-              {{ module.data_type(class='form-control', placeholder='realtime') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.slug.label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.slug(class='form-control') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.title.label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.title(class='form-control') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.form['description'].label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.form['description'](class='form-control') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.info.label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.info(class='form-control') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.query_parameters.label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.query_parameters(class='form-control') }}
-              <p class="help-block">Query parameters must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
-            </div>
-          </div>
-
-          <div class="form-group">
-            {{ module.options.label(class='col-sm-2 control-label') }}
-            <div class="col-sm-10">
-              {{ module.options(class='form-control') }}
-              <p class="help-block">Options must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
-            </div>
-          </div>
-
-        </fieldset>
-
-      {% endfor %}
-
-      <input type="submit" class="btn btn-default" value="Add a module" name="add_module">
-
-    </div>
+<div class="row">
+  <div class="col-xs-6">
 
   {% if uuid %}
-    <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
+    <h1>Update a dashboard</h1>
+    <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
   {% else %}
-    <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
+    <h1>Create a dashboard</h1>
+    <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
   {% endif %}
-</form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      {{ form.published() }}
+
+      <div class="well">
+
+        <div class="form-group">
+          {{ form.title.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.title(class='form-control', placeholder='Carer\'s Allowance') }}
+            <p class="help-block">
+              The title displayed at the top of the dashboard.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.description.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.description(class='form-control') }}
+            <p class="help-block">
+              A short piece of text describing the service.
+              It's shown at the bottom of the dashboard.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.dashboard_type.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.dashboard_type(class='form-control') }}
+            <p class="help-block">
+              What kind of service this dashboard is describing. If you're unsure,
+              just leave this as the default option.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.strapline.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.strapline(class='form-control') }}
+            <p class="help-block">
+              A couple of words describing the dashboard. Shown at the top of the page.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.slug.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.slug(class='form-control', placeholder='carers-allowance') }}
+            <p class="help-block">
+              The location of your dashboard under <code>https://www.gov.uk/performance/</code>.
+              All lowercase with words separated by hyphens.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.customer_type.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.customer_type(class='form-control') }}
+            <p class="help-block">
+              Who the service is designed for.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.business_model.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.business_model(class='form-control') }}
+            <p class="help-block">
+              How the service is paid for.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="well">
+        <div class="form-group">
+          {{ form.transaction_title.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.transaction_title(class='form-control', placeholder='Apply for Carer\'s Allowance') }}
+            <p class="help-block">
+              An action that describes the service, like "Apply for Carer's Allowance".
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.transaction_link.label(class='col-sm-2 control-label') }}
+          <div class="col-sm-10">
+            {{ form.transaction_link(class='form-control', placeholder='https://www.gov.uk/carers-allowance') }}
+            <p class="help-block">
+              The URL for the service on GOV.UK.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="well">
+        <h2>Modules</h2>
+
+        {% for module in form.modules %}
+          {{ module.form['id'] }}
+          <fieldset class="module">
+
+            <div class="form-group">
+              <div class="col-sm-12">
+                <div class="pull-right">
+      {% if loop.index0 > 0 %}
+                    <button type="submit" class="btn btn-default" name="move_module_up_{{ loop.index0 }}">
+                      <span class="glyphicon glyphicon-arrow-up"></span> Move module up
+                    </button>
+                  {% endif %}
+                  {% if form.modules|length > loop.index %}
+                    <button type="submit" class="btn btn-default" name="move_module_down_{{ loop.index0 }}">
+                      <span class="glyphicon glyphicon-arrow-down"></span> Move module down
+                    </button>
+                  {% endif %}
+                  <button type="submit" class="btn btn-danger" name="remove_module_{{ loop.index0 }}">
+                    <span class="glyphicon glyphicon-remove"></span> Remove module
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.module_type.label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.module_type(class='form-control') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Data source</label>
+              <div class="col-sm-5">
+                {{ module.data_group.label(class='sr-only') }}
+                {{ module.data_group(class='form-control', placeholder='carers-allowance') }}
+                <p class="help-block">This data group and data type must already exist</p>
+              </div>
+              <div class="col-sm-5">
+                {{ module.data_type.label(class='sr-only') }}
+                {{ module.data_type(class='form-control', placeholder='realtime') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.slug.label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.slug(class='form-control') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.title.label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.title(class='form-control') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.form['description'].label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.form['description'](class='form-control') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.info.label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.info(class='form-control') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.query_parameters.label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.query_parameters(class='form-control') }}
+                <p class="help-block">Query parameters must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              {{ module.options.label(class='col-sm-2 control-label') }}
+              <div class="col-sm-10">
+                {{ module.options(class='form-control') }}
+                <p class="help-block">Options must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
+              </div>
+            </div>
+
+          </fieldset>
+
+        {% endfor %}
+
+        <input type="submit" class="btn btn-default" value="Add a module" name="add_module">
+
+      </div>
+
+    {% if uuid %}
+      <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
+    {% else %}
+      <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
+    {% endif %}
+    </form>
+  </div>
+  <div class="col-xs-6">
+    <h1>Preview</h1>
+    <div class="embed-responsive embed-responsive-4by3">
+      <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}"></iframe>
+    </div>
+  </div>
+</div
 
 {% endblock %}
