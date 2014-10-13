@@ -3,15 +3,18 @@
 {% block body %}
 
 <div class="row">
-  <div class="col-xs-6">
-
-  {% if uuid %}
-    <h1>Update a dashboard</h1>
-    <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
-  {% else %}
-    <h1>Create a dashboard</h1>
-    <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
-  {% endif %}
+{% if uuid %}
+  <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
+{% else %}
+  <h1>Create a dashboard</h1>
+  <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
+{% endif %}
+    <div class="col-xs-6">
+    {% if uuid %}
+      <h1>Update a dashboard</h1>
+    {% else %}
+      <h1>Create a dashboard</h1>
+    {% endif %}
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       {{ form.published() }}
 
@@ -212,23 +215,33 @@
 
       </div>
 
-    {% if uuid %}
-      <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
-    {% else %}
-      <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
-    {% endif %}
-    </form>
-  </div>
-  <div class="col-xs-6">
-    <div class="row">
-      <div class="col-xs-6" data-spy="affix">
-        <h1>Preview</h1>
-        <div class="embed-responsive embed-responsive-4by3">
-          <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}"></iframe>
+    </div>
+    <div class="col-xs-6">
+      <div class="row">
+        <div class="col-xs-12" data-spy="affix">
+          <div class="row add-bottom-margin">
+            <div class="col-xs-12">
+              <h1>Preview</h1>
+              <div class="embed-responsive embed-responsive-4by3">
+                <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}"></iframe>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-3">
+            </div>
+            <div class="col-xs-9">
+            {% if uuid %}
+              <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
+            {% else %}
+              <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
+            {% endif %}
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </div
 
 {% endblock %}
