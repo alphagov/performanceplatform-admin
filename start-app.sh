@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
-VENV_DIR=~/.virtualenvs/$(basename $(cd $(dirname $0) && pwd -P))-$1-$2
+PORT=${1:-3070}
+VENV_DIR=~/.virtualenvs/$(basename $(cd $(dirname $0) && pwd -P))-$PORT-$2
 
 if [ -z "$VIRTUAL_ENV" ]; then
   if [ ! -f "${VENV_DIR}/bin/activate" ]; then
@@ -16,4 +17,4 @@ pip install -r requirements.txt
 
 export PYTHONUNBUFFERED=1
 
-exec python start.py $1
+exec python start.py $PORT
