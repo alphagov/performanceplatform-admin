@@ -1,7 +1,7 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
 from admin import app
 from hamcrest import (assert_that, contains_string, equal_to, has_entries,
-                      ends_with, instance_of)
+                      ends_with, instance_of, has_key, has_entry)
 from mock import patch, Mock
 from admin.forms import DashboardCreationForm
 
@@ -34,7 +34,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         resp = client.get('/administer-dashboards')
 
         assert_that(resp.data, contains_string(
-            '<li><a href="/administer-dashboards/edit/uuid">'
+            '<li><a href="/administer-dashboards/uuid">'
             'Name of service</a></li>'
         ))
 
@@ -101,7 +101,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'modules-0-info': '["Foo", "Bar"]',
             }
 
-            admin_app.post('/administer-dashboards/create', data=data)
+            admin_app.post('/administer-dashboards', data=data)
 
         post_json = create_dashboard.call_args[0][0]
 
@@ -117,7 +117,7 @@ class DashboardTestCase(FlaskAppTestCase):
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
     def test_info_many_paths(self, create_dashboard):
         info_tests = [
-            ('asdas',        False, 'Not valid JSON'),
+            ('asdas',   False, 'Not valid JSON'),
             ('{}',      False, 'Not an array'),
             ('[123]',   False, 'An array containing a non-string'),
             ('[]',      True,  'An empty list'),
@@ -144,7 +144,7 @@ class DashboardTestCase(FlaskAppTestCase):
                     'modules-0-info': info
                 }
 
-                admin_app.post('/administer-dashboards/create', data=data)
+                admin_app.post('/administer-dashboards', data=data)
 
                 with admin_app.session_transaction() as session:
                     flash_status = session['_flashes'][0][0]
@@ -164,7 +164,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 }
                 session['pending_dashboard'] = {'slug': 'my-valid-slug'}
 
-            resp = admin_app.get('/administer-dashboards/create')
+            resp = admin_app.get('/administer-dashboards/new')
 
             assert_that(resp.data, contains_string('value="my-valid-slug"'))
 
@@ -177,7 +177,7 @@ class DashboardTestCase(FlaskAppTestCase):
                     'permissions': ['signin', 'dashboard']
                 }
 
-            resp = admin_app.post('/administer-dashboards/create',
+            resp = admin_app.post('/administer-dashboards',
                                   data={'slug': 'valid-slug'})
 
         post_json = create_dashboard.call_args[0][0]
@@ -198,7 +198,7 @@ class DashboardTestCase(FlaskAppTestCase):
             }
             session['pending_dashboard'] = dashboard_data
 
-        self.client.post('/administer-dashboards/create',
+        self.client.post('/administer-dashboards',
                          data=dashboard_data)
 
         self.assert_session_does_not_contain('pending_dashboard')
@@ -221,22 +221,23 @@ class DashboardTestCase(FlaskAppTestCase):
                 'permissions': ['signin', 'dashboard']
             }
 
-        self.client.post('/administer-dashboards/create',
+        self.client.post('/administer-dashboards',
                          data={'slug': 'foo'})
 
-        self.assert_session_contains('pending_dashboard', {'slug': 'foo'})
+        self.assert_session_contains('pending_dashboard',
+                                     has_entry('slug', 'foo'))
         self.assert_flashes('Error creating the foo dashboard: Error message',
                             'danger')
 
     @signed_in(permissions=['signin', 'dashboard'])
     def test_add_module_redirects_back_to_the_form(self, client):
-        resp = client.post(
-            '/administer-dashboards/create', data={'add_module': 1})
+        resp = client.post('/administer-dashboards',
+                           data={'add_module': 1})
 
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['location'],
-            contains_string('administer-dashboards/create?modules=1')
+            contains_string('administer-dashboards/new?modules=1')
         )
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
@@ -258,7 +259,7 @@ class DashboardTestCase(FlaskAppTestCase):
         }
 
         resp = self.client.post(
-            '/administer-dashboards/update/uuid', data=data)
+            '/administer-dashboards/uuid', data=data)
         post_json = update_mock.call_args[0][1]
         assert_that(post_json['modules'][0], has_entries({
             'slug': 'carers-realtime',
@@ -272,7 +273,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['Location'],
-            ends_with('/administer-dashboards/edit/uuid'))
+            ends_with('/administer-dashboards'))
         self.assert_flashes(
             'Updated the my-valid-slug dashboard', expected_category='success')
 
@@ -303,11 +304,11 @@ class DashboardTestCase(FlaskAppTestCase):
         update_mock.side_effect = error
 
         resp = self.client.post(
-            '/administer-dashboards/update/uuid', data=data)
+            '/administer-dashboards/uuid', data=data)
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['Location'],
-            ends_with('/administer-dashboards/edit/uuid'))
+            ends_with('/administer-dashboards/uuid'))
         self.assert_flashes(
             'Error updating the my-valid-slug dashboard: Error message',
             expected_category='danger')
@@ -328,10 +329,177 @@ class DashboardTestCase(FlaskAppTestCase):
                 'permissions': ['signin', 'dashboard']
             }
 
-        resp = self.client.get('/administer-dashboards/edit/uuid')
+        resp = self.client.get('/administer-dashboards/uuid')
         mock_get.assert_called_once_with('uuid')
         rendered_template = 'dashboards/create.html'
         assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
         kwargs = mock_render.call_args[1]
         assert_that(kwargs['form'], instance_of(DashboardCreationForm))
         assert_that(resp.status_code, equal_to(200))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_remove_module_after_adding(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'remove_module_0': 'remove',
+        }
+
+        client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard'],
+                        has_key('slug'))
+            assert_that(len(session['pending_dashboard']['modules']),
+                        equal_to(0))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_remove_module_from_existing_dashboard(self, client):
+        data = {
+            'slug': 'my-valid-slug',
+            'title': 'My valid title',
+            'modules-0-slug': 'carers-realtime',
+            'modules-0-data_group': 'carers-allowance',
+            'modules-0-data_type': 'realtime',
+            'modules-0-options': '{}',
+            'modules-0-query_parameters': '{}',
+            'modules-0-id': 'module-uuid',
+            'remove_module_0': 'remove',
+        }
+
+        client.post(
+            '/administer-dashboards/uuid', data=data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard'],
+                        has_key('slug'))
+            assert_that(len(session['pending_dashboard']['modules']),
+                        equal_to(0))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_remove_middle_module(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'remove_module_0': 'remove',
+        }
+
+        client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(len(session['pending_dashboard']['modules']),
+                        equal_to(1))
+            assert_that(session['pending_dashboard']['modules'][0]['slug'],
+                        equal_to('bar'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_first_module_down(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_down_0': 'move',
+        }
+
+        client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'bar'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'foo'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_last_module_down(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_down_1': 'move',
+        }
+
+        client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'bar'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_last_module_down_on_existing_dashboard(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_down_1': 'move',
+        }
+
+        client.post('/administer-dashboards/uuid',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'bar'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_last_module_up(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_up_1': 'move',
+        }
+
+        client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'bar'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'foo'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_move_first_module_up(self, client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'move_module_up_0': 'move',
+        }
+
+        client.post('/administer-dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0],
+                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][1],
+                        has_entry('slug', 'bar'))

@@ -3,8 +3,10 @@ from flask.ext.scss import Scss
 from flask_wtf.csrf import CsrfProtect
 from os import getenv, path
 from raven.contrib.flask import Sentry
+from redis import Redis
 
 from admin.core import log_handler
+from admin.redis_session import RedisSessionInterface
 
 app = Flask(__name__)
 
@@ -13,6 +15,12 @@ GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 app.config['LOG_LEVEL'] = "INFO"
 app.config.from_object('admin.config.{0}'.format(GOVUK_ENV))
 app.secret_key = app.config['COOKIE_SECRET_KEY']
+app.redis_instance = Redis(
+    host=app.config['REDIS_HOST'],
+    port=app.config['REDIS_PORT'],
+)
+app.session_interface = RedisSessionInterface(
+    redis=app.redis_instance, prefix='admin_app:session:')
 
 # adds uncaught exception handlers to app and submits to sentry
 # this will only send when SENTRY_DSN is defined in config

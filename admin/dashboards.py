@@ -5,56 +5,43 @@ from admin.helpers import (
     requires_authentication,
     requires_permission,
 )
-from collections import defaultdict
 from flask import (
     flash, redirect, render_template, request,
     session, url_for
 )
-from werkzeug.datastructures import MultiDict
 from admin.forms import convert_to_dashboard_form
 
 import json
 import requests
-import os
+import functools
 
 
 DASHBOARD_ROUTE = '/administer-dashboards'
 
 
-@app.route('{0}/edit/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
-@requires_authentication
-@requires_permission('dashboard')
-def edit_dashboard(admin_client, uuid):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-        'uuid': uuid
-    })
-    dashboard_dict = admin_client.get_dashboard(uuid)
-    form = convert_to_dashboard_form(dashboard_dict)
-    return render_template('dashboards/create.html',
-                           form=form,
-                           **template_context)
+def update_modules_form_and_redirect(func):
+    @functools.wraps(func)
+    def wrapper(admin_client, uuid=None):
+        form = DashboardCreationForm(request.form)
+        session['pending_dashboard'] = form.data
+        if uuid is not None:
+            session['pending_dashboard']['uuid'] = uuid
 
+        if 'add_module' in request.form:
+            url = url_for('dashboard_form',
+                          uuid=uuid,
+                          modules=current_module_count(form)+1)
+            return redirect(url)
 
-@app.route('{0}/update/<uuid>'.format(DASHBOARD_ROUTE), methods=['POST'])
-@requires_authentication
-@requires_permission('dashboard')
-def dashboard_admin_update_put(admin_client, uuid):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-    })
-    form = DashboardCreationForm(request.form)
-    the_dict = build_dict_for_post(form)
-    try:
-        admin_client.update_dashboard(uuid, the_dict)
-        flash('Updated the {} dashboard'.format(form.slug.data), 'success')
-    except requests.HTTPError as e:
-        formatted_error = 'Error updating the {} dashboard: {}'.format(
-            form.slug.data, e.response.json()['message'])
-        flash(formatted_error, 'danger')
-    return redirect(url_for('edit_dashboard', uuid=uuid))
+        if move_or_remove(request.form, session):
+            return redirect(url_for('dashboard_form', uuid=uuid))
+
+        if uuid is None:
+            return func(admin_client, form)
+        else:
+            return func(admin_client, form, uuid)
+
+    return wrapper
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
@@ -87,19 +74,34 @@ def dashboard_admin_index(admin_client):
                            **template_context)
 
 
-@app.route('{0}/create'.format(DASHBOARD_ROUTE), methods=['GET'])
+@app.route('{0}/new'.format(DASHBOARD_ROUTE), methods=['GET'])
+@app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
-def dashboard_admin_create(admin_client):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-    })
+def dashboard_form(admin_client, uuid=None):
+    def should_use_session(session, uuid):
+        if 'pending_dashboard' not in session:
+            return False
+        if uuid is None:
+            return True
+        if session['pending_dashboard'].get('uuid') == uuid:
+            return True
+        return False
 
-    if 'pending_dashboard' in session:
-        form = DashboardCreationForm(MultiDict(session['pending_dashboard']))
-    else:
+    template_context = base_template_context()
+    template_context['user'] = session['oauth_user']
+    if uuid is not None:
+        template_context['uuid'] = uuid
+
+    if should_use_session(session, uuid):
+        form = DashboardCreationForm(data=session['pending_dashboard'])
+    elif uuid is None:
         form = DashboardCreationForm(request.form)
+    else:
+        dashboard_dict = admin_client.get_dashboard(uuid)
+        form = convert_to_dashboard_form(dashboard_dict)
+    if 'pending_dashboard' in session:
+        del session['pending_dashboard']
 
     if request.args.get('modules'):
         total_modules = int(request.args.get('modules'))
@@ -112,53 +114,55 @@ def dashboard_admin_create(admin_client):
                            **template_context)
 
 
-@app.route('{0}/create'.format(DASHBOARD_ROUTE), methods=['POST'])
+@app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['POST'])
 @requires_authentication
 @requires_permission('dashboard')
-def dashboard_admin_create_post(admin_client):
-    if 'add_module' in request.form:
-        session['pending_dashboard'] = request.form
-        current_modules = len(
-            DashboardCreationForm(
-                MultiDict(session['pending_dashboard'])).modules)
-        return redirect(url_for('dashboard_admin_create',
-                                modules=current_modules+1))
-
-    form = DashboardCreationForm(request.form)
-
+@update_modules_form_and_redirect
+def dashboard_update(admin_client, form, uuid):
     try:
-        admin_client.create_dashboard(build_dict_for_post(form))
-        if 'pending_dashboard' in session:
-            del session['pending_dashboard']
-        flash('Created the {} dashboard'.format(form.slug.data), 'success')
+        dict_for_post = build_dict_for_post(form)
+        admin_client.update_dashboard(uuid, dict_for_post)
+        flash('Updated the {} dashboard'.format(form.slug.data), 'success')
+        del session['pending_dashboard']
         return redirect(url_for('dashboard_admin_index'))
-    except requests.HTTPError as e:
-        session['pending_dashboard'] = request.form
-        formatted_error = 'Error creating the {} dashboard: {}'.format(
-            form.slug.data, e.response.json()['message'])
-        flash(formatted_error, 'danger')
-        return redirect(url_for('dashboard_admin_create'))
-    except ValueError as e:
-        session['pending_dashboard'] = request.form
-        formatted_error = 'Error validating the {} dashboard: {}'.format(
-            form.slug.data, e.message)
-        flash(formatted_error, 'danger')
-        return redirect(url_for('dashboard_admin_create'))
+    except (requests.HTTPError, ValueError) as e:
+        flash(format_error('updating', form, e), 'danger')
+        return redirect(url_for('dashboard_form', uuid=uuid))
+
+
+@app.route('{0}'.format(DASHBOARD_ROUTE), methods=['POST'])
+@requires_authentication
+@requires_permission('dashboard')
+@update_modules_form_and_redirect
+def dashboard_create(admin_client, form):
+    try:
+        dict_for_post = build_dict_for_post(form)
+        admin_client.create_dashboard(dict_for_post)
+        flash('Created the {} dashboard'.format(form.slug.data), 'success')
+        del session['pending_dashboard']
+        return redirect(url_for('dashboard_admin_index'))
+    except (requests.HTTPError, ValueError) as e:
+        flash(format_error('creating', form, e), 'danger')
+        return redirect(url_for('dashboard_form'))
+
+
+def create_or_udpate(admin_client, form):
+    pass
 
 
 def build_dict_for_post(form):
     parsed_modules = []
 
     for (index, module) in enumerate(form.modules.entries, start=1):
-        if module.info.data.strip():
-            info = json.loads(module.info.data)
-        else:
-            info = []
+        info = load_json_if_present(module.info.data.strip(), [])
         if not isinstance(info, list):
             raise ValueError("Info must be a list")
         for item in info:
             if not isinstance(item, basestring):
                 raise ValueError("Info must all be strings")
+        options = load_json_if_present(module.options.data.strip(), {})
+        query_parameters = load_json_if_present(
+            module.query_parameters.data.strip(), {})
         parsed_modules.append({
             # module.id ends up being the id of the subform, so we cant use the
             # magic method
@@ -170,8 +174,8 @@ def build_dict_for_post(form):
             'title': module.title.data,
             'description': module.data['description'],
             'info': info,
-            'options': json.loads(module.options.data),
-            'query_parameters': json.loads(module.query_parameters.data),
+            'options': options,
+            'query_parameters': query_parameters,
             'order': index,
         })
     return {
@@ -191,3 +195,58 @@ def build_dict_for_post(form):
         }],
         'modules': parsed_modules,
     }
+
+
+def format_error(verb, form, error):
+    if isinstance(error, requests.HTTPError):
+        return 'Error {} the {} dashboard: {}'.format(
+            verb, form.slug.data, error.response.json()['message'])
+    elif isinstance(error, ValueError):
+        return 'Error validating the {} dashbaord: {}'.format(
+            form.slug.data, error.message)
+
+
+def load_json_if_present(data, default):
+    if data:
+        return json.loads(data)
+    else:
+        return default
+
+
+def current_module_count(form):
+    return len(form.modules)
+
+
+def move_or_remove(request_form, session):
+    """Move or remove a module and return True if a redirect is needed"""
+    def get_module_index(field_prefix, form):
+        for field in form.keys():
+            if field.startswith(field_prefix):
+                return int(field.replace(field_prefix, ''))
+
+        return None
+
+    # Remove a module from the list
+    index = get_module_index('remove_module_', request.form)
+    if index is not None:
+        session['pending_dashboard']['modules'].pop(index)
+        return True
+
+    # Move a module down in the list (increment it's index number)
+    index = get_module_index('move_module_down_', request.form)
+    if index is not None:
+        modules = session['pending_dashboard']['modules']
+        if index < len(modules) - 1:
+            modules[index], modules[index+1] = modules[index+1], modules[index]
+            session['pending_dashboard']['modules'] = modules
+        return True
+
+    # Move a module up in the list (decrement it's index number)
+    index = get_module_index('move_module_up_', request.form)
+    if index is not None:
+        modules = session['pending_dashboard']['modules']
+        if index > 0:
+            modules[index], modules[index-1] = modules[index-1], modules[index]
+            session['pending_dashboard']['modules'] = modules
+        return True
+    return False

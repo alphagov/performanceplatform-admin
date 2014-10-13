@@ -10,7 +10,8 @@ import json
 def convert_to_dashboard_form(dashboard_dict):
     for module in dashboard_dict['modules']:
         module['info'] = json.dumps(module['info'])
-        module['query_parameters'] = json.dumps(module['query_parameters'])
+        if module['query_parameters'] is not None:
+            module['query_parameters'] = json.dumps(module['query_parameters'])
         module['options'] = json.dumps(module['options'])
         module['module_type'] = module['type']['id']
         module['uuid'] = module['id']

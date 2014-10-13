@@ -11,6 +11,9 @@ SIGNON_BASE_URL = 'http://signon.dev.gov.uk'
 
 DEBUG = True
 
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+
 FAKE_OAUTH_TOKEN = 'development-oauth-access-token'
 FAKE_OAUTH_USER = {
     "email": "some.user@digital.cabinet-office.gov.uk",
