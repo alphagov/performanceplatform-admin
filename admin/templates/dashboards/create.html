@@ -220,9 +220,13 @@
     </form>
   </div>
   <div class="col-xs-6">
-    <h1>Preview</h1>
-    <div class="embed-responsive embed-responsive-4by3">
-      <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}"></iframe>
+    <div class="row">
+      <div class="col-xs-6" data-spy="affix">
+        <h1>Preview</h1>
+        <div class="embed-responsive embed-responsive-4by3">
+          <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}"></iframe>
+        </div>
+      </div>
     </div>
   </div>
 </div

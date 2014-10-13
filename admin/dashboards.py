@@ -124,7 +124,7 @@ def dashboard_update(admin_client, form, uuid):
         admin_client.update_dashboard(uuid, dict_for_post)
         flash('Updated the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
-        return redirect(url_for('dashboard_admin_index'))
+        return redirect(url_for('dashboard_form', uuid=uuid))
     except (requests.HTTPError, ValueError) as e:
         flash(format_error('updating', form, e), 'danger')
         return redirect(url_for('dashboard_form', uuid=uuid))
@@ -140,7 +140,7 @@ def dashboard_create(admin_client, form):
         admin_client.create_dashboard(dict_for_post)
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
-        return redirect(url_for('dashboard_admin_index'))
+        return redirect(url_for('dashboard_form'))
     except (requests.HTTPError, ValueError) as e:
         flash(format_error('creating', form, e), 'danger')
         return redirect(url_for('dashboard_form'))
