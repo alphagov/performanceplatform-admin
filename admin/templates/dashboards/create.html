@@ -9,12 +9,26 @@
   <h1>Create a dashboard</h1>
   <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
 {% endif %}
-    <div class="col-xs-6">
-    {% if uuid %}
-      <h1>Update a dashboard</h1>
-    {% else %}
-      <h1>Create a dashboard</h1>
-    {% endif %}
+    <div class="col-xs-6" data-spy="scroll" data-target=".navbar">
+    <nav id="navbar-example2" class="navbar navbar-default navbar-static" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+        {% if uuid %}
+          <a class="navbar-brand" href="/administer-dashboards/{{form.slug.data}}">Update a dashboard</a>
+        {% else %}
+          <a class="navbar-brand" href="/administer-dashboards/{{form.slug.data}}">Create a dashboard</a>
+        {% endif %}
+        </div>
+        <div class="collapse navbar-collapse bs-example-js-navbar-scrollspy">
+          <ul class="nav navbar-nav">
+
+          {% for module in form.modules %}
+            <li><a href="#{{module.form.slug.data}}">{{module.form.slug.data}}</a></li>
+          {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </nav>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       {{ form.published() }}
 
@@ -121,7 +135,7 @@
 
         {% for module in form.modules %}
           {{ module.form['id'] }}
-          <fieldset class="module">
+          <fieldset class="module" id={{module.form.slug.data}}>
 
             <div class="form-group">
               <div class="col-sm-12">
@@ -224,7 +238,7 @@
               <div class="col-xs-12">
                 <h1>Preview</h1>
                 <div class="embed-responsive embed-responsive-4by3">
-                  <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}?cachebust={{cachebust}}"></iframe>
+                  <iframe class="embed-responsive-item" src="http://spotlight.development.performance.service.gov.uk/performance/{{form.slug.data}}?cachebust={{cachebust}}"></iframe>
                 </div>
               </div>
             </div>
@@ -246,7 +260,7 @@
             <div class="col-xs-6">
               <h1>Preview</h1>
               <div class="embed-responsive embed-responsive-4by3">
-                <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}?cachebust={{cachebust}}"></iframe>
+                <iframe class="embed-responsive-item" src="http://spotlight.development.performance.service.gov.uk/performance/{{form.slug.data}}?cachebust={{cachebust}}"></iframe>
               </div>
             </div>
           </div>
@@ -267,4 +281,8 @@
   </form>
 </div
 
+{% endblock %}
+
+{% block footer_javascripts %}
+<script src='/static/javascripts/preview.js'> </script>
 {% endblock %}
