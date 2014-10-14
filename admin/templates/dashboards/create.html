@@ -218,12 +218,35 @@
     </div>
     <div class="col-xs-6">
       <div class="row">
+        <noscript>
+          <div class="col-xs-12">
+            <div class="row add-bottom-margin">
+              <div class="col-xs-12">
+                <h1>Preview</h1>
+                <div class="embed-responsive embed-responsive-4by3">
+                  <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}?cachebust={{cachebust}}"></iframe>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3">
+              </div>
+              <div class="col-xs-9">
+              {% if uuid %}
+                <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
+              {% else %}
+                <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
+              {% endif %}
+              </div>
+            </div>
+          </div>
+        </noscript>
         <div class="col-xs-12" data-spy="affix">
           <div class="row add-bottom-margin">
-            <div class="col-xs-12">
+            <div class="col-xs-6">
               <h1>Preview</h1>
               <div class="embed-responsive embed-responsive-4by3">
-                <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}"></iframe>
+                <iframe class="embed-responsive-item" src="http://localhost:3057/performance/{{form.slug.data}}?cachebust={{cachebust}}"></iframe>
               </div>
             </div>
           </div>

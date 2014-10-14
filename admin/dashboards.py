@@ -14,6 +14,7 @@ from admin.forms import convert_to_dashboard_form
 import json
 import requests
 import functools
+import random
 
 
 DASHBOARD_ROUTE = '/administer-dashboards'
@@ -111,6 +112,7 @@ def dashboard_form(admin_client, uuid=None):
 
     return render_template('dashboards/create.html',
                            form=form,
+                           cachebust=random.randint(0,999999),
                            **template_context)
 
 
