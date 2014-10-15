@@ -1,9 +1,13 @@
 var scrollToIdInIframe = function (id) {
   var src = $('iframe').attr('src');
+  src = stripPreviousId(src);
   $('iframe').attr('src', src + "#" + id);
 }
 
-$('#myScrollspy').on('activate.bs.scrollspy', function () {
-  alert('123');
-  // do something…
+$('#navbar').on('activate.bs.scrollspy', function () {
+  scrollToIdInIframe($('li.active a').attr('href').replace(/#/, ''));
 })
+
+var stripPreviousId = function (url) {
+  return url.replace(/#[\w-]+$/, '');
+};

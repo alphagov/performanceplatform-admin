@@ -7,7 +7,7 @@
     {% include "includes.html" %}
 </head>
 
-<body class="environment-{{environment.name}}">
+<body class="environment-{{environment.name}}" data-spy="scroll" data-target="#navbar">
     {% include "navbar/nav.html" %}
     <div class="container-fluid">
         {% with messages = get_flashed_messages(with_categories=true) %}
