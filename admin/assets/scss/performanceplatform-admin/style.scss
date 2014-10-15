@@ -47,3 +47,14 @@
   margin-top: 3em;
   padding: 1em 0 2em;
 }
+
+.navbar-lower.affix {
+  top: 0px;
+  width:100%;
+}
+
+.navbar-collapse{
+  padding-left:0; 
+  padding-right:0;
+  background-color:#222
+}

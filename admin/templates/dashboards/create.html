@@ -9,25 +9,11 @@
   <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
 {% endif %}
     <div class="col-xs-6">
-      <nav id="navbar" class="navbar navbar-default navbar-static" role="navigation">
-        <div class="container-fluid">
-          <div class="navbar-header">
-          {% if uuid %}
-            <a class="navbar-brand" href="/administer-dashboards/{{form.slug.data}}">Update a dashboard</a>
-          {% else %}
-            <a class="navbar-brand" href="/administer-dashboards/{{form.slug.data}}">Create a dashboard</a>
-          {% endif %}
-          </div>
-          <div id="nav-thing" class="collapse navbar-collapse bs-example-js-navbar-scrollspy">
-            <ul class="nav navbar-nav">
-              <li><a href="#content">Dashboard config</a></li>
-            {% for module in form.modules %}
-              <li><a href="#{{module.form.slug.data}}">{{module.form.slug.data}}</a></li>
-            {% endfor %}
-            </ul>
-          </div>
-        </div>
-      </nav>
+    {% if uuid %}
+      <h1>Update a dashboard</h1>
+    {% else %}
+      <h1>Create a dashboard</h1>
+    {% endif %}
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       {{ form.published() }}
 
