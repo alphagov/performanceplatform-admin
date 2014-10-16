@@ -23,6 +23,12 @@ DASHBOARD_ROUTE = '/administer-dashboards'
 def update_modules_form_and_redirect(func):
     @functools.wraps(func)
     def wrapper(admin_client, uuid=None):
+        # this is wrong - not always a uuid, won't use this url really anywhere apart form update
+        # e.g. won't use if catching an add or remove module or some such thing.
+        page_position = request.args.get('page_position')
+        url = url_for('dashboard_form', uuid=uuid)
+        if page_position:
+            url = url+'#{}'.format(page_position)
         form = DashboardCreationForm(request.form)
         session['pending_dashboard'] = form.data
         if uuid is not None:
@@ -38,9 +44,9 @@ def update_modules_form_and_redirect(func):
             return redirect(url_for('dashboard_form', uuid=uuid))
 
         if uuid is None:
-            return func(admin_client, form)
+            return func(admin_client, form, url)
         else:
-            return func(admin_client, form, uuid)
+            return func(admin_client, form, url, uuid)
 
     return wrapper
 
@@ -120,11 +126,7 @@ def dashboard_form(admin_client, uuid=None):
 @requires_authentication
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
-def dashboard_update(admin_client, form, uuid):
-    page_position = request.args.get('page_position')
-    url = url_for('dashboard_form', uuid=uuid)
-    if page_position:
-        url = url+'#{}'.format(page_position)
+def dashboard_update(admin_client, form, url, uuid):
     try:
         dict_for_post = build_dict_for_post(form)
         admin_client.update_dashboard(uuid, dict_for_post)
@@ -140,7 +142,7 @@ def dashboard_update(admin_client, form, uuid):
 @requires_authentication
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
-def dashboard_create(admin_client, form):
+def dashboard_create(admin_client, form, url):
     try:
         dict_for_post = build_dict_for_post(form)
         admin_client.create_dashboard(dict_for_post)
