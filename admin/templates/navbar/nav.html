@@ -1,44 +1,8 @@
-<header class="
-  navbar
-  navbar-default
-  navbar-inverse
-  navbar-static-top
-  environment-indicator
-  add-bottom-margin" role="banner">
-  <div class="container">
-    <div class="navbar-header">
-      <a class="navbar-toggle" data-toggle="collapse" data-target="header .navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a href="/" class="navbar-brand">GOV.UK Performance Platform admin</a>
-        <div class="environment-label">
-          {{environment.human_name}} 
-        </div>
-    </div>
-    <nav role="navigation" class="collapse navbar-collapse">
-        <ul class="nav navbar-nav">
-          {% if not user %}
-            <li>
-              <a href="/login" title="Sign in">Sign in</a>
-            </li>
-          {% endif %}
-          <li>
-            <a href="{{ url_for('upload_list_data_sets') }}">Upload data</a>
-          </li>
-          {% if can_edit_dashboards(user) %}
-            <li>
-              <a href="{{ url_for('dashboard_admin_index') }}">Administer dashboards</a>
-            </li>
-          {% endif %}
-          <li >
-            <a href="mailto:performance@digital.cabinet-office.gov.uk">Contact</a>
-          </li>
-        </ul>
-        {% include "navbar/signed_in.html" %}
-    </nav>
+{% if form %}
+  <div class="form-header">
+    {% include "navbar/base-nav.html" %}
     {% include "navbar/form-nav.html" %}
   </div>
-</header>
+{% else %}
+  {% include "navbar/base-nav.html" %}
+{% endif %}

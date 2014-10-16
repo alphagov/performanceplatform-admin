@@ -1,16 +1,18 @@
-{% if form %}
-  <nav id="navbar" role="navigation" class="collapse navbar-collapse navbar-lower" data-spy="affix" data-offset="50">
-    <div class="container-fluid">
-      <div class="navbar-header">
-      </div>
-      <div id="nav-thing" class="collapse navbar-collapse bs-example-js-navbar-scrollspy">
-        <ul class="nav navbar-nav">
-          <li><a href="#content">Dashboard config</a></li>
-        {% for module in form.modules %}
-          <li><a href="#{{module.form.slug.data}}">{{module.form.slug.data}}</a></li>
-        {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </nav>
-{% endif %}
+<header class="
+  navbar
+  navbar-default
+  navbar-inverse
+  navbar-static-top
+  environment-indicator
+  add-bottom-margin" role="banner" data-spy="affix" data-offset="50">
+  <div class="container">
+    <nav id="navbar" role="navigation" class="collapse navbar-collapse navbar-lower">
+      <ul class="nav navbar-nav">
+        <li><a href="#content">Dashboard config</a></li>
+      {% for module in form.modules %}
+        <li><a href="#{{module.form.slug.data}}">{{module.form.slug.data}}</a></li>
+      {% endfor %}
+      </ul>
+    </nav>
+  </div>
+</header>

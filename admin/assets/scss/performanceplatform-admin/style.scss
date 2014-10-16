@@ -48,13 +48,15 @@
   padding: 1em 0 2em;
 }
 
-.navbar-lower.affix {
+header.affix {
   top: 0px;
   width:100%;
-}
-
-.navbar-collapse{
   padding-left:0; 
   padding-right:0;
   background-color:#222
+}
+
+div.form-header > header {
+  border-width: 0px;
+  margin-bottom: 0px !important;
 }
