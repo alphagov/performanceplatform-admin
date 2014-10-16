@@ -121,15 +121,19 @@ def dashboard_form(admin_client, uuid=None):
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
 def dashboard_update(admin_client, form, uuid):
+    page_position = request.args.get('page_position')
+    url = url_for('dashboard_form', uuid=uuid)
+    if page_position:
+        url = url+'#{}'.format(page_position)
     try:
         dict_for_post = build_dict_for_post(form)
         admin_client.update_dashboard(uuid, dict_for_post)
         flash('Updated the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
-        return redirect(url_for('dashboard_form', uuid=uuid))
+        return redirect(url)
     except (requests.HTTPError, ValueError) as e:
         flash(format_error('updating', form, e), 'danger')
-        return redirect(url_for('dashboard_form', uuid=uuid))
+        return redirect(url)
 
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['POST'])
