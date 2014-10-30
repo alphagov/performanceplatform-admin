@@ -213,11 +213,15 @@
 
     </div>
 
-  {% if uuid %}
-    <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
-  {% else %}
-    <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
-  {% endif %}
+    <div class="clearfix">
+      {% if uuid %}
+        <input type="submit" class="pull-left btn btn-success" value="Update dashboard" name="create">
+      {% else %}
+        <input type="submit" class="pull-left btn btn-success" value="Create dashboard" name="create">
+      {% endif %}
+      <p class="pull-left add-left-margin control-label">You are in <strong>{{environment.human_name}}</strong></p>
+    </div>
+
 </form>
 
 {% endblock %}
