@@ -50,13 +50,13 @@ class ModuleForm(Form):
     data_group = TextField('Data group')
     data_type = TextField('Data type')
 
-    slug = TextField('Slug')
+    slug = TextField('Module URL')
     title = TextField('Title')
     description = TextField('Description')
     info = TextField('Info')
 
     query_parameters = TextAreaField('Query parameters', default='{}')
-    options = TextAreaField('Options', default='{}')
+    options = TextAreaField('Visualisation settings', default='{}')
 
 
 class DashboardCreationForm(Form):
@@ -78,8 +78,8 @@ class DashboardCreationForm(Form):
         ('Public sector purchasing dashboard',
          'Public sector purchasing dashboard'),
     ])
-    slug = TextField('Slug')
-    title = TextField('Title')
+    slug = TextField('Dashboard URL')
+    title = TextField('Dashboard title')
     description = TextField('Description')
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
