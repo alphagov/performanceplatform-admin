@@ -162,6 +162,7 @@
             {{ module.slug.label(class='col-sm-2 control-label') }}
             <div class="col-sm-10">
               {{ module.slug(class='form-control') }}
+              <p class="help-block">This is the page per thing URL for this module</p>
             </div>
           </div>
 
@@ -176,6 +177,7 @@
             {{ module.form['description'].label(class='col-sm-2 control-label') }}
             <div class="col-sm-10">
               {{ module.form['description'](class='form-control') }}
+              <p class="help-block">This appears under the title on the visualisation</p>
             </div>
           </div>
 
@@ -183,6 +185,7 @@
             {{ module.info.label(class='col-sm-2 control-label') }}
             <div class="col-sm-10">
               {{ module.info(class='form-control') }}
+              <p class="help-block">This appears on the page per thing view and should include the data source</p>
             </div>
           </div>
 
@@ -198,7 +201,7 @@
             {{ module.options.label(class='col-sm-2 control-label') }}
             <div class="col-sm-10">
               {{ module.options(class='form-control') }}
-              <p class="help-block">Options must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
+              <p class="help-block">Adjust how the visualisation looks. Settings must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
             </div>
           </div>
 
@@ -210,11 +213,15 @@
 
     </div>
 
-  {% if uuid %}
-    <input type="submit" class="col-sm-offset-2 btn btn-success" value="Update dashboard" name="create">
-  {% else %}
-    <input type="submit" class="col-sm-offset-2 btn btn-success" value="Create dashboard" name="create">
-  {% endif %}
+    <div class="clearfix">
+      {% if uuid %}
+        <input type="submit" class="pull-left btn btn-success" value="Update dashboard" name="create">
+      {% else %}
+        <input type="submit" class="pull-left btn btn-success" value="Create dashboard" name="create">
+      {% endif %}
+      <p class="pull-left add-left-margin control-label">You are in <strong>{{environment.human_name}}</strong></p>
+    </div>
+
 </form>
 
 {% endblock %}
