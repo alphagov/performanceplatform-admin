@@ -59,6 +59,22 @@ class ModuleForm(Form):
     options = TextAreaField('Visualisation settings', default='{}')
 
 
+def get_department_choices():
+    choices = [('', '')]
+
+    if not getenv('TESTING', False):
+        try:
+            # Create an unauthenticated client
+            admin_client = AdminAPI(app.config['STAGECRAFT_HOST'], None)
+            departments = admin_client.list_departments()
+            choices += [
+                (dept['id'], dept['name']) for dept in departments]
+        except requests.ConnectionError:
+            if not app.config['DEBUG']:
+                raise
+    return choices
+
+
 class DashboardCreationForm(Form):
     dashboard_type = SelectField('Dashboard type', choices=[
         ('transaction', 'Transaction'),
@@ -81,6 +97,7 @@ class DashboardCreationForm(Form):
     slug = TextField('Dashboard URL')
     title = TextField('Dashboard title')
     description = TextField('Description')
+    department = SelectField('Department', choices=get_department_choices())
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
         ('Business', 'Business'),
