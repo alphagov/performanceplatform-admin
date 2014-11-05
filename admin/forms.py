@@ -59,16 +59,17 @@ class ModuleForm(Form):
     options = TextAreaField('Visualisation settings', default='{}')
 
 
-def get_department_choices():
+def get_organisation_choices():
     choices = [('', '')]
 
     if not getenv('TESTING', False):
         try:
             # Create an unauthenticated client
             admin_client = AdminAPI(app.config['STAGECRAFT_HOST'], None)
-            departments = admin_client.list_departments()
+            organisations = admin_client.list_organisations()
             choices += [
-                (dept['id'], dept['name']) for dept in departments]
+                (org['id'], org['name']) for org in organisations]
+            choices.sort(key=lambda tup: tup[1])
         except requests.ConnectionError:
             if not app.config['DEBUG']:
                 raise
@@ -97,10 +98,10 @@ class DashboardCreationForm(Form):
     slug = TextField('Dashboard URL')
     title = TextField('Dashboard title')
     description = TextField('Description')
-    department = SelectField(
-        'Department',
+    owning_organisation = SelectField(
+        'Owning organisation',
         [validators.Required(message='This field cannot be blank.')],
-        choices=get_department_choices()
+        choices=get_organisation_choices()
     )
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
