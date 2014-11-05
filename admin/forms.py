@@ -1,6 +1,6 @@
 from admin import app
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     SelectField, HiddenField)
+                     SelectField, HiddenField, validators)
 from performanceplatform.client import AdminAPI
 import requests
 from os import getenv
@@ -97,7 +97,11 @@ class DashboardCreationForm(Form):
     slug = TextField('Dashboard URL')
     title = TextField('Dashboard title')
     description = TextField('Description')
-    department = SelectField('Department', choices=get_department_choices())
+    department = SelectField(
+        'Department',
+        [validators.Required(message='This field cannot be blank.')],
+        choices=get_department_choices()
+    )
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
         ('Business', 'Business'),
