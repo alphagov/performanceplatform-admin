@@ -193,6 +193,7 @@ def build_dict_for_post(form):
         'slug': form.slug.data,
         'title': form.title.data,
         'description': form.description.data,
+        'organisation': form.owning_organisation.data,
         'customer_type': form.customer_type.data,
         'business_model': form.business_model.data,
         'strapline': form.strapline.data,

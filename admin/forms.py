@@ -23,6 +23,8 @@ def convert_to_dashboard_form(dashboard_dict):
     elif len(transaction_link) == 1:
         dashboard_dict['transaction_link'] = transaction_link[0]['url']
         dashboard_dict['transaction_title'] = transaction_link[0]['title']
+    organisation_id = dashboard_dict['organisation']['id']
+    dashboard_dict['owning_organisation'] = organisation_id
 
     return DashboardCreationForm(data=dashboard_dict)
 
