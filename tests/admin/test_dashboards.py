@@ -76,6 +76,25 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         ))
 
 
+def organisations_list():
+    return [{'id': 'organisation-uuid', 'name': 'Mock organisation'}]
+
+
+def valid_dashboard_data(options=None):
+    data = {
+        'slug': 'valid-slug',
+        'title': 'My valid title',
+        'owning_organisation': 'organisation-uuid',
+        'dashboard_type': 'transaction',
+        'customer_type': 'Business',
+        'strapline': 'Dashboard',
+        'business_model': 'Department budget'
+    }
+    if options:
+        data.update(options)
+    return data
+
+
 class DashboardTestCase(FlaskAppTestCase):
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
@@ -169,7 +188,10 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(resp.data, contains_string('value="my-valid-slug"'))
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    def test_create_post_sends_a_post_to_stagecraft(self, create_dashboard):
+    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
+    def test_create_post_sends_a_post_to_stagecraft(self,
+                                                    mock_list_organisations,
+                                                    create_dashboard):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -177,8 +199,11 @@ class DashboardTestCase(FlaskAppTestCase):
                     'permissions': ['signin', 'dashboard']
                 }
 
-            resp = admin_app.post('/administer-dashboards',
-                                  data={'slug': 'valid-slug'})
+            mock_list_organisations.return_value = organisations_list()
+
+            data = valid_dashboard_data()
+
+            resp = admin_app.post('/administer-dashboards', data=data)
 
         post_json = create_dashboard.call_args[0][0]
 
