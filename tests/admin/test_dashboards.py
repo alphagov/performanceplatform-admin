@@ -95,24 +95,23 @@ def valid_dashboard_data(options=None):
     return data
 
 
+@patch("performanceplatform.client.admin.AdminAPI.list_organisations",
+       return_value=organisations_list())
 class DashboardTestCase(FlaskAppTestCase):
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
         self.app = app.test_client()
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
     def test_creating_dashboard_with_a_module(self,
-                                              mock_list_organisations,
-                                              create_dashboard):
+                                              create_dashboard,
+                                              mock_list_organisations):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
                     'permissions': ['signin', 'dashboard']
                 }
-
-            mock_list_organisations.return_value = organisations_list()
 
             data = valid_dashboard_data({
                 'modules-0-module_type': '',
@@ -138,10 +137,7 @@ class DashboardTestCase(FlaskAppTestCase):
         }))
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
-    def test_info_many_paths(self, mock_list_organisations, create_dashboard):
-        mock_list_organisations.return_value = organisations_list()
-
+    def test_info_many_paths(self, create_dashboard, mock_list_organisations):
         info_tests = [
             ('asdas',   False, 'Not valid JSON'),
             ('{}',      False, 'Not an array'),
@@ -180,7 +176,8 @@ class DashboardTestCase(FlaskAppTestCase):
                     # reset flashes
                     session['_flashes'] = []
 
-    def test_create_form_uses_pending_dashboard_if_stored(self):
+    def test_create_form_uses_pending_dashboard_if_stored(
+            self, mock_list_organisations):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -194,18 +191,15 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(resp.data, contains_string('value="my-valid-slug"'))
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
     def test_create_post_sends_a_post_to_stagecraft(self,
-                                                    mock_list_organisations,
-                                                    create_dashboard):
+                                                    create_dashboard,
+                                                    mock_list_organisations):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
                     'permissions': ['signin', 'dashboard']
                 }
-
-            mock_list_organisations.return_value = organisations_list()
 
             data = valid_dashboard_data()
 
@@ -217,10 +211,9 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
     def test_creating_dashboard_deletes_from_session(self,
-                                                     mock_list_organisations,
-                                                     create_dashboard):
+                                                     create_dashboard,
+                                                     mock_list_organisations):
         dashboard_data = {
             'slug': 'valid-slug',
         }
@@ -232,8 +225,6 @@ class DashboardTestCase(FlaskAppTestCase):
             }
             session['pending_dashboard'] = dashboard_data
 
-        mock_list_organisations.return_value = organisations_list()
-
         self.client.post('/administer-dashboards',
                          data=valid_dashboard_data())
 
@@ -241,9 +232,8 @@ class DashboardTestCase(FlaskAppTestCase):
         self.assert_flashes('Created the valid-slug dashboard', 'success')
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
     def test_failed_dashboard_creation_stored_in_session(
-            self, mock_list_organisations, create_dashboard):
+            self, create_dashboard, mock_list_organisations):
         response_json_mock = Mock()
         response_json_mock.return_value = {'message': 'Error message'}
         response = requests.Response()
@@ -258,8 +248,6 @@ class DashboardTestCase(FlaskAppTestCase):
                 'permissions': ['signin', 'dashboard']
             }
 
-        mock_list_organisations.return_value = organisations_list()
-
         self.client.post('/administer-dashboards',
                          data=valid_dashboard_data())
 
@@ -271,7 +259,9 @@ class DashboardTestCase(FlaskAppTestCase):
         )
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_add_module_redirects_back_to_the_form(self, client):
+    def test_add_module_redirects_back_to_the_form(self,
+                                                   mock_list_organisations,
+                                                   client):
         resp = client.post('/administer-dashboards',
                            data={'add_module': 1})
 
@@ -282,17 +272,14 @@ class DashboardTestCase(FlaskAppTestCase):
         )
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
     def test_updating_existing_dashboard(self,
-                                         mock_list_organisations,
-                                         update_mock):
+                                         update_mock,
+                                         mock_list_organisations):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
                 'permissions': ['signin', 'dashboard']
             }
-
-        mock_list_organisations.return_value = organisations_list()
 
         data = valid_dashboard_data({
             'modules-0-module_type': '',
@@ -324,16 +311,13 @@ class DashboardTestCase(FlaskAppTestCase):
             'Updated the valid-slug dashboard', expected_category='success')
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
-    @patch("performanceplatform.client.admin.AdminAPI.list_organisations")
     def test_failing_updating_existing_dashboard_flashes_error(
-            self, mock_list_organisations, update_mock):
+            self, update_mock, mock_list_organisations):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
                 'permissions': ['signin', 'dashboard']
             }
-
-        mock_list_organisations.return_value = organisations_list()
 
         data = valid_dashboard_data({
             'modules-0-module_type': '',
@@ -365,7 +349,8 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
     @patch("admin.dashboards.render_template")
-    def test_rendering_edit_page(self, mock_render, mock_get):
+    def test_rendering_edit_page(
+            self, mock_render, mock_get, mock_list_organisations):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
@@ -388,7 +373,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(200))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_remove_module_after_adding(self, client):
+    def test_remove_module_after_adding(self, mock_list_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
@@ -406,7 +391,8 @@ class DashboardTestCase(FlaskAppTestCase):
                         equal_to(0))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_remove_module_from_existing_dashboard(self, client):
+    def test_remove_module_from_existing_dashboard(
+            self, mock_list_organisations, client):
         data = {
             'slug': 'my-valid-slug',
             'title': 'My valid title',
@@ -429,7 +415,7 @@ class DashboardTestCase(FlaskAppTestCase):
                         equal_to(0))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_remove_middle_module(self, client):
+    def test_remove_middle_module(self, mock_list_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
@@ -450,7 +436,7 @@ class DashboardTestCase(FlaskAppTestCase):
                         equal_to('bar'))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_first_module_down(self, client):
+    def test_move_first_module_down(self, mock_list_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
@@ -471,7 +457,7 @@ class DashboardTestCase(FlaskAppTestCase):
                         has_entry('slug', 'foo'))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_down(self, client):
+    def test_move_last_module_down(self, list_mock_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
@@ -492,7 +478,8 @@ class DashboardTestCase(FlaskAppTestCase):
                         has_entry('slug', 'bar'))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_down_on_existing_dashboard(self, client):
+    def test_move_last_module_down_on_existing_dashboard(
+            self, mock_list_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
@@ -513,7 +500,7 @@ class DashboardTestCase(FlaskAppTestCase):
                         has_entry('slug', 'bar'))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_up(self, client):
+    def test_move_last_module_up(self, mock_list_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
@@ -534,7 +521,7 @@ class DashboardTestCase(FlaskAppTestCase):
                         has_entry('slug', 'foo'))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_first_module_up(self, client):
+    def test_move_first_module_up(self, list_mock_organisations, client):
         form_data = {
             'slug': 'valid-slug',
             'modules-0-module_type': '',
