@@ -136,6 +136,24 @@ class DashboardTestCase(FlaskAppTestCase):
             'info': ["Foo", "Bar"],
         }))
 
+    def test_creating_dashboard_without_organisation(self,
+                                                     mock_list_organisations):
+        with self.app as admin_app:
+            with admin_app.session_transaction() as session:
+                session['oauth_token'] = {'access_token': 'token'}
+                session['oauth_user'] = {
+                    'permissions': ['signin', 'dashboard']
+                }
+
+            data = valid_dashboard_data({'owning_organisation': ''})
+
+            resp = admin_app.post('/administer-dashboards', data=data)
+
+        assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['Location'],
+            ends_with('/administer-dashboards/new'))
+
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
     def test_info_many_paths(self, create_dashboard, mock_list_organisations):
         info_tests = [
@@ -356,6 +374,32 @@ class DashboardTestCase(FlaskAppTestCase):
                   '../fixtures/example-dashboard.json')) as file:
             dashboard_json = file.read()
         dashboard_dict = json.loads(dashboard_json)
+        mock_render.return_value = ''
+        mock_get.return_value = dashboard_dict
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+
+        resp = self.client.get('/administer-dashboards/uuid')
+        mock_get.assert_called_once_with('uuid')
+        rendered_template = 'dashboards/create.html'
+        assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
+        kwargs = mock_render.call_args[1]
+        assert_that(kwargs['form'], instance_of(DashboardCreationForm))
+        assert_that(resp.status_code, equal_to(200))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    @patch("admin.dashboards.render_template")
+    def test_rendering_edit_page_for_dashboard_without_owning_organisation(
+            self, mock_render, mock_get, mock_list_organisations):
+        with open(os.path.join(
+                  os.path.dirname(__file__),
+                  '../fixtures/example-dashboard.json')) as file:
+            dashboard_json = file.read()
+        dashboard_dict = json.loads(dashboard_json)
+        dashboard_dict['organisation'] = None
         mock_render.return_value = ''
         mock_get.return_value = dashboard_dict
         with self.client.session_transaction() as session:
