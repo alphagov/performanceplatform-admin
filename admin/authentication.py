@@ -41,8 +41,9 @@ def authorize():
         client_secret=app.config['SIGNON_OAUTH_SECRET'],
         authorization_response=request.url)
     # need to pass ?client_id=[SIGNON_OAUTH_ID]
-    user = gds_session.get('{0}/user.json'.format(
-        app.config['SIGNON_BASE_URL'])).json()
+    user = gds_session.get('{0}/user.json?client_id={1}'.format(
+        app.config['SIGNON_BASE_URL'],
+        app.config['SIGNON_OAUTH_ID'])).json()
     if 'signin' in user['user']['permissions']:
         flash("You have been successfully signed in")
     session['oauth_user'] = user['user']
