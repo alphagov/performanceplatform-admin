@@ -7,7 +7,7 @@ from os import getenv
 import json
 
 
-def convert_to_dashboard_form(dashboard_dict):
+def convert_to_dashboard_form(dashboard_dict, admin_client):
     for module in dashboard_dict['modules']:
         module['info'] = json.dumps(module['info'])
         if module['query_parameters'] is not None:
@@ -28,7 +28,7 @@ def convert_to_dashboard_form(dashboard_dict):
     else:
         organisation_id = None
     dashboard_dict['owning_organisation'] = organisation_id
-    return DashboardCreationForm(data=dashboard_dict)
+    return DashboardCreationForm(admin_client, data=dashboard_dict)
 
 
 def get_module_choices():
@@ -78,6 +78,11 @@ def get_organisation_choices(admin_client):
 
 
 class DashboardCreationForm(Form):
+    def __init__(self, admin_client, *args, **kwargs):
+        super(DashboardCreationForm, self).__init__(*args, **kwargs)
+        self.owning_organisation.choices = get_organisation_choices(
+            admin_client)
+
     dashboard_type = SelectField('Dashboard type', choices=[
         ('transaction', 'Transaction'),
         ('high-volume-transaction', 'High volume transaction'),

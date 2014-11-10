@@ -1,5 +1,5 @@
 from admin import app
-from admin.forms import DashboardCreationForm, get_organisation_choices
+from admin.forms import DashboardCreationForm
 from admin.helpers import (
     base_template_context,
     requires_authentication,
@@ -22,9 +22,7 @@ DASHBOARD_ROUTE = '/administer-dashboards'
 def update_modules_form_and_redirect(func):
     @functools.wraps(func)
     def wrapper(admin_client, uuid=None):
-        form = DashboardCreationForm(request.form)
-        form.owning_organisation.choices = get_organisation_choices(
-            admin_client)
+        form = DashboardCreationForm(admin_client, request.form)
         session['pending_dashboard'] = form.data
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
@@ -96,14 +94,13 @@ def dashboard_form(admin_client, uuid=None):
         template_context['uuid'] = uuid
 
     if should_use_session(session, uuid):
-        form = DashboardCreationForm(data=session['pending_dashboard'])
+        form = DashboardCreationForm(admin_client,
+                                     data=session['pending_dashboard'])
     elif uuid is None:
-        form = DashboardCreationForm(request.form)
+        form = DashboardCreationForm(admin_client, request.form)
     else:
         dashboard_dict = admin_client.get_dashboard(uuid)
-        form = convert_to_dashboard_form(dashboard_dict)
-
-    form.owning_organisation.choices = get_organisation_choices(admin_client)
+        form = convert_to_dashboard_form(dashboard_dict, admin_client)
 
     if 'pending_dashboard' in session:
         del session['pending_dashboard']
