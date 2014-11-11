@@ -1,6 +1,7 @@
 from unittest import TestCase
 from admin.forms import convert_to_dashboard_form
 from hamcrest import assert_that, equal_to
+from mock import Mock
 import os
 import json
 from admin.dashboards import build_dict_for_post
@@ -13,7 +14,11 @@ class DashboardTestCase(TestCase):
                   '../fixtures/example-dashboard.json')) as file:
             dashboard_json = file.read()
         dashboard_dict = json.loads(dashboard_json)
-        dashboard_form = convert_to_dashboard_form(dashboard_dict)
+        mock_admin_client = Mock()
+        mock_admin_client.list_organisations = Mock(
+            return_value=[{'id': '', 'name': ''}])
+        dashboard_form = convert_to_dashboard_form(dashboard_dict,
+                                                   mock_admin_client)
         dict_for_post = build_dict_for_post(dashboard_form)
         assert_that(
             dict_for_post['description'],

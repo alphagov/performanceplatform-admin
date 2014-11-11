@@ -1,13 +1,13 @@
 from admin import app
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     SelectField, HiddenField)
+                     SelectField, HiddenField, validators)
 from performanceplatform.client import AdminAPI
 import requests
 from os import getenv
 import json
 
 
-def convert_to_dashboard_form(dashboard_dict):
+def convert_to_dashboard_form(dashboard_dict, admin_client):
     for module in dashboard_dict['modules']:
         module['info'] = json.dumps(module['info'])
         if module['query_parameters'] is not None:
@@ -23,8 +23,12 @@ def convert_to_dashboard_form(dashboard_dict):
     elif len(transaction_link) == 1:
         dashboard_dict['transaction_link'] = transaction_link[0]['url']
         dashboard_dict['transaction_title'] = transaction_link[0]['title']
-
-    return DashboardCreationForm(data=dashboard_dict)
+    if dashboard_dict['organisation'] is not None:
+        organisation_id = dashboard_dict['organisation']['id']
+    else:
+        organisation_id = None
+    dashboard_dict['owning_organisation'] = organisation_id
+    return DashboardCreationForm(admin_client, data=dashboard_dict)
 
 
 def get_module_choices():
@@ -59,7 +63,26 @@ class ModuleForm(Form):
     options = TextAreaField('Visualisation settings', default='{}')
 
 
+def get_organisation_choices(admin_client):
+    choices = [('', '')]
+
+    try:
+        organisations = admin_client.list_organisations()
+        choices += [
+            (org['id'], org['name']) for org in organisations]
+        choices.sort(key=lambda tup: tup[1])
+    except requests.ConnectionError:
+        if not app.config['DEBUG']:
+            raise
+    return choices
+
+
 class DashboardCreationForm(Form):
+    def __init__(self, admin_client, *args, **kwargs):
+        super(DashboardCreationForm, self).__init__(*args, **kwargs)
+        self.owning_organisation.choices = get_organisation_choices(
+            admin_client)
+
     dashboard_type = SelectField('Dashboard type', choices=[
         ('transaction', 'Transaction'),
         ('high-volume-transaction', 'High volume transaction'),
@@ -81,6 +104,10 @@ class DashboardCreationForm(Form):
     slug = TextField('Dashboard URL')
     title = TextField('Dashboard title')
     description = TextField('Description')
+    owning_organisation = SelectField(
+        'Owning organisation',
+        [validators.Required(message='This field cannot be blank.')]
+    )
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
         ('Business', 'Business'),

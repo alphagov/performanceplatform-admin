@@ -22,7 +22,7 @@ DASHBOARD_ROUTE = '/administer-dashboards'
 def update_modules_form_and_redirect(func):
     @functools.wraps(func)
     def wrapper(admin_client, uuid=None):
-        form = DashboardCreationForm(request.form)
+        form = DashboardCreationForm(admin_client, request.form)
         session['pending_dashboard'] = form.data
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
@@ -94,12 +94,14 @@ def dashboard_form(admin_client, uuid=None):
         template_context['uuid'] = uuid
 
     if should_use_session(session, uuid):
-        form = DashboardCreationForm(data=session['pending_dashboard'])
+        form = DashboardCreationForm(admin_client,
+                                     data=session['pending_dashboard'])
     elif uuid is None:
-        form = DashboardCreationForm(request.form)
+        form = DashboardCreationForm(admin_client, request.form)
     else:
         dashboard_dict = admin_client.get_dashboard(uuid)
-        form = convert_to_dashboard_form(dashboard_dict)
+        form = convert_to_dashboard_form(dashboard_dict, admin_client)
+
     if 'pending_dashboard' in session:
         del session['pending_dashboard']
 
@@ -114,18 +116,24 @@ def dashboard_form(admin_client, uuid=None):
                            **template_context)
 
 
+class InvalidFormFieldError(Exception):
+    pass
+
+
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['POST'])
 @requires_authentication
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
 def dashboard_update(admin_client, form, uuid):
     try:
+        if not form.validate():
+            raise InvalidFormFieldError()
         dict_for_post = build_dict_for_post(form)
         admin_client.update_dashboard(uuid, dict_for_post)
         flash('Updated the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
         return redirect(url_for('dashboard_admin_index'))
-    except (requests.HTTPError, ValueError) as e:
+    except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('updating', form, e), 'danger')
         return redirect(url_for('dashboard_form', uuid=uuid))
 
@@ -136,12 +144,14 @@ def dashboard_update(admin_client, form, uuid):
 @update_modules_form_and_redirect
 def dashboard_create(admin_client, form):
     try:
+        if not form.validate():
+            raise InvalidFormFieldError()
         dict_for_post = build_dict_for_post(form)
         admin_client.create_dashboard(dict_for_post)
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
         return redirect(url_for('dashboard_admin_index'))
-    except (requests.HTTPError, ValueError) as e:
+    except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('creating', form, e), 'danger')
         return redirect(url_for('dashboard_form'))
 
@@ -185,6 +195,7 @@ def build_dict_for_post(form):
         'slug': form.slug.data,
         'title': form.title.data,
         'description': form.description.data,
+        'organisation': form.owning_organisation.data,
         'customer_type': form.customer_type.data,
         'business_model': form.business_model.data,
         'strapline': form.strapline.data,
@@ -201,9 +212,22 @@ def format_error(verb, form, error):
     if isinstance(error, requests.HTTPError):
         return 'Error {} the {} dashboard: {}'.format(
             verb, form.slug.data, error.response.json()['message'])
+    elif isinstance(error, InvalidFormFieldError):
+        return 'Error {} the {} dashboard: {}'.format(
+            verb, form.slug.data, to_error_list(form.errors))
     elif isinstance(error, ValueError):
         return 'Error validating the {} dashbaord: {}'.format(
             form.slug.data, error.message)
+
+
+def to_error_list(form_errors):
+    def format_error(error):
+        return '{0}: {1}'.format(field_name, error)
+
+    messages = []
+    for field_name, field_errors in form_errors.items():
+        messages.append(','.join(map(format_error, field_errors)))
+    return ', '.join(messages)
 
 
 def load_json_if_present(data, default):
