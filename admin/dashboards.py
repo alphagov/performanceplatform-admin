@@ -199,6 +199,8 @@ def build_dict_for_post(form):
         'customer_type': form.customer_type.data,
         'business_model': form.business_model.data,
         'strapline': form.strapline.data,
+        'costs': form.costs.data,
+        'other_notes': form.other_notes.data,
         'links': [{
             'title': form.transaction_title.data,
             'url': form.transaction_link.data,
