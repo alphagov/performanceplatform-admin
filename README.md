@@ -12,7 +12,7 @@ users to update [performance data on GOV.UK][pp].
 
 ## Application dependencies
 
-We recommend using [virtualenv][] to manage this application's dependencies.
+We recommend using [virtualenv][] to manage this application's dependencies. If you are using the performance platform development VM, run `workon performanceplatform-admin` to source this.
 
 To set up, run:
 
