@@ -120,6 +120,8 @@ class DashboardCreationForm(Form):
         ('Taxpayers', 'Taxpayers'),
         ('Fees and charges, and taxpayers', 'Fees and charges, and taxpayers'),
     ])
+    costs = TextAreaField('Notes on costs')
+    other_notes = TextAreaField('Other notes')
 
     transaction_title = TextField('Transaction action')
     transaction_link = TextField('Transaction link')

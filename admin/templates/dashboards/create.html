@@ -97,6 +97,28 @@
           </p>
         </div>
       </div>
+
+      <div class="form-group">
+        {{ form.costs.label(class='col-sm-2 control-label') }}
+        <div class="col-sm-10">
+          {{ form.costs(class='form-control') }}
+          <p class="help-block">
+            Notes on how costs are made up.
+            These are shown at the bottom of the dashboard.
+          </p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form.other_notes.label(class='col-sm-2 control-label') }}
+        <div class="col-sm-10">
+          {{ form.other_notes(class='form-control') }}
+          <p class="help-block">
+            Other notes to help people interpret the dashboard.
+            These are shown at the bottom of the dashboard.
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="well">
