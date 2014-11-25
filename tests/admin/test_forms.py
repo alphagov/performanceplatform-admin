@@ -1,14 +1,17 @@
 from unittest import TestCase
 from admin.forms import convert_to_dashboard_form
 from hamcrest import assert_that, equal_to
-from mock import Mock
+from mock import Mock, patch
 import os
 import json
 from admin.dashboards import build_dict_for_post
 
 
 class DashboardTestCase(TestCase):
-    def test_convert_to_dashboard_form_returns_correct_dashboard_form(self):
+    @patch('admin.forms.ModuleTypes.get_section_type',
+           return_value={'id': 'module-type-uuid', 'name': 'section'})
+    def test_convert_to_dashboard_form_returns_correct_dashboard_form(
+            self, mock_get_section_type):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
