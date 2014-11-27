@@ -77,7 +77,8 @@ class DashboardIndexTestCase(FlaskAppTestCase):
 
 
 def module_types_list():
-    return [{'id': 'section-module-type-uuid', 'name': 'section'}]
+    return [{'id': 'availability-module-type-uuid', 'name': 'availability'},
+            {'id': 'section-module-type-uuid', 'name': 'section'}]
 
 
 def organisations_list():
@@ -99,7 +100,7 @@ def valid_dashboard_data(options=None):
     return data
 
 
-@patch("admin.dashboards.ModuleTypes.get_types",
+@patch("admin.forms.ModuleTypes.get_types",
        return_value=module_types_list())
 @patch("performanceplatform.client.admin.AdminAPI.list_organisations",
        return_value=organisations_list())
@@ -141,6 +142,77 @@ class DashboardTestCase(FlaskAppTestCase):
             'options': {},
             'query_parameters': {},
             'info': ["Foo", "Bar"],
+        }))
+
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    def test_creating_a_dashboard_with_a_sectioned_module(
+            self,
+            create_dashboard,
+            mock_list_organisations,
+            mock_get_module_types):
+        with self.app as admin_app:
+            with admin_app.session_transaction() as session:
+                session['oauth_token'] = {'access_token': 'token'}
+                session['oauth_user'] = {
+                    'permissions': ['signin', 'dashboard']
+                }
+
+            data = valid_dashboard_data({
+                'modules-0-module_type': 'availability-module-type-uuid',
+                'modules-0-slug': 'carers-realtime-1',
+                'modules-0-data_group': 'carers-allowance',
+                'modules-0-data_type': 'realtime',
+                'modules-0-options': '{}',
+                'modules-0-query_parameters': '{}',
+                'modules-0-info': '["Foo", "Bar"]',
+                'modules-1-module_type': 'section-module-type-uuid',
+                'modules-1-category': 'container',
+                'modules-1-slug': 'section-1',
+                'modules-1-title': 'Section 1 title',
+                'modules-1-description': 'Section description',
+                'modules-2-module_type': 'availability-module-type-uuid',
+                'modules-2-slug': 'carers-realtime-2',
+                'modules-2-data_group': 'carers-allowance',
+                'modules-2-data_type': 'realtime',
+                'modules-2-options': '{}',
+                'modules-2-query_parameters': '{}',
+                'modules-2-info': '["Foo", "Bar"]',
+                'modules-3-module_type': 'availability-module-type-uuid',
+                'modules-3-slug': 'carers-realtime-3',
+                'modules-3-data_group': 'carers-allowance',
+                'modules-3-data_type': 'realtime',
+                'modules-3-options': '{}',
+                'modules-3-query_parameters': '{}',
+                'modules-3-info': '["Foo", "Bar"]',
+                'modules-4-module_type': 'section-module-type-uuid',
+                'modules-4-category': 'container',
+                'modules-4-slug': 'section-2',
+                'modules-4-title': 'Section 2 title',
+                'modules-4-description': 'Section description'
+            })
+
+            admin_app.post('/administer-dashboards', data=data)
+
+        post_json = create_dashboard.call_args[0][0]
+
+        assert_that(post_json['modules'][1], has_entries({
+            'slug': 'section-1',
+            'order': 2
+        }))
+
+        assert_that(post_json['modules'][1]['modules'][0], has_entries({
+            'slug': 'carers-realtime-2',
+            'order': 3
+        }))
+
+        assert_that(post_json['modules'][1]['modules'][1], has_entries({
+            'slug': 'carers-realtime-3',
+            'order': 4
+        }))
+
+        assert_that(post_json['modules'][2], has_entries({
+            'slug': 'section-2',
+            'order': 5
         }))
 
     def test_creating_dashboard_without_organisation(self,

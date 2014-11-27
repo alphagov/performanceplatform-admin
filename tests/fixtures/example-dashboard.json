@@ -155,43 +155,66 @@
    }
   },
   {
-   "description": "Digital take-up rates each quarter",
-   "data_type": "summaries",
-   "id": "24068637-e2de-420b-9144-6898a0dd622e",
-   "data_group": "transactional-services",
-   "info": [
-    "Data source: Home Office",
-    "<a href=\"https://www.gov.uk/service-manual/measurement/digital-takeup.html\">Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."
-   ],
-   "title": "Digital take-up",
-   "query_parameters": {
-    "sort_by": "_timestamp:ascending",
-    "filter_by": [
-     "service_id:home-office-visas-immigration-applications",
-     "type:quarterly"
-    ]
-   },
-   "slug": "digital-take-up-per-quarter",
+   "description": "Digital services",
+   "parent": null,
+   "data_type": "",
+   "id": "section-module-uuid",
+   "data_group": "",
+   "info": [],
+   "title": "Digital services",
+   "query_parameters": {},
+   "slug": "digital-services",
    "dashboard": {
     "id": "06f3dc33-77be-4d63-a0df-618e856d6216"
    },
    "type": {
-    "id": "3ad885d9-62cc-45d0-85ba-c0b52ea3f8f9"
+    "id": "section-module-type-uuid"
    },
-   "options": {
-    "value-attribute": "digital_takeup",
-    "axis-period": "quarter",
-    "axes": {
-     "y": [
-      {
-       "label": "Percentage digital take-up"
+   "options": {},
+   "modules": [
+    {
+     "description": "Digital take-up rates each quarter",
+     "parent": {
+       "id": "section-module-uuid"
+     },
+     "data_type": "summaries",
+     "id": "24068637-e2de-420b-9144-6898a0dd622e",
+     "data_group": "transactional-services",
+     "info": [
+      "Data source: Home Office",
+      "<a href=\"https://www.gov.uk/service-manual/measurement/digital-takeup.html\">Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."
+     ],
+     "title": "Digital take-up",
+     "query_parameters": {
+      "sort_by": "_timestamp:ascending",
+      "filter_by": [
+       "service_id:home-office-visas-immigration-applications",
+       "type:quarterly"
+      ]
+     },
+     "slug": "digital-take-up-per-quarter",
+     "dashboard": {
+      "id": "06f3dc33-77be-4d63-a0df-618e856d6216"
+     },
+     "type": {
+      "id": "3ad885d9-62cc-45d0-85ba-c0b52ea3f8f9"
+     },
+     "options": {
+      "value-attribute": "digital_takeup",
+      "axis-period": "quarter",
+      "axes": {
+       "y": [
+        {
+         "label": "Percentage digital take-up"
+        }
+       ]
+      },
+      "format": {
+       "type": "percent"
       }
-     ]
-    },
-    "format": {
-     "type": "percent"
+     }
     }
-   }
+   ]
   }
  ],
  "dashboard_type": "high-volume-transaction",
