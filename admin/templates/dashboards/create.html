@@ -251,7 +251,13 @@
       {% else %}
         <input type="submit" class="pull-left btn btn-success" value="Create dashboard" name="create">
       {% endif %}
-      <p class="pull-left add-left-margin control-label">You are in <strong>{{environment.human_name}}</strong></p>
+      <p class="pull-left add-left-margin control-label">
+        You're
+        {% if form.title.data %}
+        editing the <strong>{{ form.title.data }}</strong> dashboard
+        {% endif %}
+        in <strong>{{environment.human_name.lower()}}</strong>
+      </p>
     </div>
 
 </form>
