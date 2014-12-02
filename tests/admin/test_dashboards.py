@@ -325,8 +325,31 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(
             resp.headers['Location'],
             ends_with('/administer-dashboards'))
-        self.assert_flashes(
-            'Updated the valid-slug dashboard', expected_category='success')
+        expected_flash = 'Updated the <a href="http://spotlight.development' + \
+            '.performance.service.gov.uk/performance/valid-slug">' + \
+            'My valid title</a> dashboard'
+        self.assert_flashes(expected_flash, expected_category='success')
+
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_updating_flash_escapes_title_html(self,
+                                               update_mock,
+                                               mock_list_organisations):
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+
+        data = valid_dashboard_data({
+            'title': 'Bad title<h1>boo</h1>'
+        })
+
+        resp = self.client.post(
+            '/administer-dashboards/uuid', data=data)
+        expected_flash = 'Updated the <a href="http://spotlight.development' + \
+            '.performance.service.gov.uk/performance/valid-slug">' + \
+            'Bad title&lt;h1&gt;boo&lt;/h1&gt;</a> dashboard'
+        self.assert_flashes(expected_flash, expected_category='success')
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_failing_updating_existing_dashboard_flashes_error(

@@ -11,6 +11,7 @@ from flask import (
 )
 from admin.forms import convert_to_dashboard_form
 
+import cgi
 import json
 import requests
 import functools
@@ -130,7 +131,12 @@ def dashboard_update(admin_client, form, uuid):
             raise InvalidFormFieldError()
         dict_for_post = build_dict_for_post(form)
         admin_client.update_dashboard(uuid, dict_for_post)
-        flash('Updated the {} dashboard'.format(form.slug.data), 'success')
+        flash('Updated the <a href="{0}/performance/{1}">{2}</a> dashboard'
+              .format(
+                  app.config['GOVUK_SITE_URL'],
+                  form.slug.data,
+                  cgi.escape(form.title.data)
+              ), 'success')
         del session['pending_dashboard']
         return redirect(url_for('dashboard_admin_index'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
