@@ -23,6 +23,15 @@ DASHBOARD_ROUTE = '/administer-dashboards'
 def update_modules_form_and_redirect(func):
     @functools.wraps(func)
     def wrapper(admin_client, uuid=None):
+
+        def set_section_module_choices(modules):
+            for m in [m for m in modules if m.category.data == 'container']:
+                section_type = module_types.get_section_type()
+                m.module_type.choices = [
+                    (section_type['id'], section_type['name'])]
+                m.module_type.data = section_type['id']
+            return modules
+
         module_types = ModuleTypes()
         form = DashboardCreationForm(
             admin_client, module_types, request.form)
@@ -46,12 +55,7 @@ def update_modules_form_and_redirect(func):
         if move_or_remove(request.form, session):
             return redirect(url_for('dashboard_form', uuid=uuid))
 
-        for m in form.modules:
-            if m.category.data == 'container':
-                section_type = module_types.get_section_type()
-                m.module_type.choices = [
-                    (section_type['id'], section_type['name'])]
-                m.module_type.data = section_type['id']
+        form.modules = set_section_module_choices(form.modules)
 
         if uuid is None:
             return func(admin_client, module_types, form)
@@ -105,6 +109,14 @@ def dashboard_form(admin_client, uuid=None):
             return True
         return False
 
+    def append_new_module_forms():
+        total_modules = int(request.args.get('modules'))
+        modules_required = total_modules - len(form.modules)
+        for i in range(modules_required):
+            form.modules.append_entry()
+            choices = module_types.get_visualisation_choices()
+            form.modules[-1].module_type.choices = choices
+
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
     if uuid is not None:
@@ -129,12 +141,7 @@ def dashboard_form(admin_client, uuid=None):
         del session['pending_dashboard']
 
     if request.args.get('modules'):
-        total_modules = int(request.args.get('modules'))
-        modules_required = total_modules - len(form.modules)
-        for i in range(modules_required):
-            form.modules.append_entry()
-            choices = module_types.get_visualisation_choices()
-            form.modules[-1].module_type.choices = choices
+        append_new_module_forms()
         if request.args.get('section'):
             form.modules[-1].category.data = 'container'
 
