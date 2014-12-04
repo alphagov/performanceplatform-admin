@@ -147,10 +147,10 @@
       <h2>Modules</h2>
 
       {% for module in form.modules %}
-        {{ module.form['id'] }}
-        {{ module['category'] }}
-
         <fieldset class="module">
+          {{ module.form['id'] }}
+          {{ module['category'] }}
+
           <div class="form-group">
             <div class="col-sm-12">
               <div class="pull-right">

@@ -133,7 +133,6 @@ def dashboard_form(admin_client, uuid=None):
                                      request.form)
     else:
         dashboard_dict = admin_client.get_dashboard(uuid)
-        module_types = ModuleTypes()
         form = convert_to_dashboard_form(
             dashboard_dict, admin_client, module_types)
 
@@ -145,6 +144,24 @@ def dashboard_form(admin_client, uuid=None):
         if request.args.get('section'):
             form.modules[-1].category.data = 'container'
 
+    return render_template('dashboards/create.html',
+                           form=form,
+                           **template_context)
+
+
+@app.route('{0}/clone'.format(DASHBOARD_ROUTE), methods=['GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def dashboard_clone(admin_client):
+    template_context = base_template_context()
+    template_context['user'] = session['oauth_user']
+    dashboard_dict = admin_client.get_dashboard(request.args.get('uuid'))
+    form = convert_to_dashboard_form(
+        dashboard_dict, admin_client, ModuleTypes())
+    form['title'].data = ''
+    form['slug'].data = ''
+    for m in form.modules:
+        m['id'].data = ''
     return render_template('dashboards/create.html',
                            form=form,
                            **template_context)

@@ -11,7 +11,17 @@
 
   <ul>
     {% for dashboard in dashboards %}
-      <li><a href="{{ url_for('dashboard_form', uuid=dashboard.id) }}">{{ dashboard.title }}</a></li>
+      <li>
+        {{ dashboard.title }}
+        <ul class='links'>
+          <li>
+            <a class='inline' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}">Edit</a>
+          </li>
+          <li>
+            <a class='inline' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}">Clone</a>
+          </li>
+        </ul>
+      </li>
     {% endfor %}
   </ul>
 {% endif %}

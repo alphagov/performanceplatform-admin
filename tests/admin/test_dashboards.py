@@ -33,10 +33,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
 
         resp = client.get('/administer-dashboards')
 
-        assert_that(resp.data, contains_string(
-            '<li><a href="/administer-dashboards/uuid">'
-            'Name of service</a></li>'
-        ))
+        assert_that(resp.data, contains_string('Name of service'))
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')
@@ -535,6 +532,42 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
         kwargs = mock_render.call_args[1]
         assert_that(kwargs['form'], instance_of(DashboardCreationForm))
+        assert_that(resp.status_code, equal_to(200))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    @patch("admin.dashboards.render_template")
+    def test_clone_dashboard_renders_a_prefilled_create_page(
+            self,
+            mock_render,
+            mock_get,
+            mock_list_organisations,
+            mock_get_module_types):
+        with open(os.path.join(
+                  os.path.dirname(__file__),
+                  '../fixtures/example-dashboard.json')) as file:
+            dashboard_json = file.read()
+        dashboard_dict = json.loads(dashboard_json)
+        dashboard_dict['organisation'] = None
+        mock_render.return_value = ''
+        mock_get.return_value = dashboard_dict
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
+
+        resp = self.client.get('/administer-dashboards/clone?uuid=uuid')
+        mock_get.assert_called_once_with('uuid')
+        rendered_template = 'dashboards/create.html'
+        assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
+        kwargs = mock_render.call_args[1]
+        form = kwargs['form']
+        assert_that(form, instance_of(DashboardCreationForm))
+        assert_that(form.strapline.data, equal_to(dashboard_dict['strapline']))
+        assert_that(form['title'].data, equal_to(''))
+        assert_that(form['slug'].data, equal_to(''))
+        for m in form.modules:
+            assert_that(m['id'].data, equal_to(''))
         assert_that(resp.status_code, equal_to(200))
 
     @signed_in(permissions=['signin', 'dashboard'])

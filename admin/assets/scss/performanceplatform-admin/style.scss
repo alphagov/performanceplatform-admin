@@ -10,6 +10,24 @@
   }
 }
 
+ul.links {
+  padding-left: 0;
+  display: inline;
+  list-style: none;
+  font-size: inherit;
+
+  li {
+    display: inline-block;
+    margin-left: 3px;
+    border-left: 1px solid $gray-light;
+    padding-left: 6px;
+
+    &:first-child {
+      border-left: none;
+    }
+  }
+}
+
 .module {
   border-bottom: 1px solid #333;
   margin: 2em 0;
