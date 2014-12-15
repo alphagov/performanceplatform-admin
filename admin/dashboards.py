@@ -224,7 +224,7 @@ def format_error(verb, form, error):
         return 'Error {} the {} dashboard: {}'.format(
             verb, form.slug.data, to_error_list(form.errors))
     elif isinstance(error, ValueError):
-        return 'Error validating the {} dashbaord: {}'.format(
+        return 'Error validating the {} dashboard: {}'.format(
             form.slug.data, error.message)
 
 
