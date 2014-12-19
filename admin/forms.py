@@ -1,4 +1,5 @@
 from admin import app
+from admin.fields.json_textarea import JSONTextAreaField
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
                      SelectField, HiddenField, validators)
 from performanceplatform.client import AdminAPI
@@ -59,8 +60,8 @@ class ModuleForm(Form):
     description = TextField('Description')
     info = TextField('Info')
 
-    query_parameters = TextAreaField('Query parameters', default='{}')
-    options = TextAreaField('Visualisation settings', default='{}')
+    query_parameters = JSONTextAreaField('Query parameters', default='{}')
+    options = JSONTextAreaField('Visualisation settings', default='{}')
 
 
 def get_organisation_choices(admin_client):
