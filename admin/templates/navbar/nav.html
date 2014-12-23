@@ -30,7 +30,10 @@
           </li>
           {% if can_edit_dashboards(user) %}
             <li>
-              <a href="{{ url_for('dashboard_admin_index') }}">Administer dashboards</a>
+              <a href="{{ url_for('dashboard_admin_index') }}">Dashboards</a>
+            </li>
+            <li>
+              <a href="{{ url_for('transforms_index') }}">Transforms</a>
             </li>
           {% endif %}
           <li >

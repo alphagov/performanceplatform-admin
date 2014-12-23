@@ -34,6 +34,7 @@ log_handler.set_up_logging(app, GOVUK_ENV)
 import admin.main
 import admin.authentication
 import admin.dashboards
+import admin.transforms
 import admin.upload
 
 
