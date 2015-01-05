@@ -423,7 +423,8 @@ class DashboardTestCase(FlaskAppTestCase):
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_updating_flash_escapes_title_html(self,
                                                update_mock,
-                                               mock_list_organisations):
+                                               mock_list_organisations,
+                                               mock_get_module_types):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
