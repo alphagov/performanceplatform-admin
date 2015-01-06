@@ -1,5 +1,5 @@
 from admin import app
-from admin.forms import DashboardCreationForm
+from admin.forms import DashboardCreationForm, ModuleTypes
 from admin.helpers import (
     base_template_context,
     requires_authentication,
@@ -23,10 +23,28 @@ DASHBOARD_ROUTE = '/administer-dashboards'
 def update_modules_form_and_redirect(func):
     @functools.wraps(func)
     def wrapper(admin_client, uuid=None):
-        form = DashboardCreationForm(admin_client, request.form)
+
+        def set_section_module_choices(modules):
+            for m in [m for m in modules if m.category.data == 'container']:
+                section_type = module_types.get_section_type()
+                m.module_type.choices = [
+                    (section_type['id'], section_type['name'])]
+                m.module_type.data = section_type['id']
+            return modules
+
+        module_types = ModuleTypes()
+        form = DashboardCreationForm(
+            admin_client, module_types, request.form)
         session['pending_dashboard'] = form.data
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
+
+        if 'add_section' in request.form:
+            url = url_for('dashboard_form',
+                          uuid=uuid,
+                          section=1,
+                          modules=current_module_count(form)+1)
+            return redirect(url)
 
         if 'add_module' in request.form:
             url = url_for('dashboard_form',
@@ -37,10 +55,12 @@ def update_modules_form_and_redirect(func):
         if move_or_remove(request.form, session):
             return redirect(url_for('dashboard_form', uuid=uuid))
 
+        form.modules = set_section_module_choices(form.modules)
+
         if uuid is None:
-            return func(admin_client, form)
+            return func(admin_client, module_types, form)
         else:
-            return func(admin_client, form, uuid)
+            return func(admin_client, module_types, form, uuid)
 
     return wrapper
 
@@ -89,28 +109,41 @@ def dashboard_form(admin_client, uuid=None):
             return True
         return False
 
+    def append_new_module_forms():
+        total_modules = int(request.args.get('modules'))
+        modules_required = total_modules - len(form.modules)
+        for i in range(modules_required):
+            form.modules.append_entry()
+            choices = module_types.get_visualisation_choices()
+            form.modules[-1].module_type.choices = choices
+
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
     if uuid is not None:
         template_context['uuid'] = uuid
 
+    module_types = ModuleTypes()
     if should_use_session(session, uuid):
         form = DashboardCreationForm(admin_client,
+                                     module_types,
                                      data=session['pending_dashboard'])
     elif uuid is None:
-        form = DashboardCreationForm(admin_client, request.form)
+        form = DashboardCreationForm(admin_client,
+                                     module_types,
+                                     request.form)
     else:
         dashboard_dict = admin_client.get_dashboard(uuid)
-        form = convert_to_dashboard_form(dashboard_dict, admin_client)
+        module_types = ModuleTypes()
+        form = convert_to_dashboard_form(
+            dashboard_dict, admin_client, module_types)
 
     if 'pending_dashboard' in session:
         del session['pending_dashboard']
 
     if request.args.get('modules'):
-        total_modules = int(request.args.get('modules'))
-        modules_required = total_modules - len(form.modules)
-        for i in range(modules_required):
-            form.modules.append_entry()
+        append_new_module_forms()
+        if request.args.get('section'):
+            form.modules[-1].category.data = 'container'
 
     return render_template('dashboards/create.html',
                            form=form,
@@ -125,11 +158,11 @@ class InvalidFormFieldError(Exception):
 @requires_authentication
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
-def dashboard_update(admin_client, form, uuid):
+def dashboard_update(admin_client, module_types, form, uuid):
     try:
         if not form.validate():
             raise InvalidFormFieldError()
-        dict_for_post = build_dict_for_post(form)
+        dict_for_post = build_dict_for_post(form, module_types)
         admin_client.update_dashboard(uuid, dict_for_post)
         flash('Updated the <a href="{0}/performance/{1}">{2}</a> dashboard'
               .format(
@@ -148,11 +181,11 @@ def dashboard_update(admin_client, form, uuid):
 @requires_authentication
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
-def dashboard_create(admin_client, form):
+def dashboard_create(admin_client, module_types, form):
     try:
         if not form.validate():
             raise InvalidFormFieldError()
-        dict_for_post = build_dict_for_post(form)
+        dict_for_post = build_dict_for_post(form, module_types)
         admin_client.create_dashboard(dict_for_post)
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
@@ -166,9 +199,21 @@ def create_or_udpate(admin_client, form):
     pass
 
 
-def build_dict_for_post(form):
-    parsed_modules = []
+def build_dict_for_post(form, module_types):
+    def section_modules(modules):
+        parent_module = None
+        sectioned_modules = []
+        for module in modules:
+            if module['type_id'] == module_types.get_section_type()['id']:
+                parent_module = module
+                sectioned_modules.append(module)
+            elif parent_module:
+                parent_module['modules'].append(module)
+            else:
+                sectioned_modules.append(module)
+        return sectioned_modules
 
+    parsed_modules = []
     for (index, module) in enumerate(form.modules.entries, start=1):
         info = load_json_if_present(module.info.data.strip(), [])
         if not isinstance(info, list):
@@ -193,6 +238,7 @@ def build_dict_for_post(form):
             'options': options,
             'query_parameters': query_parameters,
             'order': index,
+            'modules': [],
         })
     return {
         'published': form.published.data,
@@ -212,7 +258,7 @@ def build_dict_for_post(form):
             'url': form.transaction_link.data,
             'type': 'transaction',
         }],
-        'modules': parsed_modules,
+        'modules': section_modules(parsed_modules),
     }
 
 

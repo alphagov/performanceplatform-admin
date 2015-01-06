@@ -8,18 +8,26 @@ from admin.dashboards import build_dict_for_post
 
 
 class DashboardTestCase(TestCase):
-    def test_convert_to_dashboard_form_returns_correct_dashboard_form(self):
+    def setUp(self):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
-            dashboard_json = file.read()
-        dashboard_dict = json.loads(dashboard_json)
-        mock_admin_client = Mock()
-        mock_admin_client.list_organisations = Mock(
+            self.dashboard_json = file.read()
+        self.mock_admin_client = Mock()
+        self.mock_admin_client.list_organisations = Mock(
             return_value=[{'id': '', 'name': ''}])
+        self.mock_module_types = Mock()
+        self.mock_module_types.get_section_type = Mock(
+            return_value={
+                'id': 'section-module-type-uuid', 'name': 'section'})
+
+    def test_convert_to_dashboard_form_returns_correct_dashboard_form(self):
+        dashboard_dict = json.loads(self.dashboard_json)
         dashboard_form = convert_to_dashboard_form(dashboard_dict,
-                                                   mock_admin_client)
-        dict_for_post = build_dict_for_post(dashboard_form)
+                                                   self.mock_admin_client,
+                                                   self.mock_module_types)
+        dict_for_post = build_dict_for_post(dashboard_form,
+                                            self.mock_module_types)
         assert_that(
             dict_for_post['description'],
             equal_to(dashboard_dict['description']))
@@ -45,3 +53,13 @@ class DashboardTestCase(TestCase):
             dict_for_post['links'], equal_to(dashboard_dict['links']))
         assert_that(
             dict_for_post['published'], equal_to(dashboard_dict['published']))
+
+    def test_convert_to_dashboard_form_returns_flattened_modules(self):
+        dashboard_dict = json.loads(self.dashboard_json)
+        dashboard_form = convert_to_dashboard_form(dashboard_dict,
+                                                   self.mock_admin_client,
+                                                   self.mock_module_types)
+        modules = dashboard_form.modules
+        assert_that(len(modules), equal_to(6))
+        assert_that(modules[-2].data['title'], equal_to('Digital services'))
+        assert_that(modules[-1].data['title'], equal_to('Digital take-up'))

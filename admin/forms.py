@@ -4,17 +4,30 @@ from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
                      SelectField, HiddenField, validators)
 from performanceplatform.client import AdminAPI
 import requests
-from os import getenv
 import json
 
 
-def convert_to_dashboard_form(dashboard_dict, admin_client):
+def convert_to_dashboard_form(dashboard_dict, admin_client, module_types):
+    def flatten_modules(modules):
+        flattened_modules = []
+        for module in modules:
+            if module['type']['id'] == module_types.get_section_type()['id']:
+                child_modules = module['modules']
+                flattened_modules.append(module)
+                flattened_modules.extend(flatten_modules(child_modules))
+            else:
+                flattened_modules.append(module)
+        return flattened_modules
+
+    dashboard_dict['modules'] = flatten_modules(dashboard_dict['modules'])
     for module in dashboard_dict['modules']:
         module['info'] = json.dumps(module['info'])
         if module['query_parameters'] is not None:
             module['query_parameters'] = json.dumps(module['query_parameters'])
         module['options'] = json.dumps(module['options'])
         module['module_type'] = module['type']['id']
+        if module['module_type'] == module_types.get_section_type()['id']:
+            module['category'] = 'container'
         module['uuid'] = module['id']
     transaction_link = [link for link
                         in dashboard_dict['links']
@@ -29,29 +42,46 @@ def convert_to_dashboard_form(dashboard_dict, admin_client):
     else:
         organisation_id = None
     dashboard_dict['owning_organisation'] = organisation_id
-    return DashboardCreationForm(admin_client, data=dashboard_dict)
+    return DashboardCreationForm(admin_client,
+                                 module_types,
+                                 data=dashboard_dict)
 
 
-def get_module_choices():
-    choices = [('', '')]
+class ModuleTypes():
+    def __init__(self):
+        self.types_cache = None
 
-    if not getenv('TESTING', False):
-        try:
-            # Create an unauthenticated client
-            admin_client = AdminAPI(app.config['STAGECRAFT_HOST'], None)
-            module_types = admin_client.list_module_types()
-            choices += [
-                (module['id'], module['name']) for module in module_types]
-        except requests.ConnectionError:
-            if not app.config['DEBUG']:
-                raise
-    return choices
+    def get_types(self):
+        if self.types_cache is None:
+            self.types_cache = []
+            try:
+                admin_client = AdminAPI(
+                    app.config['STAGECRAFT_HOST'], None)
+                self.types_cache = admin_client.list_module_types()
+            except requests.ConnectionError:
+                if not app.config['DEBUG']:
+                    raise
+        return self.types_cache
+
+    def get_section_type(self):
+        return (module for module in self.get_types()
+                if module["name"] == "section").next()
+
+    def get_visualisation_choices(self):
+        choices = [('', '')]
+        choices += [
+            (module['id'], module['name'])
+            for module in self.get_types()
+            if module['name'] != 'section'
+        ]
+        return choices
 
 
 class ModuleForm(Form):
     id = HiddenField('UUID')
-    module_type = SelectField('Module type', choices=get_module_choices())
+    category = HiddenField('category', default='visualisation')
 
+    module_type = SelectField('Module type')
     data_group = TextField('Data group')
     data_type = TextField('Data type')
 
@@ -79,10 +109,12 @@ def get_organisation_choices(admin_client):
 
 
 class DashboardCreationForm(Form):
-    def __init__(self, admin_client, *args, **kwargs):
+    def __init__(self, admin_client, module_types,  *args, **kwargs):
         super(DashboardCreationForm, self).__init__(*args, **kwargs)
         self.owning_organisation.choices = get_organisation_choices(
             admin_client)
+        for m in self.modules:
+            m.module_type.choices = module_types.get_visualisation_choices()
 
     dashboard_type = SelectField('Dashboard type', choices=[
         ('transaction', 'Transaction'),
