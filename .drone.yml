@@ -1,0 +1,6 @@
+image: bradrydzewski/python:2.7
+services:
+  - redis
+script:
+  - pip install -q -r requirements_for_tests.txt
+  - ./run_tests.sh
