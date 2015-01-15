@@ -20,12 +20,14 @@ class DashboardTestCase(TestCase):
         self.mock_module_types.get_section_type = Mock(
             return_value={
                 'id': 'section-module-type-uuid', 'name': 'section'})
+        self.mock_data_sources = Mock()
 
     def test_convert_to_dashboard_form_returns_correct_dashboard_form(self):
         dashboard_dict = json.loads(self.dashboard_json)
         dashboard_form = convert_to_dashboard_form(dashboard_dict,
                                                    self.mock_admin_client,
-                                                   self.mock_module_types)
+                                                   self.mock_module_types,
+                                                   self.mock_data_sources)
         dict_for_post = build_dict_for_post(dashboard_form,
                                             self.mock_module_types)
         assert_that(
@@ -58,7 +60,8 @@ class DashboardTestCase(TestCase):
         dashboard_dict = json.loads(self.dashboard_json)
         dashboard_form = convert_to_dashboard_form(dashboard_dict,
                                                    self.mock_admin_client,
-                                                   self.mock_module_types)
+                                                   self.mock_module_types,
+                                                   self.mock_data_sources)
         modules = dashboard_form.modules
         assert_that(len(modules), equal_to(6))
         assert_that(modules[-2].data['title'], equal_to('Digital services'))
