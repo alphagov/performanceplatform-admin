@@ -1,13 +1,16 @@
 from admin import app
 from admin.fields.json_textarea import JSONTextAreaField
+from flask import session
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     SelectField, HiddenField, validators)
+                     HiddenField, validators)
+from wtforms_components.fields.select import SelectField
 from performanceplatform.client import AdminAPI
 import requests
 import json
 
 
-def convert_to_dashboard_form(dashboard_dict, admin_client, module_types):
+def convert_to_dashboard_form(
+        dashboard_dict, admin_client, module_types, data_sources):
     def flatten_modules(modules):
         flattened_modules = []
         for module in modules:
@@ -44,6 +47,7 @@ def convert_to_dashboard_form(dashboard_dict, admin_client, module_types):
     dashboard_dict['owning_organisation'] = organisation_id
     return DashboardCreationForm(admin_client,
                                  module_types,
+                                 data_sources,
                                  data=dashboard_dict)
 
 
@@ -77,13 +81,58 @@ class ModuleTypes():
         return choices
 
 
+class DataSources():
+    def __init__(self):
+        self._data_sets = []
+        try:
+            admin_client = AdminAPI(
+                app.config['STAGECRAFT_HOST'],
+                session['oauth_token']['access_token'],
+                None)
+            self._data_sets = admin_client.list_data_sets()
+        except requests.ConnectionError:
+            if not app.config['DEBUG']:
+                raise
+        sources = [
+            (ds['data_group'], ds['data_type']) for ds in self._data_sets]
+        self.sources = list(set(sources))
+
+    def _groups(self):
+        return list(set([source[0] for source in self.sources]))
+
+    def group_choices(self):
+        choices = [('', '')]
+        choices += [(group, group) for group in self._groups()]
+        choices.sort(key=lambda tup: tup[0])
+        return choices
+
+    def _sorted_sources(self):
+        sources = list(self.sources)
+        sources.sort(key=lambda tup: (tup[0], tup[1]))
+        return sources
+
+    def type_choices(self):
+        choices = [('', '')]
+        current_group = None
+        for source in self._sorted_sources():
+            if source[0] != current_group:
+                choices += [(source[0], [(source[1], source[1])])]
+                current_group = source[0]
+            else:
+                choices[-1][1].append((source[1], source[1]))
+        return choices
+
+
 class ModuleForm(Form):
+    def __init__(self, *args, **kwargs):
+        super(ModuleForm, self).__init__(*args, **kwargs)
+
     id = HiddenField('UUID')
     category = HiddenField('category', default='visualisation')
 
     module_type = SelectField('Module type')
-    data_group = TextField('Data group')
-    data_type = TextField('Data type')
+    data_group = SelectField('Data group', default='')
+    data_type = SelectField('Data type', default='')
 
     slug = TextField('Module URL')
     title = TextField('Title')
@@ -109,12 +158,15 @@ def get_organisation_choices(admin_client):
 
 
 class DashboardCreationForm(Form):
-    def __init__(self, admin_client, module_types,  *args, **kwargs):
+    def __init__(
+            self, admin_client, module_types, data_sources,  *args, **kwargs):
         super(DashboardCreationForm, self).__init__(*args, **kwargs)
         self.owning_organisation.choices = get_organisation_choices(
             admin_client)
         for m in self.modules:
             m.module_type.choices = module_types.get_visualisation_choices()
+            m.data_group.choices = data_sources.group_choices()
+            m.data_type.choices = data_sources.type_choices()
 
     dashboard_type = SelectField('Dashboard type', choices=[
         ('transaction', 'Transaction'),

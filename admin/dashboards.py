@@ -1,5 +1,5 @@
 from admin import app
-from admin.forms import DashboardCreationForm, ModuleTypes
+from admin.forms import DashboardCreationForm, ModuleTypes, DataSources
 from admin.helpers import (
     base_template_context,
     requires_authentication,
@@ -33,8 +33,9 @@ def update_modules_form_and_redirect(func):
             return modules
 
         module_types = ModuleTypes()
+        data_sources = DataSources()
         form = DashboardCreationForm(
-            admin_client, module_types, request.form)
+            admin_client, module_types, data_sources, request.form)
         session['pending_dashboard'] = form.data
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
@@ -116,6 +117,10 @@ def dashboard_form(admin_client, uuid=None):
             form.modules.append_entry()
             choices = module_types.get_visualisation_choices()
             form.modules[-1].module_type.choices = choices
+            choices = data_sources.group_choices()
+            form.modules[-1].data_group.choices = choices
+            choices = data_sources.type_choices()
+            form.modules[-1].data_type.choices = choices
 
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
@@ -123,18 +128,21 @@ def dashboard_form(admin_client, uuid=None):
         template_context['uuid'] = uuid
 
     module_types = ModuleTypes()
+    data_sources = DataSources()
     if should_use_session(session, uuid):
         form = DashboardCreationForm(admin_client,
                                      module_types,
+                                     data_sources,
                                      data=session['pending_dashboard'])
     elif uuid is None:
         form = DashboardCreationForm(admin_client,
                                      module_types,
+                                     data_sources,
                                      request.form)
     else:
         dashboard_dict = admin_client.get_dashboard(uuid)
         form = convert_to_dashboard_form(
-            dashboard_dict, admin_client, module_types)
+            dashboard_dict, admin_client, module_types, data_sources)
 
     if 'pending_dashboard' in session:
         del session['pending_dashboard']
@@ -157,7 +165,7 @@ def dashboard_clone(admin_client):
     template_context['user'] = session['oauth_user']
     dashboard_dict = admin_client.get_dashboard(request.args.get('uuid'))
     form = convert_to_dashboard_form(
-        dashboard_dict, admin_client, ModuleTypes())
+        dashboard_dict, admin_client, ModuleTypes(), DataSources())
     form['title'].data = ''
     form['slug'].data = ''
     form['published'].data = False
