@@ -566,6 +566,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(form.strapline.data, equal_to(dashboard_dict['strapline']))
         assert_that(form['title'].data, equal_to(''))
         assert_that(form['slug'].data, equal_to(''))
+        assert_that(form['published'].data, equal_to(False))
         for m in form.modules:
             assert_that(m['id'].data, equal_to(''))
         assert_that(resp.status_code, equal_to(200))
