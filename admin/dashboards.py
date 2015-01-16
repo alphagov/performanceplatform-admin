@@ -160,6 +160,7 @@ def dashboard_clone(admin_client):
         dashboard_dict, admin_client, ModuleTypes())
     form['title'].data = ''
     form['slug'].data = ''
+    form['published'].data = False
     for m in form.modules:
         m['id'].data = ''
     return render_template('dashboards/create.html',
