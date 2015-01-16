@@ -1,10 +1,11 @@
 from unittest import TestCase
-from admin.forms import convert_to_dashboard_form
-from hamcrest import assert_that, equal_to
+from admin.forms import convert_to_dashboard_form, DataSources
+from hamcrest import assert_that, equal_to, contains_inanyorder, contains
 from mock import Mock
 import os
 import json
 from admin.dashboards import build_dict_for_post
+from tests.admin.test_dashboards import data_sets_list
 
 
 class DashboardTestCase(TestCase):
@@ -66,3 +67,34 @@ class DashboardTestCase(TestCase):
         assert_that(len(modules), equal_to(6))
         assert_that(modules[-2].data['title'], equal_to('Digital services'))
         assert_that(modules[-1].data['title'], equal_to('Digital take-up'))
+
+
+class DataSourcesTestCase(TestCase):
+    def setUp(self):
+        mock_admin_client = Mock()
+        mock_admin_client.list_data_sets = Mock(
+            return_value=data_sets_list())
+        self.data_sources = DataSources(mock_admin_client, 'foo')
+
+    def test_derives_sources_from_data_sets(self):
+        sources = self.data_sources.sources
+        assert_that(sources, contains_inanyorder(
+            ('vehicle-licensing', 'channels'),
+            ('vehicle-licensing', 'failures'),
+            ('carers-allowance', 'realtime')))
+
+    def tests_builds_sorted_group_choices_without_duplicates(self):
+        choices = self.data_sources.group_choices()
+        assert_that(choices, contains(
+            ('', ''),
+            ('carers-allowance', 'carers-allowance'),
+            ('vehicle-licensing', 'vehicle-licensing')))
+
+    def test_builds_sorted_data_type_choices_by_group(self):
+        choices = self.data_sources.type_choices()
+        assert_that(choices, contains(
+            ('', ''),
+            ('carers-allowance', [
+                ('realtime', 'realtime')]),
+            ('vehicle-licensing', [
+                ('channels', 'channels'), ('failures', 'failures')])))

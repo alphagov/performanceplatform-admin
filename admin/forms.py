@@ -1,6 +1,5 @@
 from admin import app
 from admin.fields.json_textarea import JSONTextAreaField
-from flask import session
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
                      HiddenField, validators)
 from wtforms_components.fields.select import SelectField
@@ -82,19 +81,10 @@ class ModuleTypes():
 
 
 class DataSources():
-    def __init__(self):
-        self._data_sets = []
-        try:
-            admin_client = AdminAPI(
-                app.config['STAGECRAFT_HOST'],
-                session['oauth_token']['access_token'],
-                None)
-            self._data_sets = admin_client.list_data_sets()
-        except requests.ConnectionError:
-            if not app.config['DEBUG']:
-                raise
+    def __init__(self, admin_client, session_access_token):
+        data_sets = admin_client.list_data_sets()
         sources = [
-            (ds['data_group'], ds['data_type']) for ds in self._data_sets]
+            (ds['data_group'], ds['data_type']) for ds in data_sets]
         self.sources = list(set(sources))
 
     def _groups(self):
