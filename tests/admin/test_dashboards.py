@@ -105,7 +105,7 @@ def valid_dashboard_data(options=None):
     return data
 
 
-@patch("admin.forms.ModuleTypes.get_types",
+@patch("performanceplatform.client.admin.AdminAPI.list_module_types",
        return_value=module_types_list())
 @patch("performanceplatform.client.admin.AdminAPI.list_data_sets",
        return_value=data_sets_list())
@@ -121,7 +121,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                               create_dashboard,
                                               mock_list_organisations,
                                               mock_list_data_sets,
-                                              mock_get_module_types):
+                                              mock_list_module_types):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -158,7 +158,7 @@ class DashboardTestCase(FlaskAppTestCase):
             create_dashboard,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types):
+            mock_list_module_types):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -227,7 +227,7 @@ class DashboardTestCase(FlaskAppTestCase):
     def test_creating_dashboard_without_organisation(self,
                                                      mock_list_organisations,
                                                      mock_list_data_sets,
-                                                     mock_get_module_types):
+                                                     mock_list_module_types):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -249,7 +249,7 @@ class DashboardTestCase(FlaskAppTestCase):
                              create_dashboard,
                              mock_list_organisations,
                              mock_list_data_sets,
-                             mock_get_module_types):
+                             mock_list_module_types):
         info_tests = [
             ('asdas',   False, 'Not valid JSON'),
             ('{}',      False, 'Not an array'),
@@ -292,7 +292,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types):
+            mock_list_module_types):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -310,7 +310,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                                     create_dashboard,
                                                     mock_list_organisations,
                                                     mock_list_data_sets,
-                                                    mock_get_module_types):
+                                                    mock_list_module_types):
         with self.app as admin_app:
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
@@ -332,7 +332,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                                      create_dashboard,
                                                      mock_list_organisations,
                                                      mock_list_data_sets,
-                                                     mock_get_module_types):
+                                                     mock_list_module_types):
         dashboard_data = {
             'slug': 'valid-slug',
         }
@@ -356,7 +356,7 @@ class DashboardTestCase(FlaskAppTestCase):
             create_dashboard,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types):
+            mock_list_module_types):
         response_json_mock = Mock()
         response_json_mock.return_value = {'message': 'Error message'}
         response = requests.Response()
@@ -385,7 +385,7 @@ class DashboardTestCase(FlaskAppTestCase):
     def test_add_module_redirects_back_to_the_form(self,
                                                    mock_list_organisations,
                                                    mock_list_data_sets,
-                                                   mock_get_module_types,
+                                                   mock_list_module_types,
                                                    client):
         resp = client.post('/administer-dashboards',
                            data={'add_module': 1})
@@ -401,7 +401,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                          update_mock,
                                          mock_list_organisations,
                                          mock_list_data_sets,
-                                         mock_get_module_types):
+                                         mock_list_module_types):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
@@ -444,7 +444,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                                update_mock,
                                                mock_list_organisations,
                                                mock_list_data_sets,
-                                               mock_get_module_types):
+                                               mock_list_module_types):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
@@ -455,7 +455,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'title': 'Bad title<h1>boo</h1>'
         })
 
-        resp = self.client.post(
+        self.client.post(
             '/administer-dashboards/uuid', data=data)
         expected_flash = 'Updated the <a href="http://spotlight.development' + \
             '.performance.service.gov.uk/performance/valid-slug">' + \
@@ -468,7 +468,7 @@ class DashboardTestCase(FlaskAppTestCase):
             update_mock,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types):
+            mock_list_module_types):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
@@ -510,7 +510,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                  mock_get,
                                  mock_list_organisations,
                                  mock_list_data_sets,
-                                 mock_get_module_types):
+                                 mock_list_module_types):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
@@ -540,7 +540,7 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_get,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types):
+            mock_list_module_types):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
@@ -571,7 +571,7 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_get,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types):
+            mock_list_module_types):
         with open(os.path.join(
                   os.path.dirname(__file__),
                   '../fixtures/example-dashboard.json')) as file:
@@ -606,7 +606,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',
@@ -629,7 +629,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         data = {
             'slug': 'my-valid-slug',
@@ -657,7 +657,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',
@@ -683,7 +683,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',
@@ -709,7 +709,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',
@@ -735,7 +735,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',
@@ -761,7 +761,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',
@@ -787,7 +787,7 @@ class DashboardTestCase(FlaskAppTestCase):
             self,
             mock_list_organisations,
             mock_list_data_sets,
-            mock_get_module_types,
+            mock_list_module_types,
             client):
         form_data = {
             'slug': 'valid-slug',

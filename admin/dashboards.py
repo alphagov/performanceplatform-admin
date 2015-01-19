@@ -32,7 +32,7 @@ def update_modules_form_and_redirect(func):
                 m.module_type.data = section_type['id']
             return modules
 
-        module_types = ModuleTypes()
+        module_types = ModuleTypes(admin_client)
         data_sources = DataSources(
             admin_client, session['oauth_token']['access_token'])
         form = DashboardCreationForm(
@@ -128,7 +128,7 @@ def dashboard_form(admin_client, uuid=None):
     if uuid is not None:
         template_context['uuid'] = uuid
 
-    module_types = ModuleTypes()
+    module_types = ModuleTypes(admin_client)
     data_sources = DataSources(
         admin_client, session['oauth_token']['access_token'])
     if should_use_session(session, uuid):
@@ -169,7 +169,7 @@ def dashboard_clone(admin_client):
     form = convert_to_dashboard_form(
         dashboard_dict,
         admin_client,
-        ModuleTypes(),
+        ModuleTypes(admin_client),
         DataSources(admin_client, session['oauth_token']['access_token']))
     form['title'].data = ''
     form['slug'].data = ''

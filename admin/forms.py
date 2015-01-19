@@ -3,7 +3,6 @@ from admin.fields.json_textarea import JSONTextAreaField
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
                      HiddenField, validators)
 from wtforms_components.fields.select import SelectField
-from performanceplatform.client import AdminAPI
 import requests
 import json
 
@@ -51,30 +50,18 @@ def convert_to_dashboard_form(
 
 
 class ModuleTypes():
-    def __init__(self):
-        self.types_cache = None
-
-    def get_types(self):
-        if self.types_cache is None:
-            self.types_cache = []
-            try:
-                admin_client = AdminAPI(
-                    app.config['STAGECRAFT_HOST'], None)
-                self.types_cache = admin_client.list_module_types()
-            except requests.ConnectionError:
-                if not app.config['DEBUG']:
-                    raise
-        return self.types_cache
+    def __init__(self, admin_client):
+        self.types = admin_client.list_module_types()
 
     def get_section_type(self):
-        return (module for module in self.get_types()
+        return (module for module in self.types
                 if module["name"] == "section").next()
 
     def get_visualisation_choices(self):
         choices = [('', '')]
         choices += [
             (module['id'], module['name'])
-            for module in self.get_types()
+            for module in self.types
             if module['name'] != 'section'
         ]
         return choices
