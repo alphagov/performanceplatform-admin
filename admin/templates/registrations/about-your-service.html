@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h1>About your service</h1>
+
+<div class="row">
+  <p class="col-sm-8 col-md-6">
+    We will use these details to check your eligibilty for a performance
+    dashboard and create you a template dashboard into which you can add
+    and edit your data.
+  </p>
+</div>
+
+<form method="POST" action="{{ url_for('about_your_service') }}" role="form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <div class="row">
+    <div class="form-group col-sm-8 col-md-6">
+      {{ form.service_name.label }}
+      {{ form.service_name(class='form-control') }}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="form-group col-sm-8 col-md-6">
+      {{ form.service_url.label }}
+      <span class="hint">(optional)</span>
+      <p class="hint">Start your URL with http:// or https://</p>
+      {{ form.service_url(class='form-control') }}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="form-group col-sm-8 col-md-6">
+      {{ form.service_description.label }}
+      <span class="hint">(Max 200 words)</span>
+      {{ form.service_description(class='form-control', rows='4') }}
+    </div>
+  </div>
+
+  <div class="row callout">
+    <p class="col-sm-8 col-md-6">
+      This description shall appear at the bottom of your dashboard</br>
+      <a href="https://www.gov.uk/performance/standard-dashboard">Take a look an example</a>
+    </p>
+  </div>
+
+  <div class="row">
+    <p class="col-sm-8 col-md-6">
+      These details shall be reviewed and possibly amended by our content
+      designers before your template dashboard is created. You will have
+      the opportunity to amend any changes made by our team.
+    </p>
+  </div>
+
+  <input type="submit" class="btn btn-success" value="Submit application" name="submit-application">
+</form>
+
+{% endblock %}

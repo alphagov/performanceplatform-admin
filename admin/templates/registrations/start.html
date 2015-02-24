@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h1>Apply for a dashboard</h1>
+<div class="row">
+  <p class="col-sm-8 col-md-6">
+    <big>
+      If you own or work on a transactional service on GOV.UK,
+      you can now get a performance dashboard for it displaying the
+      <a href="https://www.gov.uk/service-manual/measurement">4 digital KPIs</a>
+      (key performance indicators) for your service as required by the
+      <a href="https://www.gov.uk/service-manual/digital-by-default">service standard</a>.
+    </big>
+  </p>
+</div>
+
+<div class="row">
+  <p class="col-sm-8 col-md-6">
+    You will need to send us basic details about you and your service and
+    within 3 days we shall email you with a login to our Get a dashboard service.
+  </p>
+</div>
+
+<div class="row callout">
+  <p class="col-sm-8 col-md-6">
+    The details about you and your service shall be reviewed by the
+    Performance Platform team who shall the set up a GOV.UK Signon
+    account for your dashboard and email you with login details
+    within 3 working days.
+  </p>
+</div>
+
+<p>
+  When you're done, your dashboard will look like
+  <a href="https://www.gov.uk/performance/standard-dashboard">this example</a>.
+</p>
+
+<p>
+  <a href="{{ url_for('about_you') }}" class="btn btn-success btn-lg">Apply now</a>
+</p>
+
+<h2 class="h4">About the 4 digital KPIs</h2>
+
+<p>The 4 digital KPIs are part of the
+  <a href="https://www.gov.uk/service-manual">Digital Service Design Manual</a>.
+</p>
+
+<p>They are:</p>
+<ul>
+  <li>Admin cost per user</li>
+  <li>Digital take-up</li>
+  <li>User satisfaction</li>
+  <li>Completion rate</li>
+</ul>
+
+{% endblock %}
