@@ -47,3 +47,27 @@ ul.links {
 textarea.json-field {
   height: 10em;
 }
+
+.hint {
+  color: $gray-light;
+}
+
+.form-group p.hint {
+  margin-bottom: 0;
+}
+
+.confirmation-box {
+  background-color: #6F9B95;
+  color: #FFF;
+  text-align: center;
+  padding: 10px;
+
+  h1 {
+    margin-top: 10px;
+    font-weight: normal;
+
+    span.glyphicon {
+      font-size: 75%;
+    }
+  }
+}
