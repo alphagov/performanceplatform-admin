@@ -1,8 +1,10 @@
 from admin import app
-from flask import session, redirect, url_for
+from flask import abort, session, redirect, request, url_for
 from functools import wraps
 from os import getenv
 from performanceplatform.client.admin import AdminAPI
+from requests_oauthlib import OAuth2Session
+from requests import Timeout, ConnectionError
 
 
 environment = getenv('INFRASTRUCTURE_ENV', 'development')
@@ -30,6 +32,9 @@ def requires_authentication(f):
 
 
 def requires_permission(permission=None):
+    """
+    Used for application level requests from a client.
+    """
     def wrap(f):
 
         @wraps(f)
@@ -50,6 +55,39 @@ def requires_permission(permission=None):
         return verify_user_has_permission
 
     return wrap
+
+
+def api_permission_required(permission=None):
+    """
+    Used for API level requests originating from signonotron.
+    """
+    def decorator(f):
+        @wraps(f)
+        def verify_api_user_has_permission(*args, **kwargs):
+            if permission is None:
+                raise Exception('@api_permission_required needs an argument')
+
+            access_token = _extract_bearer_token(request)
+
+            if access_token is None:
+                abort(401, 'no access token given.')
+
+            user = _get_user(access_token)
+
+            if user is None:
+                # This is very unexpected, since we expect the token to come
+                # from signonotron. Possibly under attack, or crossing the
+                # environments?
+                abort(401, 'invalid access token.')
+
+            if permission in user['user']['permissions']:
+                return f(*args, **kwargs)
+            else:
+                abort(403, 'user lacks permission.')
+
+        return verify_api_user_has_permission
+
+    return decorator
 
 
 def get_admin_client(session):
@@ -96,3 +134,46 @@ def group_by_group(data_sets):
             grouped_data_sets[item['data_group']] = []
             grouped_data_sets[item['data_group']].append(item)
     return grouped_data_sets
+
+
+def _extract_bearer_token(request):
+    auth_header = request.headers.get('Authorization', None)
+    if auth_header is None:
+        return None
+
+    return _get_valid_token(auth_header)
+
+
+def _get_valid_token(auth_header):
+    """
+    >>> _get_valid_token(u'Bearer some-token') == 'some-token'
+    True
+    >>> _get_valid_token('Bearer ') is None
+    True
+    >>> _get_valid_token('Something Else') is None
+    True
+    """
+    prefix = 'Bearer '
+    if not auth_header.startswith(prefix):
+        return None
+
+    token = auth_header[len(prefix):]
+    return token if len(token) else None
+
+
+def _get_user(token):
+    gds_session = OAuth2Session(
+        app.config['SIGNON_OAUTH_ID'],
+        token={'access_token': token, 'type': 'Bearer'},
+    )
+    try:
+        user_request = gds_session.get('{0}/user.json'.format(
+            app.config['SIGNON_BASE_URL']), timeout=30)
+    except (Timeout, ConnectionError):
+        abort(500, 'Error connecting to signon service')
+    if str(user_request.status_code)[0] in ('4', '5'):
+        abort(user_request.status_code, user_request.reason)
+    try:
+        return user_request.json()
+    except ValueError:
+        abort(500, 'Unable to parse signon json')
