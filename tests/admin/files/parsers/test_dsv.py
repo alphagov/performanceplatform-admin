@@ -10,6 +10,7 @@ from hamcrest import assert_that, only_contains, is_, contains
 
 
 class ParseCsvTestCase(unittest.TestCase):
+
     def test_parse_csv(self):
         csv_stream = _string_io("a,b\nx,y\nq,w")
 
@@ -141,6 +142,7 @@ class ParseCsvTestCase(unittest.TestCase):
 
 
 class LinesGeneratorTest(unittest.TestCase):
+
     def test_handles_CR_LF_and_CRLF(self):
         text = "1\n2\r3\r\n4"
 

@@ -11,6 +11,7 @@ import json
 
 
 class DashboardIndexTestCase(FlaskAppTestCase):
+
     def setUp(self):
         self.app = app.test_client()
 
@@ -112,6 +113,7 @@ def valid_dashboard_data(options=None):
 @patch("performanceplatform.client.admin.AdminAPI.list_organisations",
        return_value=organisations_list())
 class DashboardTestCase(FlaskAppTestCase):
+
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
         self.app = app.test_client()

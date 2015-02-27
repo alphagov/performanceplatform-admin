@@ -9,6 +9,7 @@ from tests.admin.test_dashboards import data_sets_list
 
 
 class DashboardTestCase(TestCase):
+
     def setUp(self):
         with open(os.path.join(
                   os.path.dirname(__file__),
@@ -70,6 +71,7 @@ class DashboardTestCase(TestCase):
 
 
 class DataSourcesTestCase(TestCase):
+
     def setUp(self):
         mock_admin_client = Mock()
         mock_admin_client.list_data_sets = Mock(

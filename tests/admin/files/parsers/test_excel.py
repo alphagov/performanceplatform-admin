@@ -12,6 +12,7 @@ def fixture_path(name):
 
 
 class ParseExcelTestCase(unittest.TestCase):
+
     def _parse_excel(self, file_name):
         file_stream = open(fixture_path(file_name))
         return parse_excel(file_stream)

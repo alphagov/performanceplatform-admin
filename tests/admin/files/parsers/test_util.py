@@ -7,6 +7,7 @@ from hamcrest import only_contains, assert_that
 
 
 class TestMakeRecords(unittest.TestCase):
+
     def test_make_records_from_rows(self):
         rows = [
             ["name", "size"],
