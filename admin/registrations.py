@@ -1,4 +1,5 @@
 from flask import (session, render_template, url_for, flash, redirect)
+import boto.ses
 from admin import app
 from performanceplatform.client.admin import AdminAPI
 from admin.forms import AboutYouForm, AboutYourServiceForm
@@ -45,6 +46,7 @@ def about_your_service():
         session['service_name'] = form.data['service_name']
         session['service_url'] = form.data['service_url']
         session['service_description'] = form.data['service_description']
+        send_application_email()
         return redirect(url_for('confirmation'))
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
@@ -52,6 +54,34 @@ def about_your_service():
         'registrations/about-your-service.html',
         form=form,
         **template_context)
+
+
+def send_application_email():
+    conn = boto.ses.connect_to_region(
+        'us-east-1',
+        aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
+
+    body_text = (
+        "Full name: {0}\n\n"
+        "Email address: {1}\n\n"
+        "Organisation name: {2}\n\n"
+        "Service name: {3}\n\n"
+        "Service URL: {4}\n\n"
+        "Service description:\n{5}").format(
+            session['full_name'],
+            session['email_address'],
+            session['organisation_name'],
+            session['service_name'],
+            session['service_url'],
+            session['service_description'])
+
+    conn.send_email(
+        app.config['NO_REPLY_EMAIL'],
+        'New dashboard application',
+        body_text,
+        app.config['NOTIFICATIONS_EMAIL'],
+        reply_addresses=app.config['NO_REPLY_EMAIL'])
 
 
 @app.route('{0}/confirmation'.format(REGISTER_ROUTE), methods=['GET'])
