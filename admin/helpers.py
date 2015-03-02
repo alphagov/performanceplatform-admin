@@ -81,6 +81,10 @@ def api_permission_required(permission=None):
                 abort(401, 'invalid access token.')
 
             if permission in user['user']['permissions']:
+                session['oauth_user'] = user['user']
+                session['oauth_token'] = {
+                    'access_token': access_token
+                }
                 return f(*args, **kwargs)
             else:
                 abort(403, 'user lacks permission.')

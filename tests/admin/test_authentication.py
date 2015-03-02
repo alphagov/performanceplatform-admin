@@ -10,6 +10,7 @@ from admin import app
 from admin.authentication import get_authorization_url
 from admin.redis_session import RedisSession
 from requests import ConnectionError, Timeout
+from performanceplatform.client.admin import AdminAPI
 
 
 @patch('requests_oauthlib.OAuth2Session.fetch_token')
@@ -137,6 +138,7 @@ class AuthenticationTestCase(FlaskAppTestCase):
         assert_equal(session, {'oauth_state': 'state'})
 
 
+@patch('performanceplatform.client.admin.AdminAPI.reauth')
 @patch('requests_oauthlib.OAuth2Session.get')
 @patch('admin.redis_session.RedisSession.delete_sessions_for_user')
 class SignonCallbacksTestCase(FlaskAppTestCase):
@@ -148,11 +150,13 @@ class SignonCallbacksTestCase(FlaskAppTestCase):
     def test_reauth_with_invalid_user(
             self,
             session_delete_sessions_for_user_patch,
-            oauth_get_patch):
+            oauth_get_patch,
+            reauth_patch):
         # Set up the Mock for calling Signon
         self.mock_signon_json(
             oauth_get_patch).return_value = self.not_allowed_user_update_json()
-        self.expect_session_unchanged(session_delete_sessions_for_user_patch)
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
 
         response = self.do_reauth_post()
         self.assertEqual(403, response.status_code, response.data)
@@ -160,10 +164,12 @@ class SignonCallbacksTestCase(FlaskAppTestCase):
     def test_reauth_when_invalid_json(
             self,
             session_delete_sessions_for_user_patch,
-            oauth_get_patch):
+            oauth_get_patch,
+            reauth_patch):
         # Set up the Mock for calling Signon
         self.mock_signon_json(oauth_get_patch).side_effect = ValueError()
-        self.expect_session_unchanged(session_delete_sessions_for_user_patch)
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
 
         response = self.do_reauth_post()
         self.assertEqual(500, response.status_code, response.data)
@@ -171,7 +177,8 @@ class SignonCallbacksTestCase(FlaskAppTestCase):
     def test_reauth_with_valid_user(
             self,
             session_delete_sessions_for_user_patch,
-            oauth_get_patch):
+            oauth_get_patch,
+            reauth_patch):
         # Set up the Mock for calling Signon
         self.mock_signon_json(
             oauth_get_patch).return_value = self.allowed_user_update_json()
@@ -181,38 +188,43 @@ class SignonCallbacksTestCase(FlaskAppTestCase):
         self.assertEqual(200, response.status_code, response.data)
 
         session_delete_sessions_for_user_patch.assert_called_with('user-uid')
+        reauth_patch.assert_called_with('user-uid')
 
     def test_reauth_when_signon_down(
             self,
             session_delete_sessions_for_user_patch,
-            oauth_get_patch):
+            oauth_get_patch,
+            reauth_patch):
         # Set up the Mock for calling Signon
         oauth_get_patch.side_effect = ConnectionError()
-        self.expect_session_unchanged(session_delete_sessions_for_user_patch)
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
 
         response = self.do_reauth_post()
-        # assert no session was cleared
         self.assertEqual(500, response.status_code, response.data)
 
     def test_reauth_when_signon_really_slow(
             self,
             session_delete_sessions_for_user_patch,
-            oauth_get_patch):
+            oauth_get_patch,
+            reauth_patch):
         # Set up the Mock for calling Signon
         oauth_get_patch.side_effect = Timeout()
-        self.expect_session_unchanged(session_delete_sessions_for_user_patch)
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
 
         response = self.do_reauth_post()
-        # assert no session was cleared
         self.assertEqual(500, response.status_code, response.data)
 
     def test_reauth_when_signon_unauthenticated(
             self,
             session_delete_sessions_for_user_patch,
-            oauth_get_patch):
+            oauth_get_patch,
+            reauth_patch):
         # Set up the Mock for calling Signon
         oauth_get_patch.return_value.status_code = 401
-        self.expect_session_unchanged(session_delete_sessions_for_user_patch)
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
 
         response = self.do_reauth_post()
         self.assertEqual(401, response.status_code, response.data)
@@ -220,11 +232,10 @@ class SignonCallbacksTestCase(FlaskAppTestCase):
     def mock_signon_json(self, mock_signon):
         return mock_signon.return_value.json
 
-    def expect_session_unchanged(self, session_delete_sessions_for_user_patch):
-        # assert that the sessions weren't updated. If this is caused, then
+    def expected_unused(self, patched_mock):
+        # assert that the mock wasn't used. If this is caused, then
         # things should fail in tests.
-        session_delete_sessions_for_user_patch.side_effect = Exception(
-            "Unexpected session alteration")
+        patched_mock.side_effect = Exception("Unexpected usage")
 
     def allowed_user_update_json(self):
         return self.create_user_json(['user_update_permission'])

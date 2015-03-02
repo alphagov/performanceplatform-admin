@@ -1,7 +1,7 @@
 from admin import app, csrf
 from flask import redirect, request, session, url_for, flash
 from requests_oauthlib import OAuth2Session
-from helpers import api_permission_required
+from helpers import api_permission_required, get_admin_client
 
 
 def get_authorization_url(session):
@@ -109,4 +109,5 @@ def reauth(uid):
         403 on failure, as the user didn't have the correct permissions.
     """
     session.delete_sessions_for_user(uid)
+    get_admin_client(session).reauth(uid)
     return ''
