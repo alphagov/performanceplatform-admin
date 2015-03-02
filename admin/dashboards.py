@@ -45,13 +45,13 @@ def update_modules_form_and_redirect(func):
             url = url_for('dashboard_form',
                           uuid=uuid,
                           section=1,
-                          modules=current_module_count(form)+1)
+                          modules=current_module_count(form) + 1)
             return redirect(url)
 
         if 'add_module' in request.form:
             url = url_for('dashboard_form',
                           uuid=uuid,
-                          modules=current_module_count(form)+1)
+                          modules=current_module_count(form) + 1)
             return redirect(url)
 
         if move_or_remove(request.form, session):
@@ -346,7 +346,8 @@ def move_or_remove(request_form, session):
     if index is not None:
         modules = session['pending_dashboard']['modules']
         if index < len(modules) - 1:
-            modules[index], modules[index+1] = modules[index+1], modules[index]
+            modules[index], modules[
+                index + 1] = modules[index + 1], modules[index]
             session['pending_dashboard']['modules'] = modules
         return True
 
@@ -355,7 +356,8 @@ def move_or_remove(request_form, session):
     if index is not None:
         modules = session['pending_dashboard']['modules']
         if index > 0:
-            modules[index], modules[index-1] = modules[index-1], modules[index]
+            modules[index], modules[
+                index - 1] = modules[index - 1], modules[index]
             session['pending_dashboard']['modules'] = modules
         return True
     return False

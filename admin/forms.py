@@ -50,6 +50,7 @@ def convert_to_dashboard_form(
 
 
 class ModuleTypes():
+
     def __init__(self, admin_client):
         self.types = admin_client.list_module_types()
 
@@ -68,6 +69,7 @@ class ModuleTypes():
 
 
 class DataSources():
+
     def __init__(self, admin_client, session_access_token):
         data_sets = admin_client.list_data_sets()
         sources = [
@@ -101,6 +103,7 @@ class DataSources():
 
 
 class ModuleForm(Form):
+
     def __init__(self, *args, **kwargs):
         super(ModuleForm, self).__init__(*args, **kwargs)
 
@@ -135,6 +138,7 @@ def get_organisation_choices(admin_client):
 
 
 class DashboardCreationForm(Form):
+
     def __init__(
             self, admin_client, module_types, data_sources,  *args, **kwargs):
         super(DashboardCreationForm, self).__init__(*args, **kwargs)

@@ -13,6 +13,7 @@ TEST_FILE_PATH = '/tmp/test-uploaded-file'
 
 
 class FakeProcess(object):
+
     def __init__(self, return_code):
         self._returncode = return_code
 

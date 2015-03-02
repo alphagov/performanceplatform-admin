@@ -14,6 +14,7 @@ from admin.authentication import get_authorization_url
 @patch('requests_oauthlib.OAuth2Session.get')
 @patch('requests_oauthlib.OAuth2Session.authorization_url')
 class AuthenticationTestCase(FlaskAppTestCase):
+
     @signed_in()
     def test_signout_redirects_properly_and_clears_session(
             self,

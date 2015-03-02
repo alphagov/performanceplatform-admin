@@ -15,6 +15,7 @@ from mock import patch
 
 
 class HelpersTestCase(unittest.TestCase):
+
     def setUp(self):
         app.config['TESTING'] = True
         self.app = app.test_client()

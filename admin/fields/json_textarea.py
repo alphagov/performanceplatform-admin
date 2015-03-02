@@ -11,10 +11,12 @@ import json
 
 
 class JSONTextArea(object):
+
     """
     Renders a textarea element which contains JSON data that has been
     pretty-printed.
     """
+
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         field_as_string = text_type(field._value())
@@ -30,6 +32,7 @@ class JSONTextArea(object):
 
 
 class JSONTextAreaField(StringField):
+
     """
     This field represents an HTML ``<textarea>`` which is used to pretty-print
     JSON to make it easier to edit.
