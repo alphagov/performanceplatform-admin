@@ -1,6 +1,7 @@
-from admin import app
+from admin import app, csrf
 from flask import redirect, request, session, url_for, flash
 from requests_oauthlib import OAuth2Session
+from helpers import api_permission_required, get_admin_client
 
 
 def get_authorization_url(session):
@@ -50,3 +51,63 @@ def authorize():
     session['oauth_token'] = token
 
     return redirect(url_for('root'))
+
+
+@app.route("/auth/gds/api/users/<uid>", methods=['PUT'])
+@csrf.exempt
+@api_permission_required('user_update_permission')
+def update(uid):
+    """Update a user, triggered by sign-on-o-tron
+
+    When a user is updated in sign-on-o-tron, sign-on-o-tron
+    will send a PUT request to the url of this controller, with a
+    bearer token of the user that sends the request. The user which sends the
+    request is specified by the sidekiq queue that sends the notifications from
+    sign-on-o-tron. To ensure the request has come from sign-on-o-tron, we use
+    this bearer token as an auth token and request the properties of the user -
+    we only allow the request if the user has the user_update_permission.
+
+    After authenticating the request, we read the JSON request body and update
+    the stored representation of the user in our app, if present.
+
+    Following the model in gds-sso, we return a 200 if succesful.
+
+    Args:
+        uid: a sign-on-o-tron user_id
+
+    Returns:
+        200 on success
+    """
+    # For now, we implement this as a no-op
+    return ''
+
+
+@app.route("/auth/gds/api/users/<uid>/reauth", methods=['POST'])
+@csrf.exempt
+@api_permission_required('user_update_permission')
+def reauth(uid):
+    """ Force a user to reauth, triggered by sign-on-o-tron
+
+    When a user signs out of sign-on-o-tron or is suspended, sign-on-o-tron
+    will send an empty post request to the url of this controller, with a
+    bearer token of the user that sends the request. The user which sends the
+    request is specified by the sidekiq queue that sends the notifications from
+    sign-on-o-tron. To ensure the request has come from sign-on-o-tron, we use
+    this bearer token as an auth token and request the properties of the user -
+    we only allow the request if the user has the user_update_permission.
+
+    After authenticating the request, we delete all sessions for the user in
+    redis, with the effect they will no longer be able to login to the admin
+    app. Following gds-sso, we return a 200 if sucessful, despite this being a
+    post request.
+
+    Args:
+        uid: a sign-on-o-tron user_id
+
+    Returns:
+        200 on success
+        403 on failure, as the user didn't have the correct permissions.
+    """
+    session.delete_sessions_for_user(uid)
+    get_admin_client(session).reauth(uid)
+    return ''

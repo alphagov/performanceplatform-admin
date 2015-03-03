@@ -8,6 +8,9 @@ from tests.admin.support.flask_app_test_case import(
 
 from admin import app
 from admin.authentication import get_authorization_url
+from admin.redis_session import RedisSession
+from requests import ConnectionError, Timeout
+from performanceplatform.client.admin import AdminAPI
 
 
 @patch('requests_oauthlib.OAuth2Session.fetch_token')
@@ -133,3 +136,119 @@ class AuthenticationTestCase(FlaskAppTestCase):
         session = {}
         assert_equal(get_authorization_url(session), 'some url')
         assert_equal(session, {'oauth_state': 'state'})
+
+
+@patch('performanceplatform.client.admin.AdminAPI.reauth')
+@patch('requests_oauthlib.OAuth2Session.get')
+@patch('admin.redis_session.RedisSession.delete_sessions_for_user')
+class SignonCallbacksTestCase(FlaskAppTestCase):
+
+    def setUp(self):
+        super(SignonCallbacksTestCase, self).setUp()
+        self.headers = [('Authorization', 'Bearer foobar')]
+
+    def test_reauth_with_invalid_user(
+            self,
+            session_delete_sessions_for_user_patch,
+            oauth_get_patch,
+            reauth_patch):
+        # Set up the Mock for calling Signon
+        self.mock_signon_json(
+            oauth_get_patch).return_value = self.not_allowed_user_update_json()
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
+
+        response = self.do_reauth_post()
+        self.assertEqual(403, response.status_code, response.data)
+
+    def test_reauth_when_invalid_json(
+            self,
+            session_delete_sessions_for_user_patch,
+            oauth_get_patch,
+            reauth_patch):
+        # Set up the Mock for calling Signon
+        self.mock_signon_json(oauth_get_patch).side_effect = ValueError()
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
+
+        response = self.do_reauth_post()
+        self.assertEqual(500, response.status_code, response.data)
+
+    def test_reauth_with_valid_user(
+            self,
+            session_delete_sessions_for_user_patch,
+            oauth_get_patch,
+            reauth_patch):
+        # Set up the Mock for calling Signon
+        self.mock_signon_json(
+            oauth_get_patch).return_value = self.allowed_user_update_json()
+
+        response = self.do_reauth_post()
+
+        self.assertEqual(200, response.status_code, response.data)
+
+        session_delete_sessions_for_user_patch.assert_called_with('user-uid')
+        reauth_patch.assert_called_with('user-uid')
+
+    def test_reauth_when_signon_down(
+            self,
+            session_delete_sessions_for_user_patch,
+            oauth_get_patch,
+            reauth_patch):
+        # Set up the Mock for calling Signon
+        oauth_get_patch.side_effect = ConnectionError()
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
+
+        response = self.do_reauth_post()
+        self.assertEqual(500, response.status_code, response.data)
+
+    def test_reauth_when_signon_really_slow(
+            self,
+            session_delete_sessions_for_user_patch,
+            oauth_get_patch,
+            reauth_patch):
+        # Set up the Mock for calling Signon
+        oauth_get_patch.side_effect = Timeout()
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
+
+        response = self.do_reauth_post()
+        self.assertEqual(500, response.status_code, response.data)
+
+    def test_reauth_when_signon_unauthenticated(
+            self,
+            session_delete_sessions_for_user_patch,
+            oauth_get_patch,
+            reauth_patch):
+        # Set up the Mock for calling Signon
+        oauth_get_patch.return_value.status_code = 401
+        self.expected_unused(session_delete_sessions_for_user_patch)
+        self.expected_unused(reauth_patch)
+
+        response = self.do_reauth_post()
+        self.assertEqual(401, response.status_code, response.data)
+
+    def mock_signon_json(self, mock_signon):
+        return mock_signon.return_value.json
+
+    def expected_unused(self, patched_mock):
+        # assert that the mock wasn't used. If this is caused, then
+        # things should fail in tests.
+        patched_mock.side_effect = Exception("Unexpected usage")
+
+    def allowed_user_update_json(self):
+        return self.create_user_json(['user_update_permission'])
+
+    def not_allowed_user_update_json(self):
+        return self.create_user_json([])
+
+    def create_user_json(self, permissions):
+        user = {}
+        user['user'] = {}
+        user['user']['permissions'] = permissions
+        return user
+
+    def do_reauth_post(self):
+        return self.client.post(
+            '/auth/gds/api/users/user-uid/reauth', headers=self.headers)

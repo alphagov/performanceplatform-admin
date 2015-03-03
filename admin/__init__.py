@@ -26,7 +26,7 @@ app.session_interface = RedisSessionInterface(
 # this will only send when SENTRY_DSN is defined in config
 Sentry(app)
 
-CsrfProtect(app)
+csrf = CsrfProtect(app)
 
 log_handler.set_up_logging(app, GOVUK_ENV)
 
