@@ -1,7 +1,7 @@
 import requests
 
-from admin import app
-from admin.helpers import requires_authentication, base_template_context
+from application import app
+from application.helpers import requires_authentication, base_template_context
 from colour import Color
 from flask import make_response, render_template, session
 from graphviz import Digraph

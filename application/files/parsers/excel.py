@@ -1,4 +1,4 @@
-from admin.files.parsers import ParseError
+from application.files.parsers import ParseError
 
 import datetime
 import logging

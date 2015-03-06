@@ -1,6 +1,6 @@
-from admin import app
-from admin.files.spreadsheet import Spreadsheet
-from admin.helpers import(
+from application import app
+from application.files.spreadsheet import Spreadsheet
+from application.helpers import(
     requires_authentication,
     base_template_context,
     group_by_group)

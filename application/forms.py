@@ -1,5 +1,5 @@
-from admin import app
-from admin.fields.json_textarea import JSONTextAreaField
+from application import app
+from application.fields.json_textarea import JSONTextAreaField
 from flask_wtf import Form as FlaskWTFForm
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
                      HiddenField)

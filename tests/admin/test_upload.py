@@ -15,7 +15,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.is_virus')
+    @patch('application.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_user_can_post_to_upload_data(
             self,
@@ -115,7 +115,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.is_virus')
+    @patch('application.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_http_error_from_backdrop_flashes_message(
             self,
@@ -148,7 +148,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.is_virus')
+    @patch('application.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_unauthorized_from_backdrop_json(
             self,
@@ -179,7 +179,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.is_virus')
+    @patch('application.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_http_error_from_backdrop_json(
             self,
@@ -210,7 +210,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.is_virus')
+    @patch('application.files.uploaded.UploadedFile.is_virus')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_validation_error_from_backdrop_json(
             self,
@@ -251,7 +251,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.validate')
+    @patch('application.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_redirect_to_error_if_problems_and_prevent_post(
             self,
@@ -284,7 +284,7 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('admin.files.uploaded.UploadedFile.validate')
+    @patch('application.files.uploaded.UploadedFile.validate')
     @patch('performanceplatform.client.data_set.DataSet.post')
     def test_redirect_to_error_if_problems_and_prevent_post_json(
             self,

@@ -1,5 +1,5 @@
-from admin import app
-from admin.helpers import (
+from application import app
+from application.helpers import (
     signed_in,
     base_template_context,
     signed_in_no_access
@@ -9,7 +9,7 @@ from flask import (
     url_for, make_response
 )
 import requests
-from admin.authentication import get_authorization_url
+from application.authentication import get_authorization_url
 
 
 @app.route("/", methods=['GET'])

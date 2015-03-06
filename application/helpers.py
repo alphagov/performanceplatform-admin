@@ -1,4 +1,4 @@
-from admin import app
+from application import app
 from flask import abort, session, redirect, request, url_for
 from functools import wraps
 from os import getenv

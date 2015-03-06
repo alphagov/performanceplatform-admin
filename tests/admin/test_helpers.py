@@ -1,6 +1,6 @@
 import unittest
-from admin import app
-from admin.helpers import(
+from application import app
+from application.helpers import(
     requires_authentication,
     requires_permission,
     signed_in,
@@ -28,7 +28,7 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(can_edit_dashboards({'permissions': ['dashboard']}),
                     is_(True))
 
-    @patch('admin.helpers.signed_in')
+    @patch('application.helpers.signed_in')
     def test_requires_login_redirects_when_no_user(self, signed_in_mock):
         signed_in_mock.return_value = False
         func = lambda x: x
@@ -39,7 +39,7 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(response.status_code, equal_to(302))
         assert_that(response.headers['Location'], equal_to('/'))
 
-    @patch('admin.helpers.signed_in')
+    @patch('application.helpers.signed_in')
     def test_requires_permission_allows_access(self, signed_in_mock):
         signed_in_mock.return_value = True
         func = lambda: 'Decorator exited successfully'
@@ -53,7 +53,7 @@ class HelpersTestCase(unittest.TestCase):
 
         assert_that(response, is_('Decorator exited successfully'))
 
-    @patch('admin.helpers.signed_in')
+    @patch('application.helpers.signed_in')
     def test_requires_permission_raises_exception_for_invalid_decoration(
             self, signed_in_mock):
         signed_in_mock.return_value = True
@@ -67,7 +67,7 @@ class HelpersTestCase(unittest.TestCase):
 
             self.assertRaises(Exception, wrapped_app_method(func))
 
-    @patch('admin.helpers.signed_in')
+    @patch('application.helpers.signed_in')
     def test_requires_permission_redirects_when_not_signed_in(
             self, signed_in_mock):
         signed_in_mock.return_value = False
@@ -80,7 +80,7 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(response.status_code, is_(302))
         assert_that(response.headers['Location'], is_('/'))
 
-    @patch('admin.helpers.signed_in')
+    @patch('application.helpers.signed_in')
     def test_requires_permission_redirects_for_bad_permissions(
             self, signed_in_mock):
         signed_in_mock.return_value = True
@@ -142,8 +142,8 @@ class HelpersTestCase(unittest.TestCase):
             'permissions': ['signin']
         }), equal_to(False))
 
-    @patch('admin.helpers.has_user_with_token')
-    @patch('admin.helpers.no_access')
+    @patch('application.helpers.has_user_with_token')
+    @patch('application.helpers.no_access')
     def test_signed_in_true_when_has_user_with_token_and_not_no_access(
             self,
             no_access_patch,
@@ -152,15 +152,15 @@ class HelpersTestCase(unittest.TestCase):
         no_access_patch.return_value = False
         assert_that(signed_in({'oauth_user': 'user'}), equal_to(True))
 
-    @patch('admin.helpers.has_user_with_token')
+    @patch('application.helpers.has_user_with_token')
     def test_signed_in_false_when_hasnt_user_with_token(
             self,
             has_user_with_token_patch):
         has_user_with_token_patch.return_value = False
         assert_that(signed_in({'oauth_user': 'user'}), equal_to(False))
 
-    @patch('admin.helpers.has_user_with_token')
-    @patch('admin.helpers.no_access')
+    @patch('application.helpers.has_user_with_token')
+    @patch('application.helpers.no_access')
     def test_signed_in_false_when_has_user_with_token_and_no_access(
             self,
             no_access_patch,
@@ -169,8 +169,8 @@ class HelpersTestCase(unittest.TestCase):
         no_access_patch.return_value = True
         assert_that(signed_in({'oauth_user': 'user'}), equal_to(False))
 
-    @patch('admin.helpers.has_user_with_token')
-    @patch('admin.helpers.no_access')
+    @patch('application.helpers.has_user_with_token')
+    @patch('application.helpers.no_access')
     def test_signed_in_no_access_false_if_signed_in_and_not_no_access(
             self,
             no_access_patch,
@@ -180,7 +180,7 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(signed_in_no_access(
             {'oauth_user': 'user'}), equal_to(False))
 
-    @patch('admin.helpers.has_user_with_token')
+    @patch('application.helpers.has_user_with_token')
     def test_signed_in_no_access_false_when_hasnt_user_with_token(
             self,
             has_user_with_token_patch):
@@ -188,8 +188,8 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(signed_in_no_access(
             {'oauth_user': 'user'}), equal_to(False))
 
-    @patch('admin.helpers.has_user_with_token')
-    @patch('admin.helpers.no_access')
+    @patch('application.helpers.has_user_with_token')
+    @patch('application.helpers.no_access')
     def test_signed_in_no_access_true_when_has_user_with_token_and_no_access(
             self,
             no_access_patch,

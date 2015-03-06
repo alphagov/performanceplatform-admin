@@ -1,5 +1,5 @@
-from admin.files.parsers import ParseError
-from admin.files.parsers.util import make_dicts
+from application.files.parsers import ParseError
+from application.files.parsers.util import make_dicts
 
 import unittest
 

@@ -1,9 +1,9 @@
 from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
-from admin import app
+from application import app
 from hamcrest import (assert_that, contains_string, equal_to, has_entries,
                       ends_with, instance_of, has_key, has_entry)
 from mock import patch, Mock
-from admin.forms import DashboardCreationForm
+from application.forms import DashboardCreationForm
 
 import requests
 import os
@@ -506,7 +506,7 @@ class DashboardTestCase(FlaskAppTestCase):
             expected_category='danger')
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    @patch("admin.dashboards.render_template")
+    @patch("application.dashboards.render_template")
     def test_rendering_edit_page(self,
                                  mock_render,
                                  mock_get,
@@ -535,7 +535,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(200))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    @patch("admin.dashboards.render_template")
+    @patch("application.dashboards.render_template")
     def test_rendering_edit_page_for_dashboard_without_owning_organisation(
             self,
             mock_render,
@@ -566,7 +566,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(200))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    @patch("admin.dashboards.render_template")
+    @patch("application.dashboards.render_template")
     def test_clone_dashboard_renders_a_prefilled_create_page(
             self,
             mock_render,

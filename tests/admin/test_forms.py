@@ -1,10 +1,10 @@
 from unittest import TestCase
-from admin.forms import convert_to_dashboard_form, DataSources
+from application.forms import convert_to_dashboard_form, DataSources
 from hamcrest import assert_that, equal_to, contains_inanyorder, contains
 from mock import Mock
 import os
 import json
-from admin.dashboards import build_dict_for_post
+from application.dashboards import build_dict_for_post
 from tests.admin.test_dashboards import data_sets_list
 
 

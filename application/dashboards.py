@@ -1,6 +1,6 @@
-from admin import app
-from admin.forms import DashboardCreationForm, ModuleTypes, DataSources
-from admin.helpers import (
+from application import app
+from application.forms import DashboardCreationForm, ModuleTypes, DataSources
+from application.helpers import (
     base_template_context,
     requires_authentication,
     requires_permission,
@@ -9,7 +9,7 @@ from flask import (
     flash, redirect, render_template, request,
     session, url_for
 )
-from admin.forms import convert_to_dashboard_form
+from application.forms import convert_to_dashboard_form
 
 import cgi
 import json

@@ -1,7 +1,7 @@
-from admin.files.parsers.dsv import parse_csv
-from admin.files.parsers.excel import parse_excel, is_excel
-from admin.files.parsers.util import make_dicts
-from admin.files.uploaded import UploadedFile
+from application.files.parsers.dsv import parse_csv
+from application.files.parsers.excel import parse_excel, is_excel
+from application.files.parsers.util import make_dicts
+from application.files.uploaded import UploadedFile
 
 
 class Spreadsheet(UploadedFile):

@@ -6,7 +6,7 @@ from mock import patch
 from nose.tools import eq_
 from werkzeug.datastructures import FileStorage
 
-from admin.files.uploaded import UploadedFile
+from application.files.uploaded import UploadedFile
 
 
 TEST_FILE_PATH = '/tmp/test-uploaded-file'
@@ -42,7 +42,8 @@ def stub_virus_scan(is_virus):
     def decorator(func):
         @wraps(func)
         def wrapped(*args, **kwargs):
-            with patch('admin.files.uploaded.UploadedFile.is_virus') as vs:
+            with patch(
+                    'application.files.uploaded.UploadedFile.is_virus') as vs:
                 vs.return_value = is_virus
                 func(*args, **kwargs)
         return wrapped
@@ -93,7 +94,7 @@ class TestUploadedFile(unittest.TestCase):
 
         eq_(os.path.isfile(filename), False)
 
-    @patch('admin.files.uploaded.Popen')
+    @patch('application.files.uploaded.Popen')
     def test_virus_scanning(self, mock_Popen):
         mock_Popen.return_value = FakeProcess(0)
         csv_length_999999 = '\n'.join(['aa,bb,ccc' for i in range(100000)])
@@ -101,7 +102,7 @@ class TestUploadedFile(unittest.TestCase):
 
         eq_(uploaded_file.validate(), [])
 
-    @patch('admin.files.uploaded.Popen')
+    @patch('application.files.uploaded.Popen')
     def test_virus_scanning_fails_validation(self, mock_Popen):
         mock_Popen.return_value = FakeProcess(1)
         csv_length_999999 = '\n'.join(['aa,bb,ccc' for i in range(100000)])

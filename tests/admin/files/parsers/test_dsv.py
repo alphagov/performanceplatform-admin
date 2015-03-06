@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from admin.files.parsers.dsv import parse_csv, lines
-from admin.files.parsers import ParseError
+from application.files.parsers.dsv import parse_csv, lines
+from application.files.parsers import ParseError
 
 import unittest
 

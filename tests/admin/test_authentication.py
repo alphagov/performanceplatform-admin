@@ -6,8 +6,8 @@ from tests.admin.support.flask_app_test_case import(
     FlaskAppTestCase,
     signed_in)
 
-from admin import app
-from admin.authentication import get_authorization_url
+from application import app
+from application.authentication import get_authorization_url
 from admin.redis_session import RedisSession
 from requests import ConnectionError, Timeout
 from performanceplatform.client.admin import AdminAPI

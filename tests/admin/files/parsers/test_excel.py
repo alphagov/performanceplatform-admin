@@ -1,4 +1,4 @@
-from admin.files.parsers.excel import parse_excel, EXCEL_ERROR
+from application.files.parsers.excel import parse_excel, EXCEL_ERROR
 
 import os
 import unittest

@@ -2,7 +2,7 @@ import json
 from tests.admin.support.flask_app_test_case import(
     FlaskAppTestCase,
     signed_in)
-from admin import app
+from application import app
 from hamcrest import assert_that, equal_to, ends_with, contains_string
 from mock import patch, Mock
 import requests
@@ -21,7 +21,7 @@ class AppTestCase(FlaskAppTestCase):
         app.config['TESTING'] = True
         self.app = app.test_client()
 
-    @patch('admin.main.signed_in')
+    @patch('application.main.signed_in')
     def test_homepage_redirects_to_upload_when_signed_in(self, signed_in):
         signed_in.return_value = True
         response = self.app.get('/')
@@ -46,8 +46,8 @@ class AppTestCase(FlaskAppTestCase):
         assert_that(response.data, contains_string(
             'Hello, Dave'))
 
-    @patch('admin.main.signed_in_no_access')
-    @patch('admin.main.get_authorization_url')
+    @patch('application.main.signed_in_no_access')
+    @patch('application.main.get_authorization_url')
     def test_homepage_redirects_to_auth_url_when_possible_access(
             self,
             get_authorization_url_patch,

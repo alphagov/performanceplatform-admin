@@ -3,7 +3,7 @@ from hamcrest import assert_that, equal_to
 from hamcrest.core.matcher import Matcher
 from functools import wraps
 
-from admin import app
+from application import app
 
 
 def signed_in(permissions=None):
