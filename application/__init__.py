@@ -31,7 +31,7 @@ csrf = CsrfProtect(app)
 log_handler.set_up_logging(app, GOVUK_ENV)
 
 
-import application.main
+import application.controllers.main
 import application.authentication
 import application.controllers.admin.dashboards
 import admin.registrations
