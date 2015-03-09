@@ -7,7 +7,7 @@ from tests.application.support.flask_app_test_case import(
     signed_in)
 
 from application import app
-from application.authentication import get_authorization_url
+from application.controllers.authentication import get_authorization_url
 from admin.redis_session import RedisSession
 from requests import ConnectionError, Timeout
 from performanceplatform.client.admin import AdminAPI

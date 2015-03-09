@@ -9,7 +9,7 @@ from flask import (
     url_for, make_response
 )
 import requests
-from application.authentication import get_authorization_url
+from application.controllers.authentication import get_authorization_url
 
 
 @app.route("/", methods=['GET'])
