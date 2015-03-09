@@ -8,7 +8,7 @@ from tests.application.support.flask_app_test_case import(
 
 from application import app
 from application.controllers.authentication import get_authorization_url
-from admin.redis_session import RedisSession
+from application.redis_session import RedisSession
 from requests import ConnectionError, Timeout
 from performanceplatform.client.admin import AdminAPI
 
@@ -140,7 +140,7 @@ class AuthenticationTestCase(FlaskAppTestCase):
 
 @patch('performanceplatform.client.admin.AdminAPI.reauth')
 @patch('requests_oauthlib.OAuth2Session.get')
-@patch('admin.redis_session.RedisSession.delete_sessions_for_user')
+@patch('application.redis_session.RedisSession.delete_sessions_for_user')
 class SignonCallbacksTestCase(FlaskAppTestCase):
 
     def setUp(self):
