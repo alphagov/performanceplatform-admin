@@ -17,7 +17,7 @@ import requests
 import functools
 
 
-DASHBOARD_ROUTE = '/administer-dashboards'
+DASHBOARD_ROUTE = '/admin/dashboards'
 
 
 def update_modules_form_and_redirect(func):
