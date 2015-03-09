@@ -5,7 +5,7 @@ from mock import Mock
 import os
 import json
 from application.controllers.admin.dashboards import build_dict_for_post
-from tests.application.test_dashboards import data_sets_list
+from tests.application.controllers.admin.test_dashboards import data_sets_list
 
 
 class DashboardTestCase(TestCase):

@@ -83,7 +83,7 @@ def module_types_list():
 def data_sets_list():
     with open(os.path.join(
               os.path.dirname(__file__),
-              '../fixtures/data-sets-extract.json')) as file:
+              '../../../fixtures/data-sets-extract.json')) as file:
         data_sets_json = file.read()
     return json.loads(data_sets_json)
 
@@ -516,7 +516,7 @@ class DashboardTestCase(FlaskAppTestCase):
                                  mock_list_module_types):
         with open(os.path.join(
                   os.path.dirname(__file__),
-                  '../fixtures/example-dashboard.json')) as file:
+                  '../../../fixtures/example-dashboard.json')) as file:
             dashboard_json = file.read()
         dashboard_dict = json.loads(dashboard_json)
         mock_render.return_value = ''
@@ -546,7 +546,7 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_list_module_types):
         with open(os.path.join(
                   os.path.dirname(__file__),
-                  '../fixtures/example-dashboard.json')) as file:
+                  '../../../fixtures/example-dashboard.json')) as file:
             dashboard_json = file.read()
         dashboard_dict = json.loads(dashboard_json)
         dashboard_dict['organisation'] = None
@@ -577,7 +577,7 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_list_module_types):
         with open(os.path.join(
                   os.path.dirname(__file__),
-                  '../fixtures/example-dashboard.json')) as file:
+                  '../../../fixtures/example-dashboard.json')) as file:
             dashboard_json = file.read()
         dashboard_dict = json.loads(dashboard_json)
         dashboard_dict['organisation'] = None
