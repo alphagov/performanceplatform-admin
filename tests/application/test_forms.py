@@ -4,7 +4,7 @@ from hamcrest import assert_that, equal_to, contains_inanyorder, contains
 from mock import Mock
 import os
 import json
-from application.dashboards import build_dict_for_post
+from application.controllers.admin.dashboards import build_dict_for_post
 from tests.application.test_dashboards import data_sets_list
 
 

@@ -507,7 +507,7 @@ class DashboardTestCase(FlaskAppTestCase):
             expected_category='danger')
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    @patch("application.dashboards.render_template")
+    @patch("application.controllers.admin.dashboards.render_template")
     def test_rendering_edit_page(self,
                                  mock_render,
                                  mock_get,
@@ -536,7 +536,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(200))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    @patch("application.dashboards.render_template")
+    @patch("application.controllers.admin.dashboards.render_template")
     def test_rendering_edit_page_for_dashboard_without_owning_organisation(
             self,
             mock_render,
@@ -567,7 +567,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(200))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
-    @patch("application.dashboards.render_template")
+    @patch("application.controllers.admin.dashboards.render_template")
     def test_clone_dashboard_renders_a_prefilled_create_page(
             self,
             mock_render,

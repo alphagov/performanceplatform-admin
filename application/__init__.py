@@ -33,7 +33,7 @@ log_handler.set_up_logging(app, GOVUK_ENV)
 
 import application.main
 import application.authentication
-import application.dashboards
+import application.controllers.admin.dashboards
 import admin.registrations
 import application.transforms
 import application.upload
@@ -44,8 +44,8 @@ def start(port):
     if app.debug:
         # does not watch for changes and recompile on requests if debug false
         Scss(app,
-             static_dir='admin/static/css',
-             asset_dir='admin/assets/scss/manifest',
+             static_dir='application/static/css',
+             asset_dir='application/assets/scss/manifest',
              load_paths=[
                  path.join(path.dirname(__file__), 'assets/scss')])
     app.run('0.0.0.0', port=port)
