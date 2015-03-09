@@ -36,7 +36,7 @@ import application.authentication
 import application.controllers.admin.dashboards
 import admin.registrations
 import application.controllers.admin.transforms
-import application.upload
+import application.controllers.upload
 
 
 def start(port):
