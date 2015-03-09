@@ -7,7 +7,7 @@ from flask import make_response, render_template, session
 from graphviz import Digraph
 
 
-@app.route("/transforms", methods=['GET'])
+@app.route("/admin/transforms", methods=['GET'])
 @requires_authentication
 def transforms_index(admin_client):
     template_context = base_template_context()
@@ -18,7 +18,7 @@ def transforms_index(admin_client):
     return render_template('transforms/index.html', **template_context)
 
 
-@app.route("/transforms/dotfile", methods=['GET'])
+@app.route("/admin/transforms/dotfile", methods=['GET'])
 @requires_authentication
 def transforms_dotfile(admin_client):
     template_context = base_template_context()
