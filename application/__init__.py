@@ -35,7 +35,7 @@ import application.main
 import application.authentication
 import application.controllers.admin.dashboards
 import admin.registrations
-import application.transforms
+import application.controllers.admin.transforms
 import application.upload
 
 
