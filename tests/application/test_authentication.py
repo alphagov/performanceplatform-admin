@@ -2,7 +2,7 @@ from mock import patch, Mock
 from nose.tools import assert_equal
 from hamcrest import assert_that, equal_to, ends_with, contains_string
 
-from tests.admin.support.flask_app_test_case import(
+from tests.application.support.flask_app_test_case import(
     FlaskAppTestCase,
     signed_in)
 

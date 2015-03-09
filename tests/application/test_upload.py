@@ -4,7 +4,8 @@ from hamcrest import (
 )
 from mock import patch, Mock
 from StringIO import StringIO
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
+from tests.application.support.flask_app_test_case import (
+    FlaskAppTestCase, signed_in)
 import requests
 
 

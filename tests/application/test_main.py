@@ -1,5 +1,5 @@
 import json
-from tests.admin.support.flask_app_test_case import(
+from tests.application.support.flask_app_test_case import(
     FlaskAppTestCase,
     signed_in)
 from application import app

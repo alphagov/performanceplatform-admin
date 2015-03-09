@@ -1,4 +1,5 @@
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase, signed_in
+from tests.application.support.flask_app_test_case import (
+    FlaskAppTestCase, signed_in)
 from application import app
 from hamcrest import (assert_that, contains_string, equal_to, has_entries,
                       ends_with, instance_of, has_key, has_entry)
