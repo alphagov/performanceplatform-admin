@@ -12,4 +12,4 @@ if [ -z "$NO_AUTOPEP8" ]; then
   autopep8 -i -r admin tests
 fi
 
-pep8 --exclude=venv "$basedir"
+pep8 --exclude=venv,build "$basedir"

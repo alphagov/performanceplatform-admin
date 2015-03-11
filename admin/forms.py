@@ -1,7 +1,9 @@
 from admin import app
 from admin.fields.json_textarea import JSONTextAreaField
+from flask_wtf import Form as FlaskWTFForm
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     HiddenField, validators)
+                     HiddenField)
+from wtforms.validators import Required, Email, URL, Optional
 from wtforms_components.fields.select import SelectField
 import requests
 import json
@@ -127,7 +129,8 @@ def get_organisation_choices(admin_client):
     choices = [('', '')]
 
     try:
-        organisations = admin_client.list_organisations()
+        organisations = admin_client.list_organisations(
+            {'type': ['department', 'agency']})
         choices += [
             (org['id'], org['name']) for org in organisations]
         choices.sort(key=lambda tup: tup[1])
@@ -172,7 +175,7 @@ class DashboardCreationForm(Form):
     description = TextField('Description')
     owning_organisation = SelectField(
         'Owning organisation',
-        [validators.Required(message='This field cannot be blank.')]
+        validators=[Required(message='This field cannot be blank.')]
     )
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
@@ -194,3 +197,41 @@ class DashboardCreationForm(Form):
 
     modules = FieldList(FormField(ModuleForm), min_entries=0)
     published = HiddenField('published', default=False)
+
+
+class AboutYouForm(FlaskWTFForm):
+
+    def __init__(self, admin_client, *args, **kwargs):
+        super(AboutYouForm, self).__init__(*args, **kwargs)
+        self.organisation.choices = get_organisation_choices(
+            admin_client)
+        self.organisation.choices[0] = ('', 'Select a department or agency')
+
+    full_name = TextField(
+        'Full name',
+        validators=[Required(message='Name cannot be blank')])
+    email_address = TextField(
+        'Email address',
+        validators=[
+            Required(message='Email cannot be blank'),
+            Email(message='Email format is invalid')
+        ])
+    organisation = SelectField(
+        'Your organisation',
+        validators=[Required(message='Organisation cannot be blank')]
+    )
+
+
+class AboutYourServiceForm(FlaskWTFForm):
+    service_name = TextField(
+        'Service name',
+        validators=[Required(message='Name cannot be blank')])
+    service_url = TextField(
+        'Service start page URL',
+        validators=[
+            Optional(),
+            URL(message='Start page URL format is invalid')
+        ])
+    service_description = TextAreaField(
+        'Service description',
+        validators=[Required(message='Service description cannot be blank')])
