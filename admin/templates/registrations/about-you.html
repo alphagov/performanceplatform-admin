@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h1>About you</h1>
+
+<div class="row">
+  <p class="col-sm-8 col-md-6">
+    We will use these details to check your eligibility for a performance
+    dashboard and create you a GOV.UK Signon account with a template
+    dashboard into which you can add your data.
+  </p>
+</div>
+
+<form method="POST" action="{{ url_for('about_you') }}" role="form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <div class="row">
+    <div class="form-group col-sm-8 col-md-6">
+      {{ form.full_name.label }}
+      {{ form.full_name(class='form-control') }}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="form-group col-sm-8 col-md-6">
+      {{ form.email_address.label }}
+      {{ form.email_address(class='form-control') }}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="form-group col-sm-8 col-md-6">
+      {{ form.organisation.label }}
+      {{ form.organisation(class='form-control') }}
+    </div>
+  </div>
+
+  <input type="submit" class="btn btn-success" value="Continue" name="continue">
+</form>
+
+{% endblock %}
