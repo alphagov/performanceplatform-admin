@@ -1,8 +1,8 @@
-from tests.admin.support.flask_app_test_case import FlaskAppTestCase
+from tests.application.support.flask_app_test_case import FlaskAppTestCase
 from mock import patch
 from hamcrest import (assert_that, equal_to, contains_string,
                       ends_with)
-from admin import app
+from application import app
 
 
 class StartPageTestCase(FlaskAppTestCase):

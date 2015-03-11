@@ -1,9 +1,9 @@
 from flask import (session, render_template, url_for, flash, redirect)
 import boto.ses
-from admin import app
+from application import app
 from performanceplatform.client.admin import AdminAPI
-from admin.forms import AboutYouForm, AboutYourServiceForm
-from admin.helpers import base_template_context
+from application.forms import AboutYouForm, AboutYourServiceForm
+from application.helpers import base_template_context
 
 REGISTER_ROUTE = '/register'
 
