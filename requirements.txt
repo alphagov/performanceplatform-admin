@@ -9,7 +9,7 @@ graphviz==0.4.2
 gunicorn==18.0
 logstash_formatter==0.5.7
 ndg-httpsclient==0.3.2
-performanceplatform-client==0.7.0
+performanceplatform-client==0.8.0
 pyasn1==0.1.7
 pyOpenSSL==0.14
 pytz==2014.4
