@@ -1,11 +1,11 @@
 from argh import arg
 from argh.dispatching import dispatch_command
-import application
+import admin
 
 
 @arg('port', type=int, help='The port number to run the app on')
 def start_app(port):
-    application.start(port)
+    admin.start(port)
 
 
 if __name__ == '__main__':
