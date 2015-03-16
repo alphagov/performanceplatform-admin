@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<section>
+  <header class="keyline-separator">
+    <span class="hint">Your dashboard</span>
+    <h1>{{ dashboard_title }}</h1>
+    <small>Manage the data and content displayed on your dashboard</small>
+  </header>
+
+  <section class="keyline-separator">
+    <header>
+      <h1>About the dashboard</h1>
+    </header>
+
+    <form method="POST" action="{{ url_for('dashboard_hub', uuid=uuid) }}" role="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <div class="form-group">
+        {{ form.title.label }}
+        <div class="row">
+          <p class="col-sm-12 col-md-6 side-hint-md">
+            The name that will be shown at the top of your dashboard
+          </p>
+          <div class="col-sm-12 col-md-6">
+            {{ form.title(class='form-control') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form.description.label }}
+        <div class="row">
+          <p class="col-sm-12 col-md-6 side-hint-md">
+            The description that will be show at the bottom of your dashboard
+          </p>
+          <div class="col-sm-12 col-md-6">
+            {{ form.description(class='form-control') }}
+          </div>
+        </div>
+      </div>
+
+      <input type="submit" class="btn btn-success" value="Update dashboard" name="submit-dashboard">
+    </form>
+  </section>
+
+  <section class="keyline-separator">
+    <header>
+      <h1>Dashboard data</h1>
+    </header>
+
+    <ul>
+    </ul>
+  </section>
+
+  <footer>
+    <p>
+      <a href="{{ preview_url }}" class="btn btn-info" target="_blank">Preview dashboard</a>
+    </p>
+  </footer>
+</section>
+
+{% endblock %}

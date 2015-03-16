@@ -35,6 +35,7 @@ import application.controllers.main
 import application.controllers.authentication
 import application.controllers.admin.dashboards
 import application.controllers.registrations
+import application.controllers.dashboards
 import application.controllers.admin.transforms
 import application.controllers.upload
 

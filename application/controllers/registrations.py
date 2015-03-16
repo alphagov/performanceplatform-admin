@@ -3,7 +3,7 @@ import boto.ses
 from application import app
 from performanceplatform.client.admin import AdminAPI
 from application.forms import AboutYouForm, AboutYourServiceForm
-from application.helpers import base_template_context
+from application.helpers import base_template_context, to_error_list
 
 REGISTER_ROUTE = '/register'
 
@@ -96,13 +96,3 @@ def confirmation():
     return render_template(
         'registrations/confirmation.html',
         **template_context)
-
-
-def to_error_list(form_errors):
-    def format_error(error):
-        return '{0}'.format(error)
-
-    messages = []
-    for field_name, field_errors in form_errors.items():
-        messages.append('; '.join(map(format_error, field_errors)))
-    return 'You have errors in your form: ' + '; '.join(messages) + '.'

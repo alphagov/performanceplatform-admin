@@ -1,0 +1,123 @@
+{
+ "description_extra": "",
+ "strapline": "Dashboard",
+ "description": "To protect your intellectual property, you must renew your patents on the 4th anniversary of the filing date and every year after that.",
+ "links": [
+  {
+   "url": "https://www.gov.uk/renew-patent",
+   "type": "transaction",
+   "title": "Renew a patent"
+  }
+ ],
+ "title": "Patent renewals",
+ "tagline": "",
+ "organisation": {
+  "abbreviation": "Intellectual Property Office",
+  "type": {
+   "id": "2d4364e3-153h-44ad-855c-e329127de094",
+   "name": "department"
+  },
+  "id": "590110d6-acde-4a4b-bcd6-60f607965252",
+  "parent": null,
+  "name": "Intellectual Property Office"
+ },
+ "modules": [
+  {
+   "description": "",
+   "data_type": "summaries",
+   "id": "386537d1-5e91-47b7-8213-ed93d1a68792",
+   "data_group": "transactional-services",
+   "info": [],
+   "title": "Cost per transaction",
+   "query_parameters": {
+    "sort_by": "_timestamp:descending",
+    "filter_by": [
+     "service_id:bis-payment-of-patent-renewal-fee-f12",
+     "type:seasonally-adjusted"
+    ]
+   },
+   "slug": "cost-per-transaction",
+   "dashboard": {
+    "id": "06f3dc23-77be-4d63-a0df-618e856d6216"
+   },
+   "type": {
+    "id": "35b41563-2773-487c-9830-c912d74adda7"
+   },
+   "options": {
+    "classes": "cols3",
+    "value-attribute": "cost_per_transaction",
+    "format": {
+     "pence": true,
+     "type": "currency"
+    }
+   }
+  },
+  {
+   "description": "Overall satisfaction score includes all ratings weighted from 100% for 'very satisfied' to 0% for 'very dissatisfied'",
+   "data_type": "user-satisfaction-score",
+   "id": "24068637-e2d5-420b-9144-6898a1dd622e",
+   "data_group": "renew-patent",
+   "info": [
+    "Data source: GOV.UK user feedback database",
+    "<a href='/service-manual/measurement/user-satisfaction' rel='external'>User satisfaction</a> is measured by surveying users at the point of transaction completion. It is measured on a five-point scale, from most satisfied to least satisfied. The mean of these responses is converted to a percentage for display purposes."
+   ],
+   "title": "User satisfaction",
+   "query_parameters": {
+    "sort_by": "_timestamp:ascending"
+   },
+   "slug": "user-satisfaction",
+   "dashboard": {
+    "id": "06f3dc23-77be-4d63-a0df-618e856d6216"
+   },
+   "type": {
+    "id": "3ad885d9-62cc-45d0-85bb-c0b52ea3f8f9"
+   },
+   "options": {}
+  },
+  {
+   "description": "Proportion of renewals made using the digital service",
+   "data_type": "digital-takeup",
+   "id": "24068637-e2de-420c-9144-6898a0dd622e",
+   "data_group": "patent-renewal",
+   "info": [
+    "Data source: Intellectual Property Office",
+    "<a href='/service-manual/measurement/digital-takeup' rel='external'>Digital take-up</a> measures the percentage of completed monthly renewals that are made through online and bulk software versus non-digital channels."
+   ],
+   "title": "Digital take-up",
+   "query_parameters": {
+    "sort_by": "_timestamp:ascending"
+   },
+   "slug": "digital-take-up-per-quarter",
+   "dashboard": {
+    "id": "06f3dc23-77be-4d63-a0df-618e856d6216"
+   },
+   "type": {
+    "id": "3ad885d9-62cc-45d0-85bb-c0b52ea3f8f9"
+   },
+   "options": {
+    "value-attribute": "rate",
+    "axis-period": "quarter",
+    "axes": {
+     "y": [
+      {
+       "label": "Percentage digital take-up"
+      }
+     ]
+    },
+    "format": {
+     "type": "percent"
+    }
+   }
+  }
+ ],
+ "dashboard_type": "transaction",
+ "slug": "renew-patent",
+ "improve_dashboard_message": true,
+ "customer_type": "Business",
+ "costs": "These costs are based on our fee charges data produced for 2010 to 2011 and exclude policy cost.",
+ "page_type": "dashboard",
+ "published": false,
+ "business_model": "Fees and charges",
+ "id": "06f3dc23-77be-4d63-a0df-618e856d6216",
+ "other_notes": ""
+}

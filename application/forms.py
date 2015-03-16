@@ -235,3 +235,12 @@ class AboutYourServiceForm(FlaskWTFForm):
     service_description = TextAreaField(
         'Service description',
         validators=[Required(message='Service description cannot be blank')])
+
+
+class DashboardHubForm(FlaskWTFForm):
+    title = TextField(
+        'Dashboard title',
+        validators=[Required(message='Title cannot be blank')])
+    description = TextAreaField(
+        'Dashboard description',
+        validators=[Required(message='Description cannot be blank')])
