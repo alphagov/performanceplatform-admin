@@ -67,36 +67,6 @@ def update_modules_form_and_redirect(func):
     return wrapper
 
 
-@app.route('{0}'.format(DASHBOARD_ROUTE), methods=['GET'])
-@requires_authentication
-@requires_permission('dashboard')
-def dashboard_admin_index(admin_client):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-    })
-
-    dashboards_url = '{0}/dashboards'.format(app.config['STAGECRAFT_HOST'])
-    access_token = session['oauth_token']['access_token']
-    headers = {
-        'Authorization': 'Bearer {0}'.format(access_token),
-    }
-
-    dashboard_response = requests.get(dashboards_url, headers=headers)
-
-    if dashboard_response.status_code == 200:
-        dashboards = dashboard_response.json()['dashboards']
-        if len(dashboards) == 0:
-            flash('No dashboards stored', 'info')
-    else:
-        flash('Could not retrieve the list of dashboards', 'danger')
-        dashboards = None
-
-    return render_template('dashboards/index.html',
-                           dashboards=dashboards,
-                           **template_context)
-
-
 @app.route('{0}/new'.format(DASHBOARD_ROUTE), methods=['GET'])
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
@@ -202,7 +172,7 @@ def dashboard_update(admin_client, module_types, form, uuid):
                   cgi.escape(form.title.data)
               ), 'success')
         del session['pending_dashboard']
-        return redirect(url_for('dashboard_admin_index'))
+        return redirect(url_for('dashboard_list'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('updating', form, e), 'danger')
         return redirect(url_for('dashboard_form', uuid=uuid))
@@ -220,7 +190,7 @@ def dashboard_create(admin_client, module_types, form):
         admin_client.create_dashboard(dict_for_post)
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
-        return redirect(url_for('dashboard_admin_index'))
+        return redirect(url_for('dashboard_list'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('creating', form, e), 'danger')
         return redirect(url_for('dashboard_form'))

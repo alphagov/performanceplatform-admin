@@ -32,7 +32,7 @@ def dashboard_hub(admin_client, uuid):
     form = DashboardHubForm(obj=dashboard)
     if form.validate_on_submit():
         admin_client.update_dashboard(uuid, form.data)
-        return redirect(url_for('dashboard_admin_index'))
+        return redirect(url_for('dashboard_list'))
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
     preview_url = "{0}/performance/{1}".format(
