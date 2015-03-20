@@ -10,6 +10,10 @@
   }
 }
 
+h1 {
+  margin-top: 0;
+}
+
 ul.links {
   padding-left: 0;
   display: inline;
@@ -38,6 +42,12 @@ ul.links {
   margin-bottom: 13px;
 }
 
+.keyline-separator {
+  border-bottom: 1px solid $gray-light;
+  margin-bottom: 5px;
+  padding-bottom: 50px;
+}
+
 #admin-footer {
   border-top: 1px solid #999;
   margin-top: 3em;
@@ -54,6 +64,16 @@ textarea.json-field {
 
 .form-group p.hint {
   margin-bottom: 0;
+}
+
+.side-hint-md {
+  color: $gray-light;
+  margin-bottom: 0;
+
+  @media (min-width: 992px) {
+    float: right;
+    margin-top: 5px;
+  }
 }
 
 .confirmation-box {

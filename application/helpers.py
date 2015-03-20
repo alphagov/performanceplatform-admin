@@ -181,3 +181,13 @@ def _get_user(token):
         return user_request.json()
     except ValueError:
         abort(500, 'Unable to parse signon json')
+
+
+def to_error_list(form_errors):
+    def format_error(error):
+        return '{0}'.format(error)
+
+    messages = []
+    for field_name, field_errors in form_errors.items():
+        messages.append('; '.join(map(format_error, field_errors)))
+    return 'You have errors in your form: ' + '; '.join(messages) + '.'
