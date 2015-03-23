@@ -91,3 +91,39 @@ textarea.json-field {
     }
   }
 }
+
+.end-section {
+    padding-bottom: 40px
+}
+
+#dashboard-list {
+  list-style: none;
+  padding: 0;
+
+  > li {
+     padding-top: 5px;
+     margin-bottom: 30px;
+     border-top: 1px solid $gray-light;
+
+     .title {
+       font-size: 150%;
+       margin-bottom: 5px;
+       @media (min-width: 992px) {
+         float: left;
+         width: 45%;
+       }
+     }
+  }
+
+  ul.buttons {
+     list-style: none;
+      @media (min-width: 992px) {
+        float: right;
+      }
+
+     li {
+       display: inline-block;
+       margin-bottom: 5px;
+     }
+  }
+}

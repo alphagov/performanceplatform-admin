@@ -1,6 +1,9 @@
-from tests.application.support.flask_app_test_case import FlaskAppTestCase
+from tests.application.support.flask_app_test_case import (
+    FlaskAppTestCase,
+    signed_in
+)
+from mock import patch, Mock
 from application import app
-from mock import patch
 from hamcrest import (
     assert_that,
     contains_string,
@@ -9,6 +12,7 @@ from hamcrest import (
 )
 import os
 import json
+import requests
 
 
 def dashboard_data(options={}):
@@ -118,3 +122,53 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
         response = self.client.get('/dashboards/dashboard-uuid')
         url = '{0}/performance/valid-slug'.format(app.config['GOVUK_SITE_URL'])
         assert_that(response.data, contains_string(url))
+
+
+class DashboardListTestCase(FlaskAppTestCase):
+
+    def setUp(self):
+        self.app = app.test_client()
+        self.dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_dashboards_page_shows_a_list_of_dashboards(
+            self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+
+        resp = client.get('/dashboards')
+
+        assert_that(resp.data, contains_string('Name of service'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_dashboard_status_is_unpublished(self, get_patch, client):
+        self.dashboards['dashboards'][0]['published'] = False
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+
+        resp = client.get('/dashboards')
+
+        assert_that(resp.data, contains_string('Unpublished'))
+
+    @signed_in(permissions=['signin'])
+    def test_authorised_user_is_required(self, client):
+        resp = client.get('/dashboards')
+        assert_that(resp.status, equal_to('302 FOUND'))
+
+    def test_authenticated_user_is_required(self):
+        resp = self.client.get('/dashboards')
+        assert_that(resp.status, equal_to('302 FOUND'))

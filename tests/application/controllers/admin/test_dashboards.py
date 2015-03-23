@@ -33,7 +33,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         response.json = Mock(return_value=dashboards)
         get_patch.return_value = response
 
-        resp = client.get('/admin/dashboards')
+        resp = client.get('/dashboards')
 
         assert_that(resp.data, contains_string('Name of service'))
 
@@ -45,7 +45,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         response.status_code = 500
         get_patch.return_value = response
 
-        resp = client.get('/admin/dashboards')
+        resp = client.get('/dashboards')
 
         assert_that(resp.data, contains_string(
             'Could not retrieve the list of dashboards'
@@ -55,7 +55,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         response.json = Mock(return_value={'dashboards': []})
         get_patch.return_value = response
 
-        resp = client.get('/admin/dashboards')
+        resp = client.get('/dashboards')
 
         assert_that(resp.data, contains_string(
             'No dashboards stored'
@@ -68,7 +68,7 @@ class DashboardIndexTestCase(FlaskAppTestCase):
         response.status_code = 500
         get_patch.return_value = response
 
-        resp = client.get('/admin/dashboards')
+        resp = client.get('/dashboards')
 
         assert_that(resp.data, contains_string(
             'Could not retrieve the list of dashboards'
@@ -436,7 +436,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(resp.status_code, equal_to(302))
         assert_that(
             resp.headers['Location'],
-            ends_with('/admin/dashboards'))
+            ends_with('/dashboards'))
         expected_flash = 'Updated the <a href="http://spotlight.development' + \
             '.performance.service.gov.uk/performance/valid-slug">' + \
             'My valid title</a> dashboard'
