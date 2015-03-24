@@ -1,15 +1,15 @@
 from application import app
 from application.files.spreadsheet import Spreadsheet
+from application.forms import UploadDataForm
 from application.helpers import(
     requires_authentication,
     base_template_context,
-    group_by_group)
+    group_by_group, requires_permission)
 from flask import (abort, render_template,
                    redirect, request, session, url_for)
 from flask.json import jsonify
 from performanceplatform.client.data_set import DataSet
 from requests.exceptions import HTTPError
-import json
 
 
 @app.route('/upload-data', methods=['GET'])
@@ -33,6 +33,16 @@ def upload_list_data_sets(admin_client):
     return render_template('data_sets.html', **template_context)
 
 
+def get_messages_and_status_for_problems(our_problem, problems):
+    if len(problems) == 0:
+        messages = []
+        status = 200
+    else:
+        messages = problems
+        status = 500 if our_problem else 400
+    return messages, status
+
+
 @app.route('/upload-data/<data_group>/<data_type>', methods=['POST'])
 @requires_authentication
 def upload_post(data_group, data_type, admin_client):
@@ -50,12 +60,8 @@ def upload_post(data_group, data_type, admin_client):
             .format(data_group, data_type))
 
     problems, our_problem = upload_spreadsheet(data_set, request.files['file'])
-    if len(problems) == 0:
-        messages = []
-        status = 200
-    else:
-        messages = problems
-        status = 500 if our_problem else 400
+    messages, status = get_messages_and_status_for_problems(our_problem,
+                                                            problems)
 
     return response(status, data_group, data_type, messages)
 
@@ -115,3 +121,109 @@ def response(status_code, data_group, data_type, payload):
 
 def json_request(request):
     return request.headers.get('Accept', 'text/html') == 'application/json'
+
+
+@app.route('/dashboard/<data_group>/digital-take-up/upload',
+           methods=['GET', 'POST'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_digital_take_up_data_file(admin_client, data_group):
+    DATA_TYPE_NAME = 'transactions-by-channel'
+    template_context = base_template_context()
+
+    form = UploadDataForm()
+    if form.validate_on_submit():
+        # 7. check the module exists
+        # 8. create the module
+        try:
+            data_set = admin_client.get_data_set(
+                data_group, DATA_TYPE_NAME)
+        except:
+            pass
+
+        if not data_set:
+            data_set_config = {
+                'data_type': DATA_TYPE_NAME,
+                'data_group': data_group,
+                'bearer_token': 'abc123',
+                'upload_format': 'csv',
+                'auto_ids': '_timestamp, period, channel',
+                'max_age_expected': 1300000
+            }
+            data_set = admin_client.create_data_set(data_set_config)
+            new_data_set = True
+
+        try:
+            modules = admin_client.list_modules_on_dashboard(data_group)
+            for module in modules:
+                if module['data_type'] == DATA_TYPE_NAME and \
+                        module['slug'] == 'digital-takeup':
+                    # module already exists
+
+                    # info and description is not being returned by
+                    # list_modules_on_dashboard.
+                    if new_data_set:
+                        module_config = {
+                            "id": module.get("id"),
+                            "data_set": data_set["name"],
+                            "slug": module.get("slug"),
+                            "type_id": module.get("type", {}).get("id"),
+                            "title": module.get("title"),
+                            "description": module.get("description"),
+                            "info": module.get("info"),
+                            "options": {
+                                "value-attribute": "transactions_by_channels"
+                            },
+                            "order": 1
+                        }
+                        admin_client.add_module_to_dashboard(
+                            data_group, module_config)
+                else:
+                    module_types = admin_client.list_module_types()
+                    for module_type in module_types:
+                        if module_type['name'] == 'single_timeseries':
+                            module_type_id = module_type['id']
+
+                    module_config = {
+                        "data_set": data_set["name"],
+                        "slug": "digital-takeup",
+                        "type_id": module_type_id,
+                        "title": "Digital take-up",
+                        "description": "What percentage of transactions were completed using the online service",
+                        "info": ["Data source: Department for Work and Pensions", "<a href='/service-manual/measurement/digital-takeup' rel='external'>Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."],
+                        "options": {"value-attribute": "transactions_by_channels"},
+                        "order": 1
+                    }
+
+                    admin_client.add_module_to_dashboard(
+                        data_group, module_config)
+        except:
+            pass
+
+        problems, our_problem = \
+            upload_spreadsheet(data_set, request.files['file'])
+
+        messages, status = get_messages_and_status_for_problems(our_problem,
+                                                                problems)
+
+        # inspect the response. check for errors
+
+        return response(status, data_group, DATA_TYPE_NAME, messages)
+
+        # return redirect(url_for('upload_digital_take_up_data_success',
+        #                         data_group=data_group))
+    return render_template('digital_take_up/upload.html',
+                           data_group=data_group,
+                           data_type=DATA_TYPE_NAME,
+                           **template_context)
+
+
+@app.route('/dashboard/<data_group>/digital-take-up/upload/success',
+           methods=['GET', 'POST'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_digital_take_up_data_success(admin_client, data_group):
+    template_context = base_template_context()
+    return render_template('digital_take_up/upload_success.html',
+                           data_group=data_group,
+                           **template_context)

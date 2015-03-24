@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block body %}
+<p>
+    <h3>Add digital take-up</h3>
+</p>
+<h1>Upload data using a spreadsheet</h1>
+
+<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_digital_take_up_data_success', data_group=data_group) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="row">
+        <div class="col-sm-12 col-md-4">
+            <h4>Step 1</h4>
+            <label>
+                Download the template spreadsheet
+            </label>
+            <div class="step">
+                ADD IMAGE
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-4">
+            <h4>Step 2</h4>
+            <label>
+                Add data to the spreadsheet
+            </label>
+            <div class="step">
+                ADD IMAGE
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-4">
+            <h4>Step 3</h4>
+            <label>
+                Upload your completed spreadsheet
+            </label>
+            <div class="step">
+                <input id="digital-take-up-file" type="file" name="file">
+            </div>
+        </div>
+    </div>
+    <p></p>
+    <input type="submit" class="btn btn-success" value="Continue" name="continue">
+</form>
+
+
+{% endblock %}
