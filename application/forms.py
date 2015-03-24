@@ -130,7 +130,7 @@ def get_organisation_choices(admin_client):
 
     try:
         organisations = admin_client.list_organisations(
-            {'type': ['department', 'agency']})
+            {'type': ['department', 'agency', 'service', 'transaction']})
         choices += [
             (org['id'], org['name']) for org in organisations]
         choices.sort(key=lambda tup: tup[1])
