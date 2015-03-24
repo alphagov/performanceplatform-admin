@@ -144,6 +144,29 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
         url = '/dashboard-uuid/digital-take-up/upload-options'
         assert_that(response.data, contains_string(url))
 
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    def test_advises_digital_take_up_has_been_added(self, mock_get_dashboard):
+
+        mock_get_dashboard.return_value = {
+            'id': 'dashboard-uuid',
+            'title': 'A dashboard',
+            'description': 'All about this dashboard',
+            'slug': 'valid-slug',
+            'owning_organisation': 'organisation-uuid',
+            'dashboard_type': 'transaction',
+            'customer_type': 'Business',
+            'strapline': 'Dashboard',
+            'business_model': 'Department budget',
+            'published': False,
+            'status': 'unpublished',
+            'modules': [{
+                'data_type': 'digital-takeup'
+            }]
+        }
+
+        response = self.client.get('/dashboards/dashboard-uuid')
+        assert_that(response.data, contains_string('Data successfully set up'))
+
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")

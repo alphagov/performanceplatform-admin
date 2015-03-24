@@ -259,9 +259,13 @@ class UploadOptionsForm(FlaskWTFForm):
 
 
 class ChannelOptionsForm(FlaskWTFForm):
-    website = BooleanField('Website')
+    digital = BooleanField('Website')
     api = BooleanField('Api')
     telephone_human = BooleanField('Telephone (human operator)')
     telephone_automated = BooleanField('Telephone (automated)')
     paper_form = BooleanField('Paper form')
     face_to_face = BooleanField('Face to face')
+
+
+class UploadDataForm(FlaskWTFForm):
+    pass

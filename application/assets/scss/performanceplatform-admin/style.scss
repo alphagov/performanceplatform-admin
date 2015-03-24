@@ -110,7 +110,17 @@ fieldset {
   h1 {
     font-size: 18px;
   }
-
+  p.advisory {
+    clear: left;
+    font-size: 18px;
+    margin-top: 50px;
+    span {
+        color: #FFF;
+        background-color: #72B951;
+        margin-right: 15px;
+        padding: 5px;
+    }
+  }
   ul {
     padding: 0;
     list-style: disc;
@@ -244,4 +254,7 @@ ul.checkbox-set {
   background-color: #ccc;
   border-radius: 3px;
   color: black;
+
+.steps {
+  padding-bottom: 10px;
 }

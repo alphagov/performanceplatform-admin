@@ -37,6 +37,9 @@ def dashboard_hub(admin_client, uuid):
 
     Dashboard = namedtuple('Dashboard', dashboard_dict.keys())
     dashboard = Dashboard(**dashboard_dict)
+    modules = []
+    if "modules" in dashboard_dict.keys():
+        modules = [module["data_type"] for module in dashboard_dict["modules"]]
     form = DashboardHubForm(obj=dashboard)
     if form.validate_on_submit():
         admin_client.update_dashboard(uuid, form.data)
@@ -52,6 +55,7 @@ def dashboard_hub(admin_client, uuid):
         dashboard_title=dashboard.title,
         preview_url=preview_url,
         form=form,
+        modules=modules,
         **template_context)
 
 

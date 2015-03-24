@@ -1,15 +1,15 @@
+from flask import (abort, render_template,
+                   redirect, request, session, url_for)
+from flask.json import jsonify
+from requests.exceptions import HTTPError
+
 from application import app
 from application.files.spreadsheet import Spreadsheet
 from application.helpers import(
     requires_authentication,
     base_template_context,
     group_by_group)
-from flask import (abort, render_template,
-                   redirect, request, session, url_for)
-from flask.json import jsonify
 from performanceplatform.client.data_set import DataSet
-from requests.exceptions import HTTPError
-import json
 
 
 @app.route('/upload-data', methods=['GET'])
@@ -33,6 +33,16 @@ def upload_list_data_sets(admin_client):
     return render_template('data_sets.html', **template_context)
 
 
+def get_messages_and_status_for_problems(our_problem, problems):
+    if problems:
+        messages = problems
+        status = 500 if our_problem else 400
+    else:
+        messages = []
+        status = 200
+    return messages, status
+
+
 @app.route('/upload-data/<data_group>/<data_type>', methods=['POST'])
 @requires_authentication
 def upload_post(data_group, data_type, admin_client):
@@ -41,7 +51,8 @@ def upload_post(data_group, data_type, admin_client):
     except HTTPError as err:
         return response(500, data_group, data_type,
                         ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())])
+                                          err.response.json())],
+                        url_for('upload_list_data_sets'))
 
     if data_set is None:
         abort(
@@ -49,15 +60,10 @@ def upload_post(data_group, data_type, admin_client):
             'There is no data set of for data-group: {} and data-type: {}'
             .format(data_group, data_type))
 
-    problems, our_problem = upload_spreadsheet(data_set, request.files['file'])
-    if len(problems) == 0:
-        messages = []
-        status = 200
-    else:
-        messages = problems
-        status = 500 if our_problem else 400
+    messages, status = upload_file_and_get_status(data_set)
 
-    return response(status, data_group, data_type, messages)
+    return response(status, data_group, data_type, messages,
+                    url_for('upload_list_data_sets'))
 
 
 def upload_spreadsheet(data_set, file_data):
@@ -96,7 +102,7 @@ def upload_spreadsheet(data_set, file_data):
     return problems, our_problem
 
 
-def response(status_code, data_group, data_type, payload):
+def response(status_code, data_group, data_type, payload, redirect_url_for):
     data = {
         'data_group': data_group,
         'data_type': data_type,
@@ -108,10 +114,17 @@ def response(status_code, data_group, data_type, payload):
         r.status_code = status_code
     else:
         session['upload_data'] = data
-        r = redirect(url_for('upload_list_data_sets'))
+        r = redirect(redirect_url_for)
 
     return r
 
 
 def json_request(request):
     return request.headers.get('Accept', 'text/html') == 'application/json'
+
+
+def upload_file_and_get_status(data_set):
+    problems, our_problem = \
+        upload_spreadsheet(data_set, request.files['file'])
+
+    return get_messages_and_status_for_problems(our_problem, problems)

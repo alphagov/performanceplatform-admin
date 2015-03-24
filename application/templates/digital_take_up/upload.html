@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="row">
+    <div class="col-xs-4">
+        <h3>Add digital take-up</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-8">
+        <h1>Upload data using a spreadsheet</h1>
+    </div>
+</div>
+
+
+<section>
+  <header class='form'>
+    <div class="row">
+      <p class="col-md-4 small">
+        Click the button below to download a CSV file that you can
+        import into your preferred spreadsheet software.
+      </p>
+    </div>
+    <div class="row">
+      <p class="col-md-4 small">
+        Add data to the imported spreadsheet and when you're ready,
+        click the Add digital take-up button on your dashboard's
+        edit page to upload your data.
+      </p>
+    </div>
+  </header>
+</section>
+
+<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_data_file_to_dashboard', uuid=uuid) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="row steps">
+        <div class="col-sm-12 col-md-4">
+            <h4>Step 1</h4>
+            <label>
+                Download the template spreadsheet
+            </label>
+            <div class="step">
+                <span class="hint"><a href="{{ url_for('spreadsheet_template', uuid=uuid) }}" class="btn btn-primary btn">Download template</a> CSV File</span>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-4">
+                <h4>Step 2</h4>
+            <label>
+                Add data to the spreadsheet
+            </label>
+            <div class="step">
+                <table class="table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Website</td>
+                            <td>584325</td>
+                        </tr>
+                        <tr>
+                            <td>Telephone</td>
+                            <td>24325</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-4">
+            <h4>Step 3</h4>
+            <label>
+                Upload your completed spreadsheet
+            </label>
+            <div class="step">
+                <input id="digital-take-up-file" type="file" name="file">
+                {% if upload_data %}
+                <div class="upload-messages">
+                    {% if upload_data.payload %}
+                      <p class="text-danger">Upload failed - errors:</p>
+                      <ul class="upload-messages">
+                        {% for message in upload_data.payload %}
+                        <li class="text-danger">{{message}}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <input type="submit" class="btn btn-success" value="Continue" name="continue">
+        </div>
+    </div>
+</form>
+
+{% endblock %}
