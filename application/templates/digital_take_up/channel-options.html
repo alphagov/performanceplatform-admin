@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<section>
+  <header class='form'>
+    <span class="hint">Add digital take-up</span>
+    <div class="row">
+      <h1 class="col-md-6">How can people use your transaction?</h1>
+    </div>
+    <p class="small">
+      Select all the ways people can complete this transaction.
+    </p>
+    <div class="row">
+      <p class="col-md-4 small">
+        Only include contact methods where users can actually complete
+        the transaction. For example, don't include Telephone if the
+        operator will just tell you to go and fill in a form.
+      </p>
+    </div>
+  </header>
+
+  <form method="POST" action="{{ url_for('channel_options', uuid=uuid) }}" role="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <fieldset class="form-group">Digital channels
+      <ul class="checkbox-set">
+        <li class="choice">
+          {{ form.website }}
+          {{ form.website.label}}
+        </li>
+        <li class="choice">
+          {{ form.api }}
+          {{ form.api.label}}
+        </li>
+      </ul>
+    </fieldset>
+
+    <fieldset class="form-group">Non-digital channels
+      <ul class="checkbox-set">
+        <li class="choice">
+          {{ form.telephone_human }}
+          {{ form.telephone_human.label}}
+        </li>
+        <li class="choice">
+          {{ form.telephone_automated }}
+          {{ form.telephone_automated.label}}
+        </li>
+        <li class="choice">
+          {{ form.paper_form }}
+          {{ form.paper_form.label }}
+        </li>
+        <li class="choice">
+          {{ form.face_to_face }}
+          {{ form.face_to_face.label }}
+        </li>
+      </ul>
+    </fieldset>
+
+    <input type="submit" class="btn btn-success" value="Continue" name="submit-channel-options">
+  </form>
+</section>
+
+{% endblock %}

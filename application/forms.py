@@ -2,7 +2,7 @@ from application import app
 from application.fields.json_textarea import JSONTextAreaField
 from flask_wtf import Form as FlaskWTFForm
 from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     HiddenField)
+                     RadioField, BooleanField, HiddenField)
 from wtforms.validators import Required, Email, URL, Optional
 from wtforms_components.fields.select import SelectField
 import requests
@@ -244,3 +244,24 @@ class DashboardHubForm(FlaskWTFForm):
     description = TextAreaField(
         'Dashboard description',
         validators=[Required(message='Description cannot be blank')])
+
+
+class UploadOptionsForm(FlaskWTFForm):
+    upload_option = RadioField(
+        '',
+        choices=[
+            ('api', "Automatically upload from your transaction's API"),
+            ('week', 'Manually upload a spreadsheet every week'),
+            ('month', 'Manually upload a spreadsheet every month')
+        ],
+        default='week',
+        validators=[Required(message='Please select an upload option')])
+
+
+class ChannelOptionsForm(FlaskWTFForm):
+    website = BooleanField('Website')
+    api = BooleanField('Api')
+    telephone_human = BooleanField('Telephone (human operator)')
+    telephone_automated = BooleanField('Telephone (automated)')
+    paper_form = BooleanField('Paper form')
+    face_to_face = BooleanField('Face to face')

@@ -2,7 +2,7 @@
 
 {% block body %}
 
-<section>
+<section id="dashboard-hub">
   <header class="keyline-separator">
     <span class="hint">Your dashboard</span>
     <h1>{{ dashboard_title }}</h1>
@@ -50,8 +50,27 @@
       <h1>Dashboard data</h1>
     </header>
 
-    <ul>
-    </ul>
+    <section class="dashboard-data-item">
+      <div class="row">
+        <header class="col-md-3">
+          <h1>Digital take-up</h1>
+        </header>
+
+
+        <div class="col-md-5">
+          <p>
+            To calculate your digital take-up you will need:
+          </p>
+
+          <ul>
+            <li>data for how many people complete the transaction using the digital service</li>
+          </ul>
+
+          <p><a href="https://www.gov.uk/service-manual/communications/increasing-digital-takeup.html">Find out more about digital take-up</a></p>
+          <p><a href="{{ url_for('upload_options', uuid=uuid) }}" class="btn btn-info">Add digital take-up</a></p>
+        </div>
+      </div>
+    </section>
   </section>
 
   <footer>
