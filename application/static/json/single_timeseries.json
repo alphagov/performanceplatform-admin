@@ -1,0 +1,13 @@
+{
+  "duration": 52,
+  "collect": [
+    "avgSessionDuration:sum"
+  ],
+  "group_by": [
+    "stage"
+  ],
+  "period": "week",
+  "filter_by": [
+    "stage:thank-you"
+  ]
+}

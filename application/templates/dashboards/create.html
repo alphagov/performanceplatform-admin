@@ -194,7 +194,7 @@
             <div class="form-group">
               {{ module.module_type.label(class='col-sm-2 control-label') }}
               <div class="col-sm-10">
-                {{ module.module_type(class='form-control') }}
+                {{ module.module_type(class='form-control js-module-type-selector') }}
               </div>
             </div>
 
@@ -253,7 +253,7 @@
             <div class="form-group">
               {{ module.query_parameters.label(class='col-sm-2 control-label') }}
               <div class="col-sm-10">
-                {{ module.query_parameters(class='form-control json-field') }}
+                {{ module.query_parameters(class='form-control json-field js-query-parameters') }}
                 <p class="help-block">Query parameters must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
               </div>
             </div>

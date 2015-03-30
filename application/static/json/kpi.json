@@ -1,0 +1,7 @@
+{
+  "sort_by": "_timestamp:descending",
+  "filter_by": [
+    "service_id:<service-id>",
+    "type:seasonally-adjusted"
+  ]
+}
