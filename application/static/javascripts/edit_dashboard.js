@@ -17,5 +17,6 @@
   }
 
   setupJsonValidation($('.json-field'));
+  $('.js-sticky').stick_in_parent();
 
 }());

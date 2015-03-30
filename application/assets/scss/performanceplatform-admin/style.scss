@@ -134,3 +134,11 @@ textarea.json-field {
      }
   }
 }
+
+.sticky-toolbar {
+  z-index: 1;
+}
+
+.sticky-toolbar-inner {
+  position: relative;
+}
