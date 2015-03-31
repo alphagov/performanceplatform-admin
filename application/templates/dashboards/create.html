@@ -13,6 +13,25 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     {{ form.published() }}
 
+    <div class="js-sticky sticky-toolbar">
+      <div class="well clearfix sticky-toolbar-inner">
+        <p class="pull-right add-left-margin control-label">
+          You're
+          {% if form.title.data %}
+          editing the <strong>{{ form.title.data }}</strong> dashboard
+          {% endif %}
+          in <strong>{{environment.human_name.lower()}}</strong>
+        </p>
+        <input type="submit" class="btn btn-default" value="Add a section" name="add_section">
+        <input type="submit" class="btn btn-default" value="Add a module" name="add_module">
+        {% if uuid %}
+        <input type="submit" class="btn btn-success" value="Update dashboard" name="create">
+        {% else %}
+        <input type="submit" class="btn btn-success" value="Save new dashboard" name="create">
+        {% endif %}
+      </div>
+    </div>
+
     <div class="well">
 
       <div class="form-group">
@@ -175,7 +194,7 @@
             <div class="form-group">
               {{ module.module_type.label(class='col-sm-2 control-label') }}
               <div class="col-sm-10">
-                {{ module.module_type(class='form-control') }}
+                {{ module.module_type(class='form-control js-module-type-selector') }}
               </div>
             </div>
 
@@ -234,7 +253,7 @@
             <div class="form-group">
               {{ module.query_parameters.label(class='col-sm-2 control-label') }}
               <div class="col-sm-10">
-                {{ module.query_parameters(class='form-control json-field') }}
+                {{ module.query_parameters(class='form-control json-field js-query-parameters') }}
                 <p class="help-block">Query parameters must be <a href="http://jsonlint.com/" target="_blank">valid JSON</a></p>
               </div>
             </div>
@@ -252,26 +271,15 @@
 
       {% endfor %}
 
-      <input type="submit" class="btn btn-default" value="Add a section" name="add_section">
-      <input type="submit" class="btn btn-default" value="Add a module" name="add_module">
 
-    </div>
-
-    <div class="clearfix">
-      {% if uuid %}
-        <input type="submit" class="pull-left btn btn-success" value="Update dashboard" name="create">
-      {% else %}
-        <input type="submit" class="pull-left btn btn-success" value="Create dashboard" name="create">
-      {% endif %}
-      <p class="pull-left add-left-margin control-label">
-        You're
-        {% if form.title.data %}
-        editing the <strong>{{ form.title.data }}</strong> dashboard
-        {% endif %}
-        in <strong>{{environment.human_name.lower()}}</strong>
-      </p>
     </div>
 
 </form>
 
+{% endblock %}
+
+{% block footer_javascripts %}
+    <script src='/static/javascripts/jsonlint/jsonlint.js'></script>
+    <script src='/static/javascripts/sticky-kit/sticky-kit.js'></script>
+<script src='/static/javascripts/edit_dashboard.js'></script>
 {% endblock %}

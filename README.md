@@ -66,3 +66,10 @@ the instructions in the `admin/config/development.py` file.
 ```bash
 ./run_tests.sh
 ```
+
+## Populating the DB with 'seed' values
+Clone the stagecraft repo then from that folder, run:
+
+```
+ ./replicate-db.sh postgresql-primary-1.pp-preview
+```

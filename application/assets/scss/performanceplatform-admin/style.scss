@@ -55,9 +55,16 @@ ul.links {
 }
 
 textarea.json-field {
-  height: 10em;
+  height: 13em;
+  white-space: pre-wrap;
+  &.invalid {
+    border: 1px solid red;
+  }
 }
 
+.msg-invalid-json {
+  color: red;
+}
 .hint {
   color: $gray-light;
 }
@@ -126,4 +133,12 @@ textarea.json-field {
        margin-bottom: 5px;
      }
   }
+}
+
+.sticky-toolbar {
+  z-index: 1;
+}
+
+.sticky-toolbar-inner {
+  position: relative;
 }

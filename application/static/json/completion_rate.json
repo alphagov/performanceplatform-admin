@@ -1,0 +1,10 @@
+{
+  "duration": 52,
+  "collect": [
+    "count:sum"
+  ],
+  "group_by": [
+    "channel"
+  ],
+  "period": "week"
+}
