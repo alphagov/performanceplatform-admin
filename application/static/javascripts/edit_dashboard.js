@@ -3,7 +3,7 @@
   function setQueryParamsFromModuleType() {
     $('.js-module-type-selector').on('change', function () {
       var type = $(this).find('[value="' + $(this).val() + '"]').text(),
-        $queryParams = $('.js-query-parameters');
+        $queryParams = $(this).closest('.module').find('.js-query-parameters');
 
       $.getJSON('/static/json/' + type + '.json')
         .done(function (data) {

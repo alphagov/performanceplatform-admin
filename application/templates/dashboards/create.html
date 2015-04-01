@@ -16,12 +16,12 @@
     <div class="col-sm-3 sticky-outer">
     <div class="js-sticky sticky-toolbar">
       <div class="well clearfix sticky-toolbar-inner">
-        <a href="#dashboard-details"><strong>{{form.title.data}}</strong></a>
+        <a href="#dashboard-details"><strong>{{form.title.data or 'Dashboard'}}</strong></a>
         <h2><small>Modules</small></h2>
-        <ol class="list-slim">
+        <ol class="list-slim modules-list">
         {% for module in form.modules %}
           <li>
-          <a href="#module-{{ module.data['id'] }}">{{ module.data['title'] }}</a>
+          <a href="#module-{{ loop.index }}">{{ module.data['title'] or 'No title' }}</a>
           </li>
         {% endfor %}
           </ol>
@@ -180,7 +180,7 @@
       <h2>Modules</h2>
 
       {% for module in form.modules %}
-        <fieldset class="module" id="module-{{ module.data['id'] }}">
+        <fieldset class="module" id="module-{{ loop.index }}">
           {{ module.form['id'] }}
           {{ module['category'] }}
 
