@@ -2,7 +2,6 @@
 
 {% block body %}
 
-
 {% if uuid %}
   <h1>Update a dashboard</h1>
   <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
@@ -13,28 +12,43 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     {{ form.published() }}
 
+    <div class="container-inner clearfix">
+    <div class="col-sm-3 sticky-outer">
     <div class="js-sticky sticky-toolbar">
       <div class="well clearfix sticky-toolbar-inner">
-        <p class="pull-right add-left-margin control-label">
-          You're
-          {% if form.title.data %}
-          editing the <strong>{{ form.title.data }}</strong> dashboard
-          {% endif %}
-          in <strong>{{environment.human_name.lower()}}</strong>
-        </p>
+        <a href="#dashboard-details"><strong>{{form.title.data}}</strong></a>
+        <h2><small>Modules</small></h2>
+        <ol class="list-slim">
+        {% for module in form.modules %}
+          <li>
+          <a href="#module-{{ module.data['id'] }}">{{ module.data['title'] }}</a>
+          </li>
+        {% endfor %}
+          </ol>
+        <p>
         <input type="submit" class="btn btn-default" value="Add a section" name="add_section">
-        <input type="submit" class="btn btn-default" value="Add a module" name="add_module">
+        </p>
+        <p>
+          <input type="submit" class="btn btn-default" value="Add a module" name="add_module">
+        </p>
+        <p>
         {% if uuid %}
         <input type="submit" class="btn btn-success" value="Update dashboard" name="create">
         {% else %}
         <input type="submit" class="btn btn-success" value="Save new dashboard" name="create">
         {% endif %}
+        </p>
+        <p>
+          You're in <strong>{{environment.human_name.lower()}}</strong>
+        </p>
+
       </div>
     </div>
-
+    </div>
+    <div class="col-sm-9 col-sm-offset-3">
     <div class="well">
 
-      <div class="form-group">
+      <div class="form-group" id="dashboard-details">
         {{ form.title.label(class='col-sm-2 control-label') }}
         <div class="col-sm-10">
           {{ form.title(class='form-control', placeholder='Carer\'s Allowance') }}
@@ -166,7 +180,7 @@
       <h2>Modules</h2>
 
       {% for module in form.modules %}
-        <fieldset class="module">
+        <fieldset class="module" id="module-{{ module.data['id'] }}">
           {{ module.form['id'] }}
           {{ module['category'] }}
 
@@ -273,7 +287,8 @@
 
 
     </div>
-
+    </div>
+    </div>
 </form>
 
 {% endblock %}

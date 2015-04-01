@@ -134,6 +134,22 @@ textarea.json-field {
      }
   }
 }
+.list-slim {
+  padding-left: 20px;
+}
+.container-inner {
+  position: relative;
+}
+
+@media (min-width: $screen-sm-min) {
+  .sticky-outer {
+    float: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+  }
+}
 
 .sticky-toolbar {
   z-index: 1;
