@@ -437,7 +437,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(
             resp.headers['Location'],
             ends_with('/dashboards'))
-        expected_flash = 'Updated the <a href="http://spotlight.development' + \
+        expected_flash = 'Updated the <a href="http://spotlight.development' +\
             '.performance.service.gov.uk/performance/valid-slug">' + \
             'My valid title</a> dashboard'
         self.assert_flashes(expected_flash, expected_category='success')
@@ -460,7 +460,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
         self.client.post(
             '/admin/dashboards/uuid', data=data)
-        expected_flash = 'Updated the <a href="http://spotlight.development' + \
+        expected_flash = 'Updated the <a href="http://spotlight.development' +\
             '.performance.service.gov.uk/performance/valid-slug">' + \
             'Bad title&lt;h1&gt;boo&lt;/h1&gt;</a> dashboard'
         self.assert_flashes(expected_flash, expected_category='success')
@@ -681,9 +681,13 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(session['pending_dashboard']['modules'][0]['slug'],
                         equal_to('bar'))
 
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    @patch("application.forms.DashboardCreationForm.validate")
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_first_module_down(
+    def test_reorder_modules_on_new_applies_changes_when_form_is_valid(
             self,
+            mock_validate,
+            mock_create_dashboard,
             mock_list_organisations,
             mock_list_data_sets,
             mock_list_module_types,
@@ -695,21 +699,33 @@ class DashboardTestCase(FlaskAppTestCase):
             'modules-1-module_type': '',
             'modules-1-slug': 'bar',
 
-            'move_module_down_0': 'move',
+            'modules_order': '2,1',
         }
-
+        mock_validate.return_value = True
         client.post('/admin/dashboards',
                     data=form_data)
 
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'bar'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'foo'))
+        assert_that(len(mock_create_dashboard.call_args_list), equal_to(1))
 
+        post_json = mock_create_dashboard.call_args[0][0]
+
+        assert_that(post_json['modules'][0], has_entries({
+            'slug': 'bar',
+            'order': 1
+        }))
+
+        assert_that(post_json['modules'][1], has_entries({
+            'slug': 'foo',
+            'order': 2
+        }))
+
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    @patch("application.forms.DashboardCreationForm.validate")
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_down(
+    def test_reorder_modules_on_update_applies_changes_when_form_is_valid(
             self,
+            mock_validate,
+            mock_update_dashboard,
             mock_list_organisations,
             mock_list_data_sets,
             mock_list_module_types,
@@ -721,92 +737,25 @@ class DashboardTestCase(FlaskAppTestCase):
             'modules-1-module_type': '',
             'modules-1-slug': 'bar',
 
-            'move_module_down_1': 'move',
+            'modules_order': '2,1',
         }
-
-        client.post('/admin/dashboards',
+        mock_validate.return_value = True
+        client.post('/admin/dashboards/some_uuid',
                     data=form_data)
 
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'foo'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'bar'))
+        assert_that(len(mock_update_dashboard.call_args_list), equal_to(1))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_down_on_existing_dashboard(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
+        uuid = mock_update_dashboard.call_args[0][0]
+        assert_that(uuid, equal_to('some_uuid'))
 
-            'move_module_down_1': 'move',
-        }
+        post_json = mock_update_dashboard.call_args[0][1]
 
-        client.post('/admin/dashboards/uuid',
-                    data=form_data)
+        assert_that(post_json['modules'][0], has_entries({
+            'slug': 'bar',
+            'order': 1
+        }))
 
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'foo'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'bar'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_up(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
-
-            'move_module_up_1': 'move',
-        }
-
-        client.post('/admin/dashboards',
-                    data=form_data)
-
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'bar'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'foo'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_first_module_up(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
-
-            'move_module_up_0': 'move',
-        }
-
-        client.post('/admin/dashboards',
-                    data=form_data)
-
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'foo'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'bar'))
+        assert_that(post_json['modules'][1], has_entries({
+            'slug': 'foo',
+            'order': 2
+        }))
