@@ -5,6 +5,10 @@ from application.helpers import (
     requires_authentication,
     requires_permission,
 )
+from wtforms.fields import (
+    FieldList,
+    FormField
+)
 from flask import (
     flash, redirect, render_template, request,
     session, url_for
@@ -40,6 +44,10 @@ def update_modules_form_and_redirect(func):
         session['pending_dashboard'] = form.data
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
+
+        if 'modules_order' in request.form:
+            if reorder_modules(request.form, session):
+                return redirect(url_for('dashboard_form', uuid=uuid))
 
         if 'add_section' in request.form:
             url = url_for('dashboard_form',
@@ -160,6 +168,7 @@ class InvalidFormFieldError(Exception):
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
 def dashboard_update(admin_client, module_types, form, uuid):
+
     try:
         if not form.validate():
             raise InvalidFormFieldError()
@@ -331,3 +340,12 @@ def move_or_remove(request_form, session):
             session['pending_dashboard']['modules'] = modules
         return True
     return False
+
+def reorder_modules(request_form, session):
+    new_modules = []
+    new_order = request.form.get('modules_order').split(',')
+    for idx, val in enumerate(new_order):
+        new_modules.append(session['pending_dashboard']['modules'][int(val) - 1])
+
+    session['pending_dashboard']['modules'] = new_modules
+    return True

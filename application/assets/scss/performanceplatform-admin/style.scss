@@ -136,6 +136,9 @@ textarea.json-field {
 }
 .list-slim {
   padding-left: 20px;
+  > li {
+    padding-left: 5px;
+  }
 }
 .container-inner {
   position: relative;
@@ -157,4 +160,10 @@ textarea.json-field {
 
 .sticky-toolbar-inner {
   position: relative;
+}
+
+.sortable-ghost {
+  background-color: #ccc;
+  border-radius: 3px;
+  color: black;
 }
