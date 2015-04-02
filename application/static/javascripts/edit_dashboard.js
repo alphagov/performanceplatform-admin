@@ -31,8 +31,29 @@
     });
   }
 
+  function getModuleOrder() {
+    var modules = [];
+    $('.modules-list li').each(function() {
+      modules.push($(this).attr('data-index'));
+    });
+    return modules.join(',');
+  }
+
   setQueryParamsFromModuleType();
+
   setupJsonValidation($('.json-field'));
+
   $('.js-sticky').stick_in_parent();
+  Sortable.create($('.modules-list')[0], {
+    ghostClass: 'sortable-ghost',
+    onUpdate: function() {
+      if (!$('.modules-order').length) {
+        $('.frm-dashboard').prepend('<input name="modules_order" class="modules-order" type="hidden" value="" />');
+      }
+    }
+  });
+  $('.frm-dashboard').on('submit', function() {
+    $(this).find('input[type="hidden"].modules-order').val(getModuleOrder());
+  });
 
 }());

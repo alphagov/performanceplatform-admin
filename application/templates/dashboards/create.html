@@ -4,10 +4,10 @@
 
 {% if uuid %}
   <h1>Update a dashboard</h1>
-  <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal">
+  <form method="post" action="{{ url_for('dashboard_update', uuid=uuid) }}" role="form" class="form-horizontal frm-dashboard">
 {% else %}
   <h1>Create a dashboard</h1>
-  <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal">
+  <form method="post" action="{{ url_for('dashboard_create') }}" role="form" class="form-horizontal frm-dashboard">
 {% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     {{ form.published() }}
@@ -17,10 +17,11 @@
     <div class="js-sticky sticky-toolbar">
       <div class="well clearfix sticky-toolbar-inner">
         <a href="#dashboard-details"><strong>{{form.title.data or 'Dashboard'}}</strong></a>
-        <h2><small>Modules</small></h2>
+        <h3><small>Modules</small></h3>
+      <div><small>Drag to re-order</small></div>
         <ol class="list-slim modules-list">
         {% for module in form.modules %}
-          <li>
+          <li data-index="{{ loop.index }}">
           <a href="#module-{{ loop.index }}">{{ module.data['title'] or 'No title' }}</a>
           </li>
         {% endfor %}
@@ -296,5 +297,6 @@
 {% block footer_javascripts %}
     <script src='/static/javascripts/jsonlint/jsonlint.js'></script>
     <script src='/static/javascripts/sticky-kit/sticky-kit.js'></script>
+    <script src='/static/javascripts/sortable/jquery.sortable.min.js'></script>
 <script src='/static/javascripts/edit_dashboard.js'></script>
 {% endblock %}
