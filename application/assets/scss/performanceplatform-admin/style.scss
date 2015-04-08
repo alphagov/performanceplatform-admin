@@ -69,6 +69,10 @@ textarea.json-field {
   color: $gray-light;
 }
 
+fieldset {
+  font-weight: bold;
+}
+
 .form-group p.hint {
   margin-bottom: 0;
 }
@@ -80,6 +84,71 @@ textarea.json-field {
   @media (min-width: 992px) {
     float: right;
     margin-top: 5px;
+  }
+}
+
+#dashboard-hub {
+  > section > header h1 {
+    font-size: 24px;
+  }
+}
+
+.dashboard-data-item {
+  margin-top: 30px;
+  padding-top: 10px;
+  border-top: 1px solid $gray-light;
+
+  h1 {
+    font-size: 18px;
+  }
+
+  ul {
+    padding: 0;
+    list-style: disc;
+  }
+
+  li {
+    margin-left: 16px;
+  }
+}
+
+header.form {
+  margin-bottom: 20px;
+
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  small {
+    display: block;
+  }
+}
+
+ul.checkbox-set {
+  padding: 0;
+  list-style: none;
+
+  li {
+    float: left;
+    clear: left;
+    label {
+      font-weight: normal;
+    }
+  }
+}
+
+.choice {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 2px solid #DCDEDD;
+  background-color: #F2F4F3;
+
+  label {
+    margin-left: 8px;
+  }
+
+  p {
+    margin-left: 24px;
   }
 }
 

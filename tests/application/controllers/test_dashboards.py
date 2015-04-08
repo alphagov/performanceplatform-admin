@@ -106,6 +106,21 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
+    def test_renders_a_section_for_digital_take_up(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
+        assert_that(response.data, contains_string('<h1>Digital take-up</h1>'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    def test_renders_a_link_to_add_digital_take_up(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
+        url = '/dashboard-uuid/digital-take-up/upload-options'
+        assert_that(response.data, contains_string(url))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_dashboard_is_updated(
             self, mock_update_dashboard, mock_get_dashboard):

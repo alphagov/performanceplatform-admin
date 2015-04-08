@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<section>
+  <header class="form">
+    <span class="hint">Add digital take-up</span>
+    <div class="row">
+      <h1 class="col-md-6">How would you like to upload your data?</h1>
+    </div>
+    <p class="small">
+      Your data can be uploaded to the dashboard in a number of different ways.<br>
+      Select which option would work best for your service.
+    </p>
+  </header>
+
+  <form method="POST" action="{{ url_for('upload_options', uuid=uuid) }}" role="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <div class="row">
+      <div class="form-group col-md-5">
+        <div class="choice">
+          {{ upload_options[0] }}
+          {{ upload_options[0].label}}
+          <p class="hint">
+            We'll work with your developers to make your<br>
+            transaction report data automatically via an API.
+          </p>
+
+          <p class="hint">
+            You'll only have to do this once.
+          </p>
+        </div>
+
+        <div class="choice">
+          {{ upload_options[1] }}
+          {{ upload_options[1].label}}
+          <p class="hint">
+            We'll create a template spreadsheet for you to fill in.<br>
+            Take a look at a sample template.
+          </p>
+
+          <p class="hint">
+            You'll have to upload the data every week.
+          </p>
+        </div>
+
+        <div class="choice">
+          {{ upload_options[2] }}
+          {{ upload_options[2].label}}
+          <p class="hint">
+            We'll create a template spreadsheet for you to fill in.<br>
+            Take a look at a sample template.
+          </p>
+
+          <p class="hint">
+            You'll have to upload the data every month.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <input type="submit" class="btn btn-success" value="Continue" name="submit-upload-options">
+  </form>
+</section>
+
+{% endblock %}

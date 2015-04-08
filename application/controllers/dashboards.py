@@ -26,6 +26,9 @@ DASHBOARD_ROUTE = '/dashboards'
 @requires_permission('dashboard')
 def dashboard_hub(admin_client, uuid):
     template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
     dashboard_dict = admin_client.get_dashboard(uuid)
     Dashboard = namedtuple('Dashboard', dashboard_dict.keys())
     dashboard = Dashboard(**dashboard_dict)
