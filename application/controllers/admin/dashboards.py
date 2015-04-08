@@ -132,7 +132,7 @@ def dashboard_form(admin_client, uuid=None):
         if request.args.get('section'):
             form.modules[-1].category.data = 'container'
 
-    return render_template('dashboards/create.html',
+    return render_template('admin/dashboards/create.html',
                            form=form,
                            **template_context)
 
@@ -154,7 +154,7 @@ def dashboard_clone(admin_client):
     form['published'].data = False
     for m in form.modules:
         m['id'].data = ''
-    return render_template('dashboards/create.html',
+    return render_template('admin/dashboards/create.html',
                            form=form,
                            **template_context)
 

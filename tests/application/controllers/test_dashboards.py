@@ -18,7 +18,7 @@ import requests
 
 def dashboard_data(options={}):
     params = {
-        'id': 'uuid',
+        'id': 'dashboard-uuid',
         'title': 'A dashboard',
         'description': 'All about this dashboard',
         'slug': 'valid-slug',
@@ -116,7 +116,7 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
            return_value=dashboard_data())
     def test_dashboard_title_field_is_required(self, mock_get_dashboard):
         data = self.params({'title': ''})
-        response = self.client.post('/dashboards/uuid', data=data)
+        response = self.client.post('/dashboards/dashboard-uuid', data=data)
         assert_that(response.status, equal_to('200 OK'))
         assert_that(response.data, contains_string('Title cannot be blank'))
 
@@ -124,7 +124,7 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
            return_value=dashboard_data())
     def test_dashboard_description_field_is_required(self, mock_get_dashboard):
         data = self.params({'description': ''})
-        response = self.client.post('/dashboards/uuid', data=data)
+        response = self.client.post('/dashboards/dashboard-uuid', data=data)
         assert_that(response.status, equal_to('200 OK'))
         assert_that(
             response.data, contains_string('Description cannot be blank'))
@@ -150,9 +150,10 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
     def test_dashboard_is_updated(
             self, mock_update_dashboard, mock_get_dashboard):
         data = self.params()
-        self.client.post('/dashboards/uuid', data=data)
+        self.client.post('/dashboards/dashboard-uuid', data=data)
         post_json = mock_update_dashboard.call_args[0][1]
-        assert_that(mock_update_dashboard.call_args[0][0], equal_to('uuid'))
+        assert_that(
+            mock_update_dashboard.call_args[0][0], equal_to('dashboard-uuid'))
         assert_that(post_json, has_entries(data))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
@@ -284,7 +285,7 @@ class DashboardListTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')
-    def test_dashboards_page_shows_a_list_of_dashboards(
+    def test_index_page_shows_a_list_of_dashboards(
             self, get_patch, client):
         response = requests.Response()
         response.status_code = 200
@@ -292,6 +293,43 @@ class DashboardListTestCase(FlaskAppTestCase):
         get_patch.return_value = response
         resp = client.get('/dashboards')
         assert_that(resp.data, contains_string('Name of service'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_index_page_with_stagecraft_down_or_0_dashboards_shows_errors(
+            self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 500
+        get_patch.return_value = response
+
+        resp = client.get('/dashboards')
+
+        assert_that(resp.data, contains_string(
+            'Could not retrieve the list of dashboards'
+        ))
+
+        response.status_code = 200
+        response.json = Mock(return_value={'dashboards': []})
+        get_patch.return_value = response
+
+        resp = client.get('/dashboards')
+
+        assert_that(resp.data, contains_string(
+            'No dashboards stored'
+        ))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_index_page_with_stagecraft_down_errors(self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 500
+        get_patch.return_value = response
+
+        resp = client.get('/dashboards')
+
+        assert_that(resp.data, contains_string(
+            'Could not retrieve the list of dashboards'
+        ))
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('requests.get')

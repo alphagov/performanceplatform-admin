@@ -11,70 +11,6 @@ import os
 import json
 
 
-class DashboardIndexTestCase(FlaskAppTestCase):
-
-    def setUp(self):
-        self.app = app.test_client()
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_index_page_shows_list_of_dashboards(self, get_patch, client):
-        dashboards = {'dashboards': [
-            {
-                'url': 'http://stagecraft/dashboard/uuid',
-                'public-url': 'http://spotlight/performance/carers-allowance',
-                'published': True,
-                'id': 'uuid',
-                'title': 'Name of service'
-            }
-        ]}
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=dashboards)
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
-
-        assert_that(resp.data, contains_string('Name of service'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_index_page_with_stagecraft_down_or_0_dashboards_shows_errors(
-            self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 500
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
-
-        assert_that(resp.data, contains_string(
-            'Could not retrieve the list of dashboards'
-        ))
-
-        response.status_code = 200
-        response.json = Mock(return_value={'dashboards': []})
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
-
-        assert_that(resp.data, contains_string(
-            'No dashboards stored'
-        ))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_index_page_with_stagecraft_down_errors(self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 500
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
-
-        assert_that(resp.data, contains_string(
-            'Could not retrieve the list of dashboards'
-        ))
-
-
 def module_types_list():
     return [{'id': 'availability-module-type-uuid', 'name': 'availability'},
             {'id': 'section-module-type-uuid', 'name': 'section'}]
@@ -529,7 +465,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
         resp = self.client.get('/admin/dashboards/uuid')
         mock_get.assert_called_once_with('uuid')
-        rendered_template = 'dashboards/create.html'
+        rendered_template = 'admin/dashboards/create.html'
         assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
         kwargs = mock_render.call_args[1]
         assert_that(kwargs['form'], instance_of(DashboardCreationForm))
@@ -560,7 +496,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
         resp = self.client.get('/admin/dashboards/uuid')
         mock_get.assert_called_once_with('uuid')
-        rendered_template = 'dashboards/create.html'
+        rendered_template = 'admin/dashboards/create.html'
         assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
         kwargs = mock_render.call_args[1]
         assert_that(kwargs['form'], instance_of(DashboardCreationForm))
@@ -591,7 +527,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
         resp = self.client.get('/admin/dashboards/clone?uuid=uuid')
         mock_get.assert_called_once_with('uuid')
-        rendered_template = 'dashboards/create.html'
+        rendered_template = 'admin/dashboards/create.html'
         assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
         kwargs = mock_render.call_args[1]
         form = kwargs['form']
