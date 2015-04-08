@@ -7,6 +7,7 @@ from flask import (
     flash,
     session
 )
+import boto.ses
 from application.helpers import (
     base_template_context,
     requires_authentication,
@@ -30,6 +31,10 @@ def dashboard_hub(admin_client, uuid):
         'user': session['oauth_user'],
     })
     dashboard_dict = admin_client.get_dashboard(uuid)
+    if dashboard_dict['status'] != 'unpublished':
+        flash('In review or published dashboards cannot be edited', 'info')
+        return redirect(url_for('dashboard_list'))
+
     Dashboard = namedtuple('Dashboard', dashboard_dict.keys())
     dashboard = Dashboard(**dashboard_dict)
     form = DashboardHubForm(obj=dashboard)
@@ -38,6 +43,7 @@ def dashboard_hub(admin_client, uuid):
         return redirect(url_for('dashboard_list'))
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
+
     preview_url = "{0}/performance/{1}".format(
         app.config['GOVUK_SITE_URL'], dashboard_dict['slug'])
     return render_template(
@@ -47,6 +53,35 @@ def dashboard_hub(admin_client, uuid):
         preview_url=preview_url,
         form=form,
         **template_context)
+
+
+@app.route('{0}/<uuid>/send-for-review'.format(
+    DASHBOARD_ROUTE), methods=['POST'])
+@requires_authentication
+@requires_permission('dashboard')
+def send_dashboard_for_review(admin_client, uuid):
+    dashboard_dict = admin_client.get_dashboard(uuid)
+    admin_client.update_dashboard(uuid, {'status': 'in-review'})
+
+    conn = boto.ses.connect_to_region(
+        'us-east-1',
+        aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
+
+    body_text = "{0} ({1}) requests a review of the dashboard ({2})".format(
+        session['oauth_user']['name'],
+        session['oauth_user']['email'],
+        dashboard_dict['title'])
+
+    conn.send_email(
+        app.config['NO_REPLY_EMAIL'],
+        'Request to review a dashboard',
+        body_text,
+        app.config['NOTIFICATIONS_EMAIL'],
+        reply_addresses=app.config['NO_REPLY_EMAIL'])
+
+    flash('Your dashboard has been sent for review', 'success')
+    return redirect(url_for('dashboard_list'))
 
 
 @app.route('/dashboards', methods=['GET'])

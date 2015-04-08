@@ -191,3 +191,8 @@ def to_error_list(form_errors):
     for field_name, field_errors in form_errors.items():
         messages.append('; '.join(map(format_error, field_errors)))
     return 'You have errors in your form: ' + '; '.join(messages) + '.'
+
+
+@app.template_filter('format_status')
+def format_status(s):
+    return s.title().replace('-', ' ')

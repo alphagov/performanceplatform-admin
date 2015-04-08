@@ -77,6 +77,16 @@
     <p>
       <a href="{{ preview_url }}" class="btn btn-info" target="_blank">Preview dashboard</a>
     </p>
+    <form method="POST" action="{{ url_for('send_dashboard_for_review', uuid=uuid) }}" role="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <input type="submit" class="btn btn-success" value="Send dashboard for review" name="send-dashboard-for-review">
+    </form>
+    <div class="row callout">
+      <p class="col-sm-8 col-md-6">
+        Once you send for review, it will take up to 3 working days for us to review
+        and publish your dashboard.
+      </p>
+    </div>
   </footer>
 </section>
 

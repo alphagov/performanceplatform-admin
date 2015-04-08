@@ -91,6 +91,15 @@ fieldset {
   > section > header h1 {
     font-size: 24px;
   }
+
+  footer {
+    padding-top: 10px;
+
+    p:first-child {
+      float: left;
+      margin-right: 10px;
+    }
+  }
 }
 
 .dashboard-data-item {

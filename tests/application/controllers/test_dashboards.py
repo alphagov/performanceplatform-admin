@@ -8,7 +8,8 @@ from hamcrest import (
     assert_that,
     contains_string,
     equal_to,
-    has_entries
+    has_entries,
+    ends_with
 )
 import os
 import json
@@ -25,7 +26,9 @@ def dashboard_data(options={}):
         'dashboard_type': 'transaction',
         'customer_type': 'Business',
         'strapline': 'Dashboard',
-        'business_model': 'Department budget'
+        'business_model': 'Department budget',
+        'published': False,
+        'status': 'unpublished'
     }
     params.update(options)
     return params
@@ -69,6 +72,28 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
             self, mock_get_dashboard):
         response = self.client.get('/dashboards/dashboard-uuid')
         assert_that(response.status, equal_to('200 OK'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data({'status': 'in-review'}))
+    def test_in_review_dashboards_cannot_be_edited(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
+        self.assert_flashes(
+            'In review or published dashboards cannot be edited', 'info')
+        assert_that(response.status, equal_to('302 FOUND'))
+        assert_that(response.headers['Location'],
+                    ends_with('/dashboards'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data({'status': 'published'}))
+    def test_published_dashboards_cannot_be_edited(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
+        self.assert_flashes(
+            'In review or published dashboards cannot be edited', 'info')
+        assert_that(response.status, equal_to('302 FOUND'))
+        assert_that(response.headers['Location'],
+                    ends_with('/dashboards'))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
@@ -138,6 +163,100 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
         url = '{0}/performance/valid-slug'.format(app.config['GOVUK_SITE_URL'])
         assert_that(response.data, contains_string(url))
 
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    def test_renders_a_button_for_sending_unpublished_dashboards_for_review(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
+        assert_that(response.data,
+                    contains_string('Send dashboard for review'))
+
+
+class SendDashboardForReviewTestCase(FlaskAppTestCase):
+
+    def setUp(self):
+        app.config['WTF_CSRF_ENABLED'] = False
+        self.app = app.test_client()
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard'],
+                'name': 'Mr Foo Bar',
+                'email': 'foo@bar.com'
+            }
+
+    def test_authenticated_user_is_required(self):
+        with self.client.session_transaction() as session:
+            del session['oauth_token']
+        response = self.client.post(
+            '/dashboards/dashboard-uuid/send-for-review',
+            data={})
+        assert_that(response.status, equal_to('302 FOUND'))
+
+    def test_authorised_user_is_required(self):
+        with self.client.session_transaction() as session:
+            session['oauth_user'] = {'permissions': ['signin']}
+        response = self.client.post(
+            '/dashboards/dashboard-uuid/send-for-review',
+            data={})
+        assert_that(response.status, equal_to('302 FOUND'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    @patch("boto.ses.connect_to_region")
+    def test_dashboard_status_is_changed_to_in_review(
+            self,
+            mock_ses_connection,
+            mock_update_dashboard,
+            mock_get_dashboard):
+        self.client.post('/dashboards/dashboard-uuid/send-for-review', data={})
+        post_json = mock_update_dashboard.call_args[0][1]
+        assert_that(
+            mock_update_dashboard.call_args[0][0], equal_to('dashboard-uuid'))
+        data = {'status': 'in-review'}
+        assert_that(post_json, has_entries(data))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    @patch("boto.ses.connect_to_region")
+    def test_sends_review_dashboard_request_by_email(
+            self,
+            mock_ses_connection,
+            mock_update_dashboard,
+            mock_get_dashboard):
+        self.client.post('/dashboards/dashboard-uuid/send-for-review', data={})
+        second_call_args = mock_ses_connection.mock_calls[1][1]
+        assert_that(second_call_args[0],
+                    equal_to(app.config['NO_REPLY_EMAIL']))
+        assert_that(second_call_args[1],
+                    equal_to('Request to review a dashboard'))
+        assert_that(second_call_args[2], contains_string('Mr Foo Bar'))
+        assert_that(
+            second_call_args[2], contains_string('foo@bar.com'))
+        assert_that(second_call_args[2], contains_string('A dashboard'))
+        assert_that(
+            second_call_args[3],
+            equal_to(app.config['NOTIFICATIONS_EMAIL']))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    @patch("boto.ses.connect_to_region")
+    def test_redirects_to_about_your_service_page(
+            self,
+            mock_ses_connection,
+            mock_update_dashboard,
+            mock_get_dashboard):
+        response = self.client.post(
+            '/dashboards/dashboard-uuid/send-for-review', data={})
+        self.assert_flashes(
+            'Your dashboard has been sent for review', 'success')
+        assert_that(response.status, equal_to('302 FOUND'))
+        assert_that(response.headers['Location'],
+                    ends_with('/dashboards'))
+
 
 class DashboardListTestCase(FlaskAppTestCase):
 
@@ -148,36 +267,11 @@ class DashboardListTestCase(FlaskAppTestCase):
                 'url': 'http://stagecraft/dashboard/uuid',
                 'public-url': 'http://spotlight/performance/carers-allowance',
                 'published': True,
+                'status': 'published',
                 'id': 'uuid',
                 'title': 'Name of service'
             }
         ]}
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_dashboards_page_shows_a_list_of_dashboards(
-            self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
-
-        assert_that(resp.data, contains_string('Name of service'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_dashboard_status_is_unpublished(self, get_patch, client):
-        self.dashboards['dashboards'][0]['published'] = False
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
-
-        assert_that(resp.data, contains_string('Unpublished'))
 
     @signed_in(permissions=['signin'])
     def test_authorised_user_is_required(self, client):
@@ -187,3 +281,84 @@ class DashboardListTestCase(FlaskAppTestCase):
     def test_authenticated_user_is_required(self):
         resp = self.client.get('/dashboards')
         assert_that(resp.status, equal_to('302 FOUND'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_dashboards_page_shows_a_list_of_dashboards(
+            self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        assert_that(resp.data, contains_string('Name of service'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_published_dashboards_are_flagged_as_published(
+            self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        assert_that(resp.data, contains_string('Published'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_unpublished_dashboards_are_flagged_as_unpublished(
+            self, get_patch, client):
+        self.dashboards['dashboards'][0]['status'] = 'unpublished'
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        assert_that(resp.data, contains_string('Unpublished'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_in_review_dashboards_are_flagged_as_in_review(
+            self, get_patch, client):
+        self.dashboards['dashboards'][0]['status'] = 'in-review'
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        assert_that(resp.data, contains_string('In Review'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_published_dashboards_cannot_be_edited(
+            self, get_patch, client):
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        self.assertFalse('Edit dashboard' in resp.data)
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_unpublished_dashboards_can_be_edited(
+            self, get_patch, client):
+        self.dashboards['dashboards'][0]['status'] = 'unpublished'
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        assert_that(resp.data, contains_string('Edit dashboard'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('requests.get')
+    def test_in_review_dashboards_cannot_be_edited(
+            self, get_patch, client):
+        self.dashboards['dashboards'][0]['status'] = 'in-review'
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=self.dashboards)
+        get_patch.return_value = response
+        resp = client.get('/dashboards')
+        self.assertFalse('Edit dashboard' in resp.data)
