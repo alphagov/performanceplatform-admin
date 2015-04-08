@@ -5,10 +5,6 @@ from application.helpers import (
     requires_authentication,
     requires_permission,
 )
-from wtforms.fields import (
-    FieldList,
-    FormField
-)
 from flask import (
     flash, redirect, render_template, request,
     session, url_for
@@ -45,9 +41,13 @@ def update_modules_form_and_redirect(func):
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
 
+        # probably should happen after standard move and
+        # not happen if standard move happens.
+        # still not clear why standard does nothing if moving with drag?
+        # it does do something! just does what happens assuming drag happened.
+        # maybe just go to one way of moving?
         if 'modules_order' in request.form:
-            if reorder_modules(request.form, session):
-                return redirect(url_for('dashboard_form', uuid=uuid))
+            reorder_modules(request.form, session)
 
         if 'add_section' in request.form:
             url = url_for('dashboard_form',
@@ -75,19 +75,21 @@ def update_modules_form_and_redirect(func):
     return wrapper
 
 
+def should_use_session(session, uuid):
+    if 'pending_dashboard' not in session:
+        return False
+    if uuid is None:
+        return True
+    if session['pending_dashboard'].get('uuid') == uuid:
+        return True
+    return False
+
+
 @app.route('{0}/new'.format(DASHBOARD_ROUTE), methods=['GET'])
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
 def dashboard_form(admin_client, uuid=None):
-    def should_use_session(session, uuid):
-        if 'pending_dashboard' not in session:
-            return False
-        if uuid is None:
-            return True
-        if session['pending_dashboard'].get('uuid') == uuid:
-            return True
-        return False
 
     def append_new_module_forms():
         total_modules = int(request.args.get('modules'))
@@ -169,6 +171,13 @@ class InvalidFormFieldError(Exception):
 @update_modules_form_and_redirect
 def dashboard_update(admin_client, module_types, form, uuid):
 
+    if should_use_session(session, uuid):
+        data_sources = DataSources(
+            admin_client, session['oauth_token']['access_token'])
+        form = DashboardCreationForm(admin_client,
+                                     module_types,
+                                     data_sources,
+                                     data=session['pending_dashboard'])
     try:
         if not form.validate():
             raise InvalidFormFieldError()
@@ -341,11 +350,13 @@ def move_or_remove(request_form, session):
         return True
     return False
 
+
 def reorder_modules(request_form, session):
     new_modules = []
     new_order = request.form.get('modules_order').split(',')
     for idx, val in enumerate(new_order):
-        new_modules.append(session['pending_dashboard']['modules'][int(val) - 1])
+        new_modules.append(
+            session['pending_dashboard']['modules'][int(val) - 1])
 
     session['pending_dashboard']['modules'] = new_modules
     return True
