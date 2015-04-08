@@ -188,16 +188,6 @@
           <div class="form-group">
             <div class="col-sm-12">
               <div class="pull-right">
-		{% if loop.index0 > 0 %}
-                  <button type="submit" class="btn btn-default" name="move_module_up_{{ loop.index0 }}">
-                    <span class="glyphicon glyphicon-arrow-up"></span> Move module up
-                  </button>
-                {% endif %}
-                {% if form.modules|length > loop.index %}
-                  <button type="submit" class="btn btn-default" name="move_module_down_{{ loop.index0 }}">
-                    <span class="glyphicon glyphicon-arrow-down"></span> Move module down
-                  </button>
-                {% endif %}
                 <button type="submit" class="btn btn-danger" name="remove_module_{{ loop.index0 }}">
                   <span class="glyphicon glyphicon-remove"></span> Remove module
                 </button>

@@ -682,7 +682,7 @@ class DashboardTestCase(FlaskAppTestCase):
                         equal_to('bar'))
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_first_module_down(
+    def test_reorder_modules(
             self,
             mock_list_organisations,
             mock_list_data_sets,
@@ -695,118 +695,19 @@ class DashboardTestCase(FlaskAppTestCase):
             'modules-1-module_type': '',
             'modules-1-slug': 'bar',
 
-            'move_module_down_0': 'move',
+            'modules_order': '2,1',
         }
 
         client.post('/admin/dashboards',
                     data=form_data)
 
         with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'bar'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'foo'))
+            assert_that(session['pending_dashboard']['modules'][0]['slug'],
+                        equal_to('bar'))
+            assert_that(session['pending_dashboard']['modules'][1]['slug'],
+                        equal_to('foo'))
+        #This is to remind us that we need to test the actual stagecraft update happens when a post with reorder modules occurs
+        assert_that(False, equal_to(True))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_down(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
-
-            'move_module_down_1': 'move',
-        }
-
-        client.post('/admin/dashboards',
-                    data=form_data)
-
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'foo'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'bar'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_down_on_existing_dashboard(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
-
-            'move_module_down_1': 'move',
-        }
-
-        client.post('/admin/dashboards/uuid',
-                    data=form_data)
-
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'foo'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'bar'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_last_module_up(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
-
-            'move_module_up_1': 'move',
-        }
-
-        client.post('/admin/dashboards',
-                    data=form_data)
-
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'bar'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'foo'))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    def test_move_first_module_up(
-            self,
-            mock_list_organisations,
-            mock_list_data_sets,
-            mock_list_module_types,
-            client):
-        form_data = {
-            'slug': 'valid-slug',
-            'modules-0-module_type': '',
-            'modules-0-slug': 'foo',
-            'modules-1-module_type': '',
-            'modules-1-slug': 'bar',
-
-            'move_module_up_0': 'move',
-        }
-
-        client.post('/admin/dashboards',
-                    data=form_data)
-
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0],
-                        has_entry('slug', 'foo'))
-            assert_that(session['pending_dashboard']['modules'][1],
-                        has_entry('slug', 'bar'))
+    def test_reorder_modules_when_new_dashboard():
+        pending

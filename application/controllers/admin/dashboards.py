@@ -41,11 +41,6 @@ def update_modules_form_and_redirect(func):
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
 
-        # probably should happen after standard move and
-        # not happen if standard move happens.
-        # still not clear why standard does nothing if moving with drag?
-        # it does do something! just does what happens assuming drag happened.
-        # maybe just go to one way of moving?
         if 'modules_order' in request.form:
             reorder_modules(request.form, session)
 
@@ -62,7 +57,7 @@ def update_modules_form_and_redirect(func):
                           modules=current_module_count(form) + 1)
             return redirect(url)
 
-        if move_or_remove(request.form, session):
+        if remove(request.form, session):
             return redirect(url_for('dashboard_form', uuid=uuid))
 
         form.modules = set_section_module_choices(form.modules)
@@ -314,8 +309,8 @@ def current_module_count(form):
     return len(form.modules)
 
 
-def move_or_remove(request_form, session):
-    """Move or remove a module and return True if a redirect is needed"""
+def remove(request_form, session):
+    """Remove a module and return True if a redirect is needed"""
     def get_module_index(field_prefix, form):
         for field in form.keys():
             if field.startswith(field_prefix):
@@ -329,25 +324,6 @@ def move_or_remove(request_form, session):
         session['pending_dashboard']['modules'].pop(index)
         return True
 
-    # Move a module down in the list (increment it's index number)
-    index = get_module_index('move_module_down_', request.form)
-    if index is not None:
-        modules = session['pending_dashboard']['modules']
-        if index < len(modules) - 1:
-            modules[index], modules[
-                index + 1] = modules[index + 1], modules[index]
-            session['pending_dashboard']['modules'] = modules
-        return True
-
-    # Move a module up in the list (decrement it's index number)
-    index = get_module_index('move_module_up_', request.form)
-    if index is not None:
-        modules = session['pending_dashboard']['modules']
-        if index > 0:
-            modules[index], modules[
-                index - 1] = modules[index - 1], modules[index]
-            session['pending_dashboard']['modules'] = modules
-        return True
     return False
 
 
