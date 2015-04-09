@@ -708,9 +708,11 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
     @patch("application.forms.DashboardCreationForm.validate")
+    @patch("application.controllers.admin.dashboards.build_dict_for_post")
     @signed_in(permissions=['signin', 'dashboard'])
     def test_reorder_modules_on_new_applies_changes_when_form_is_valid(
             self,
+            mock_built_dict_for_post,
             mock_validate,
             mock_create_dashboard,
             mock_list_organisations,
@@ -727,16 +729,63 @@ class DashboardTestCase(FlaskAppTestCase):
             'modules_order': '2,1',
         }
         mock_validate.return_value = True
+        mock_built_dict_for_post.return_value = {"key": "1,2,3"}
         client.post('/admin/dashboards',
                     data=form_data)
 
-        mock_create_dashboard.assert_called_once_with({})
+        mock_create_dashboard.assert_called_once_with({"key": "1,2,3"})
 
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_reorder_modules_when_updating(
+    def test_reorder_modules_on_update_sets_session_correctly(
             self,
             mock_list_organisations,
             mock_list_data_sets,
             mock_list_module_types,
             client):
-        pass
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'modules_order': '2,1',
+        }
+        client.post('/admin/dashboards/some_uuid',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0]['slug'],
+                        equal_to('bar'))
+            assert_that(session['pending_dashboard']['modules'][1]['slug'],
+                        equal_to('foo'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    @patch("application.forms.DashboardCreationForm.validate")
+    @patch("application.controllers.admin.dashboards.build_dict_for_post")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_reorder_modules_on_update_applies_changes_when_form_is_valid(
+            self,
+            mock_built_dict_for_post,
+            mock_validate,
+            mock_update_dashboard,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'modules_order': '2,1',
+        }
+        mock_validate.return_value = True
+        mock_built_dict_for_post.return_value = {"key": "1,2,3"}
+        client.post('/admin/dashboards/some_uuid',
+                    data=form_data)
+
+        mock_update_dashboard.assert_called_once_with(
+            'some_uuid', {"key": "1,2,3"})
