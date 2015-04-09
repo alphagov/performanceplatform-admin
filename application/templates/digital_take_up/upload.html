@@ -6,7 +6,7 @@
 </p>
 <h1>Upload data using a spreadsheet</h1>
 
-<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_digital_take_up_data_success', data_group=data_group) }}" enctype="multipart/form-data">
+<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_digital_take_up_data_file', data_group=data_group) }}" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="row">
         <div class="col-sm-12 col-md-4">

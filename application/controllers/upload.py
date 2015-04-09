@@ -139,7 +139,7 @@ def upload_digital_take_up_data_file(admin_client, data_group):
             data_set = admin_client.get_data_set(
                 data_group, DATA_TYPE_NAME)
         except:
-            pass
+            data_set = {}
 
         if not data_set:
             data_set_config = {
@@ -153,52 +153,54 @@ def upload_digital_take_up_data_file(admin_client, data_group):
             data_set = admin_client.create_data_set(data_set_config)
             new_data_set = True
 
-        try:
-            modules = admin_client.list_modules_on_dashboard(data_group)
-            for module in modules:
-                if module['data_type'] == DATA_TYPE_NAME and \
-                        module['slug'] == 'digital-takeup':
+        # try:
+        #     modules = admin_client.list_modules_on_dashboard(data_group)
+            # for module in modules:
+            #     if module['data_type'] == DATA_TYPE_NAME and \
+            #             module['slug'] == 'digital-takeup':
                     # module already exists
 
                     # info and description is not being returned by
                     # list_modules_on_dashboard.
-                    if new_data_set:
-                        module_config = {
-                            "id": module.get("id"),
-                            "data_set": data_set["name"],
-                            "slug": module.get("slug"),
-                            "type_id": module.get("type", {}).get("id"),
-                            "title": module.get("title"),
-                            "description": module.get("description"),
-                            "info": module.get("info"),
-                            "options": {
-                                "value-attribute": "transactions_by_channels"
-                            },
-                            "order": 1
-                        }
-                        admin_client.add_module_to_dashboard(
-                            data_group, module_config)
-                else:
-                    module_types = admin_client.list_module_types()
-                    for module_type in module_types:
-                        if module_type['name'] == 'single_timeseries':
-                            module_type_id = module_type['id']
+                    # if new_data_set:
+                    #     module_config = {
+                    #         "id": module.get("id"),
+                    #         "data_set": data_set["name"],
+                    #         "slug": module.get("slug"),
+                    #         "type_id": module.get("type", {}).get("id"),
+                    #         "title": module.get("title"),
+                    #         "description": module.get("description"),
+                    #         "info": module.get("info"),
+                    #         "options": module.get("options"),
+                    #         "query_parameters": module.get("query_parameters"),
+                    #         "order": 1
+                    #     }
+                    #     admin_client.add_module_to_dashboard(
+                    #         data_group, module_config)
+                    # else:
+        module_types = admin_client.list_module_types()
+        for module_type in module_types:
+            if module_type['name'] == 'completion_rate':
+                module_type_id = module_type['id']
 
-                    module_config = {
-                        "data_set": data_set["name"],
-                        "slug": "digital-takeup",
-                        "type_id": module_type_id,
-                        "title": "Digital take-up",
-                        "description": "What percentage of transactions were completed using the online service",
-                        "info": ["Data source: Department for Work and Pensions", "<a href='/service-manual/measurement/digital-takeup' rel='external'>Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."],
-                        "options": {"value-attribute": "transactions_by_channels"},
-                        "order": 1
-                    }
+        module_config = {
+            "data_set": data_set["name"],
+            "data_group": data_group,
+            "data_type": data_set["data_type"],
+            "slug": "digital-takeup",
+            "type_id": module_type_id,
+            "title": "Digital take-up",
+            "description": "What percentage of transactions were completed using the online service",
+            "info": ["Data source: Department for Work and Pensions", "<a href='/service-manual/measurement/digital-takeup' rel='external'>Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."],
+            "options": {"value-attribute":"count:sum","axis-period":"month","axes":{"y":[{"format":"percent","key":"completion","label":"Digital take-up"}],"x":{"format":"date","key":["_start_at","_end_at"],"label":"Date"}},"numerator-matcher":"(digital)","denominator-matcher":".+","matching-attribute":"channel"},
+            "query_parameters": {"collect":["count:sum"],"group_by":["channel"],"period":"month"},
+            "order": 1
+        }
 
-                    admin_client.add_module_to_dashboard(
-                        data_group, module_config)
-        except:
-            pass
+        admin_client.add_module_to_dashboard(
+            data_group, module_config)
+        # except:
+        #     raise Exception
 
         problems, our_problem = \
             upload_spreadsheet(data_set, request.files['file'])
