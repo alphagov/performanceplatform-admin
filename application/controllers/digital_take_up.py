@@ -84,7 +84,7 @@ def channel_options(admin_client, uuid):
         if True in form.data.values():
             session['channel_choices'] = [
                 key for key, val in form.data.items() if val]
-            return redirect(url_for('download', uuid=uuid))
+            return redirect(url_for('upload_digital_take_up_data_file', uuid=uuid))
         else:
             error = 'Please select one or more channel options.'
             flash(error, 'danger')
@@ -93,21 +93,6 @@ def channel_options(admin_client, uuid):
         uuid=uuid,
         form=form,
         **template_context)
-
-
-@app.route('{0}/<uuid>/digital-take-up/download'.format(DASHBOARD_ROUTE))
-@requires_authentication
-@requires_permission('dashboard')
-def download(admin_client, uuid):
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-    })
-    return render_template(
-        'digital_take_up/download.html',
-        uuid=uuid,
-        **template_context)
-
 
 @app.route(
     '{0}/<uuid>/digital-take-up/spreadsheet-template'.format(DASHBOARD_ROUTE))

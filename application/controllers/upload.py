@@ -124,11 +124,14 @@ def json_request(request):
     return request.headers.get('Accept', 'text/html') == 'application/json'
 
 
-@app.route('/dashboard/<data_group>/digital-take-up/upload',
+@app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['GET', 'POST'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_digital_take_up_data_file(admin_client, data_group):
+def upload_digital_take_up_data_file(admin_client, uuid):
+    dashboard = admin_client.get_dashboard(uuid)
+    data_group = dashboard["slug"]
+
     DATA_TYPE_NAME = 'transactions-by-channel'
     template_context = base_template_context()
 
@@ -144,7 +147,7 @@ def upload_digital_take_up_data_file(admin_client, data_group):
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
                         url_for('upload_digital_take_up_data_file',
-                                data_group=data_group))
+                                uuid=uuid))
 
         if not data_set:
             data_set_config = {
@@ -228,7 +231,7 @@ def upload_digital_take_up_data_file(admin_client, data_group):
         # return redirect(url_for('upload_digital_take_up_data_success',
         #                         data_group=data_group))
     return render_template('digital_take_up/upload.html',
-                           data_group=data_group,
+                           uuid=uuid,
                            data_type=DATA_TYPE_NAME,
                            **template_context)
 
