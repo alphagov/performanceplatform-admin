@@ -51,7 +51,8 @@ def upload_post(data_group, data_type, admin_client):
     except HTTPError as err:
         return response(500, data_group, data_type,
                         ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())], url_for('upload_list_data_sets'))
+                                          err.response.json())],
+                        url_for('upload_list_data_sets'))
 
     if data_set is None:
         abort(
@@ -129,25 +130,23 @@ def json_request(request):
 @requires_authentication
 @requires_permission('dashboard')
 def upload_digital_take_up_data_file(admin_client, uuid):
-    dashboard = admin_client.get_dashboard(uuid)
-    data_group = dashboard["slug"]
-
     DATA_TYPE_NAME = 'transactions-by-channel'
     template_context = base_template_context()
 
     form = UploadDataForm()
     if form.validate_on_submit():
-        # 7. check the module exists
-        # 8. create the module
+        dashboard = admin_client.get_dashboard(uuid)
+        data_group = dashboard["slug"]
+
         try:
             data_set = admin_client.get_data_set(
                 data_group, DATA_TYPE_NAME)
         except HTTPError as err:
             return response(500, data_group, DATA_TYPE_NAME,
-                        ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
-                                uuid=uuid))
+                            ['[{}] {}'.format(err.response.status_code,
+                                              err.response.json())],
+                            url_for('upload_digital_take_up_data_file',
+                                    uuid=uuid))
 
         if not data_set:
             data_set_config = {
@@ -162,31 +161,32 @@ def upload_digital_take_up_data_file(admin_client, uuid):
             new_data_set = True
 
         # try:
-        #     modules = admin_client.list_modules_on_dashboard(data_group)
-            # for module in modules:
-            #     if module['data_type'] == DATA_TYPE_NAME and \
-            #             module['slug'] == 'digital-takeup':
-                    # module already exists
+        modules = admin_client.list_modules_on_dashboard(data_group)
+        # for module in modules:
+        #     if module['data_type'] == DATA_TYPE_NAME and \
+        #             module['slug'] == 'digital-takeup':
+        # module already exists
 
-                    # info and description is not being returned by
-                    # list_modules_on_dashboard.
-                    # if new_data_set:
-                    #     module_config = {
-                    #         "id": module.get("id"),
-                    #         "data_set": data_set["name"],
-                    #         "slug": module.get("slug"),
-                    #         "type_id": module.get("type", {}).get("id"),
-                    #         "title": module.get("title"),
-                    #         "description": module.get("description"),
-                    #         "info": module.get("info"),
-                    #         "options": module.get("options"),
-                    #         "query_parameters": module.get("query_parameters"),
-                    #         "order": 1
-                    #     }
-                    #     admin_client.add_module_to_dashboard(
-                    #         data_group, module_config)
-                    # else:
+        # info and description is not being returned by
+        # list_modules_on_dashboard.
+        # if new_data_set:
+        #     module_config = {
+        #         "id": module.get("id"),
+        #         "data_set": data_set["name"],
+        #         "slug": module.get("slug"),
+        #         "type_id": module.get("type", {}).get("id"),
+        #         "title": module.get("title"),
+        #         "description": module.get("description"),
+        #         "info": module.get("info"),
+        #         "options": module.get("options"),
+        #         "query_parameters": module.get("query_parameters"),
+        #         "order": 1
+        #     }
+        #     admin_client.add_module_to_dashboard(
+        #         data_group, module_config)
+        # else:
         module_types = admin_client.list_module_types()
+        module_type_id = 0
         for module_type in module_types:
             if module_type['name'] == 'completion_rate':
                 module_type_id = module_type['id']
@@ -198,16 +198,42 @@ def upload_digital_take_up_data_file(admin_client, uuid):
             "slug": "digital-takeup",
             "type_id": module_type_id,
             "title": "Digital take-up",
-            "description": "What percentage of transactions were completed using the online service",
-            "info": ["Data source: Department for Work and Pensions", "<a href='/service-manual/measurement/digital-takeup' rel='external'>Digital take-up</a> measures the percentage of completed applications that are made through a digital channel versus non-digital channels."],
-            "options": {"value-attribute":"count:sum","axis-period":"month","axes":{"y":[{"format":"percent","key":"completion","label":"Digital take-up"}],"x":{"format":"date","key":["_start_at","_end_at"],"label":"Date"}},"numerator-matcher":"(digital)","denominator-matcher":".+","matching-attribute":"channel"},
-            "query_parameters": {"collect":["count:sum"],"group_by":["channel"],"period":"month"},
+            "description": "What percentage of transactions were completed "
+                           "using the online service",
+            "info": ["Data source: Department for Work and Pensions",
+                     "<a href='/service-manual/measurement/digital-takeup' "
+                     "rel='external'>Digital take-up</a> measures the "
+                     "percentage of completed applications that are made "
+                     "through a digital channel versus non-digital channels."],
+            "options": {
+                "value-attribute": "count:sum",
+                "axis-period": "month",
+                "axes": {"y": [{
+                                   "format": "percent",
+                                   "key": "completion",
+                                   "label": "Digital take-up"
+                }],
+                    "x": {
+                    "format": "date",
+                    "key": ["_start_at", "_end_at"],
+                    "label": "Date"
+                }
+                },
+                "numerator-matcher": "(digital)",
+                "denominator-matcher": ".+",
+                "matching-attribute": "channel"
+            },
+            "query_parameters": {
+                "collect": ["count:sum"],
+                "group_by": ["channel"],
+                "period": "month"
+            },
             "order": 1
         }
 
         try:
             admin_client.add_module_to_dashboard(
-            data_group, module_config)
+                data_group, module_config)
         except HTTPError as e:
             exists = "Module with this Dashboard and Slug already exists"
             if exists not in e.response.text:
