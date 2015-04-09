@@ -51,7 +51,7 @@ def upload_post(data_group, data_type, admin_client):
     except HTTPError as err:
         return response(500, data_group, data_type,
                         ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())])
+                                          err.response.json())], url_for('upload_list_data_sets'))
 
     if data_set is None:
         abort(
@@ -63,7 +63,8 @@ def upload_post(data_group, data_type, admin_client):
     messages, status = get_messages_and_status_for_problems(our_problem,
                                                             problems)
 
-    return response(status, data_group, data_type, messages)
+    return response(status, data_group, data_type, messages,
+                    url_for('upload_list_data_sets'))
 
 
 def upload_spreadsheet(data_set, file_data):
@@ -102,7 +103,7 @@ def upload_spreadsheet(data_set, file_data):
     return problems, our_problem
 
 
-def response(status_code, data_group, data_type, payload):
+def response(status_code, data_group, data_type, payload, redirect_url_for):
     data = {
         'data_group': data_group,
         'data_type': data_type,
@@ -114,7 +115,7 @@ def response(status_code, data_group, data_type, payload):
         r.status_code = status_code
     else:
         session['upload_data'] = data
-        r = redirect(url_for('upload_list_data_sets'))
+        r = redirect(redirect_url_for)
 
     return r
 
@@ -138,8 +139,12 @@ def upload_digital_take_up_data_file(admin_client, data_group):
         try:
             data_set = admin_client.get_data_set(
                 data_group, DATA_TYPE_NAME)
-        except:
-            data_set = {}
+        except HTTPError as err:
+            return response(500, data_group, DATA_TYPE_NAME,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_digital_take_up_data_file',
+                                data_group=data_group))
 
         if not data_set:
             data_set_config = {
@@ -197,8 +202,14 @@ def upload_digital_take_up_data_file(admin_client, data_group):
             "order": 1
         }
 
-        admin_client.add_module_to_dashboard(
+        try:
+            admin_client.add_module_to_dashboard(
             data_group, module_config)
+        except HTTPError as e:
+            exists = "Module with this Dashboard and Slug already exists"
+            if exists not in e.response.text:
+                raise
+
         # except:
         #     raise Exception
 
@@ -210,7 +221,9 @@ def upload_digital_take_up_data_file(admin_client, data_group):
 
         # inspect the response. check for errors
 
-        return response(status, data_group, DATA_TYPE_NAME, messages)
+        return response(status, data_group, DATA_TYPE_NAME, messages,
+                        url_for('upload_digital_take_up_data_success',
+                                data_group=data_group))
 
         # return redirect(url_for('upload_digital_take_up_data_success',
         #                         data_group=data_group))
