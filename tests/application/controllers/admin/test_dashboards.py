@@ -399,6 +399,7 @@ class DashboardTestCase(FlaskAppTestCase):
             contains_string('admin/dashboards/new?modules=1')
         )
 
+    # correct patch order?
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_updating_existing_dashboard(self,
                                          update_mock,
@@ -681,9 +682,13 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(session['pending_dashboard']['modules'][0]['slug'],
                         equal_to('bar'))
 
+    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
+    @patch("application.forms.DashboardCreationForm.validate")
     @signed_in(permissions=['signin', 'dashboard'])
     def test_reorder_modules(
             self,
+            mock_validate,
+            mock_create_dashboard,
             mock_list_organisations,
             mock_list_data_sets,
             mock_list_module_types,
@@ -697,7 +702,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
             'modules_order': '2,1',
         }
-
+        mock_validate.return_value = True
         client.post('/admin/dashboards',
                     data=form_data)
 
@@ -707,7 +712,7 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(session['pending_dashboard']['modules'][1]['slug'],
                         equal_to('foo'))
         #This is to remind us that we need to test the actual stagecraft update happens when a post with reorder modules occurs
-        assert_that(False, equal_to(True))
+        mock_create_dashboard.assert_called_once_with({})
 
-    def test_reorder_modules_when_new_dashboard():
+    def test_reorder_modules_when_updating():
         pending

@@ -61,7 +61,6 @@ def update_modules_form_and_redirect(func):
             return redirect(url_for('dashboard_form', uuid=uuid))
 
         form.modules = set_section_module_choices(form.modules)
-
         if uuid is None:
             return func(admin_client, module_types, form)
         else:
@@ -196,13 +195,15 @@ def dashboard_update(admin_client, module_types, form, uuid):
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
 def dashboard_create(admin_client, module_types, form):
+
     try:
         if not form.validate():
+            import pdb; pdb.set_trace()
             raise InvalidFormFieldError()
         dict_for_post = build_dict_for_post(form, module_types)
         admin_client.create_dashboard(dict_for_post)
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
-        del session['pending_dashboard']
+        #del session['pending_dashboard']
         return redirect(url_for('dashboard_list'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('creating', form, e), 'danger')
