@@ -69,7 +69,7 @@ def update_modules_form_and_redirect(func):
     return wrapper
 
 
-def should_use_session(session, uuid):
+def should_use_session(session, uuid=None):
     if 'pending_dashboard' not in session:
         return False
     if uuid is None:
@@ -195,15 +195,21 @@ def dashboard_update(admin_client, module_types, form, uuid):
 @requires_permission('dashboard')
 @update_modules_form_and_redirect
 def dashboard_create(admin_client, module_types, form):
-
+    if(should_use_session(session)
+       and form.data != session['pending_dashboard']):
+        data_sources = DataSources(
+            admin_client, session['oauth_token']['access_token'])
+        form = DashboardCreationForm(admin_client,
+                                     module_types,
+                                     data_sources,
+                                     data=session['pending_dashboard'])
     try:
         if not form.validate():
-            import pdb; pdb.set_trace()
             raise InvalidFormFieldError()
         dict_for_post = build_dict_for_post(form, module_types)
         admin_client.create_dashboard(dict_for_post)
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
-        #del session['pending_dashboard']
+        del session['pending_dashboard']
         return redirect(url_for('dashboard_list'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('creating', form, e), 'danger')

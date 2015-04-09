@@ -399,7 +399,6 @@ class DashboardTestCase(FlaskAppTestCase):
             contains_string('admin/dashboards/new?modules=1')
         )
 
-    # correct patch order?
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_updating_existing_dashboard(self,
                                          update_mock,
@@ -438,7 +437,7 @@ class DashboardTestCase(FlaskAppTestCase):
         assert_that(
             resp.headers['Location'],
             ends_with('/dashboards'))
-        expected_flash = 'Updated the <a href="http://spotlight.development' + \
+        expected_flash = 'Updated the <a href="http://spotlight.development' +\
             '.performance.service.gov.uk/performance/valid-slug">' + \
             'My valid title</a> dashboard'
         self.assert_flashes(expected_flash, expected_category='success')
@@ -461,7 +460,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
         self.client.post(
             '/admin/dashboards/uuid', data=data)
-        expected_flash = 'Updated the <a href="http://spotlight.development' + \
+        expected_flash = 'Updated the <a href="http://spotlight.development' +\
             '.performance.service.gov.uk/performance/valid-slug">' + \
             'Bad title&lt;h1&gt;boo&lt;/h1&gt;</a> dashboard'
         self.assert_flashes(expected_flash, expected_category='success')
@@ -682,10 +681,35 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(session['pending_dashboard']['modules'][0]['slug'],
                         equal_to('bar'))
 
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_reorder_modules_on_new_sets_session_correctly(
+            self,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        form_data = {
+            'slug': 'valid-slug',
+            'modules-0-module_type': '',
+            'modules-0-slug': 'foo',
+            'modules-1-module_type': '',
+            'modules-1-slug': 'bar',
+
+            'modules_order': '2,1',
+        }
+        client.post('/admin/dashboards',
+                    data=form_data)
+
+        with client.session_transaction() as session:
+            assert_that(session['pending_dashboard']['modules'][0]['slug'],
+                        equal_to('bar'))
+            assert_that(session['pending_dashboard']['modules'][1]['slug'],
+                        equal_to('foo'))
+
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
     @patch("application.forms.DashboardCreationForm.validate")
     @signed_in(permissions=['signin', 'dashboard'])
-    def test_reorder_modules(
+    def test_reorder_modules_on_new_applies_changes_when_form_is_valid(
             self,
             mock_validate,
             mock_create_dashboard,
@@ -706,13 +730,13 @@ class DashboardTestCase(FlaskAppTestCase):
         client.post('/admin/dashboards',
                     data=form_data)
 
-        with client.session_transaction() as session:
-            assert_that(session['pending_dashboard']['modules'][0]['slug'],
-                        equal_to('bar'))
-            assert_that(session['pending_dashboard']['modules'][1]['slug'],
-                        equal_to('foo'))
-        #This is to remind us that we need to test the actual stagecraft update happens when a post with reorder modules occurs
         mock_create_dashboard.assert_called_once_with({})
 
-    def test_reorder_modules_when_updating():
-        pending
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_reorder_modules_when_updating(
+            self,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        pass
