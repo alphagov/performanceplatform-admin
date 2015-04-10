@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-8 col-md-6">
+        <div class="confirmation-box">
+            <h1 class="h3">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                Cost per transaction data successfully added
+            </h1>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4">What happens next</h2>
+
+<div class="row">
+    <p class="col-sm-8 col-md-6">
+        Your cost per transaction data has been saved and added to the dashboard {{ dashboard_name }}
+    </p>
+    <p class="col-sm-8 col-md-6">
+        You will need to upload the data quarterly at {{ upload_url }}
+    </p>
+</div>
+
+<a href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
+
+{% endblock %}

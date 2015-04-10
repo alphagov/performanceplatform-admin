@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Upload data{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-xs-8">
+        <h3>Upload data using a spreadsheet</h3>
+        <ul>To calculate cost per transaction you will need quarterly
+            data for:
+            <li>The total number of transactions</li>
+            <li>The total cost of running the service</li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-xs-4">
+        <strong>Step 1</strong>
+        <p>Download the template spreadsheet</p>
+    </div>
+
+    <div class="col-xs-4">
+        <strong>Step 2</strong>
+        <p>Add data to the spreadsheet</p>
+    </div>
+
+    <div class="col-xs-4">
+        <strong>Step 3</strong>
+        <p>Upload your completed spreadsheet</p>
+        {% include "upload/form.html" %}
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block footer_javascripts %}
+<script src='static/javascripts/dropzone-3.10.2/dropzone.min.js'></script>
+<script src='static/javascripts/file_upload.js'> </script>
+{% endblock %}
