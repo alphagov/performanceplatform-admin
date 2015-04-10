@@ -139,6 +139,38 @@ def upload_digital_take_up_data_file(admin_client, uuid):
                            **template_context)
 
 
+def get_or_create_data_set(admin_client, uuid, data_group, data_type,
+                           data_set_config):
+    try:
+        data_set = admin_client.get_data_set(
+            data_group, data_type)
+    except HTTPError as err:
+        return response(500, data_group, data_type,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
+
+    if not data_set:
+        data_set = admin_client.create_data_set(data_set_config)
+
+    return data_set
+
+
+def create_module_if_not_exists(admin_client, data_group, module_config, module_type_name):
+    module_types = admin_client.list_module_types()
+    for module_type in module_types:
+        if module_type['name'] == module_type_name:
+            module_config["type_id"] = module_type['id']
+    try:
+        admin_client.add_module_to_dashboard(
+            data_group, module_config)
+    except HTTPError as e:
+        exists = "Module with this Dashboard and Slug already exists"
+        if exists not in e.response.text:
+            raise
+
+
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['POST'])
 @requires_authentication
@@ -150,53 +182,17 @@ def upload_data_file_to_dashboard(admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
 
-    try:
-        data_set = admin_client.get_data_set(
-            data_group, DATA_TYPE_NAME)
-    except HTTPError as err:
-        return response(500, data_group, DATA_TYPE_NAME,
-                        ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
-                                uuid=uuid))
+    data_set_config = {
+        'data_type': DATA_TYPE_NAME,
+        'data_group': data_group,
+        'bearer_token': 'abc123',
+        'upload_format': 'csv',
+        'auto_ids': '_timestamp, period, channel',
+        'max_age_expected': 1300000
+    }
 
-    if not data_set:
-        data_set_config = {
-            'data_type': DATA_TYPE_NAME,
-            'data_group': data_group,
-            'bearer_token': 'abc123',
-            'upload_format': 'csv',
-            'auto_ids': '_timestamp, period, channel',
-            'max_age_expected': 1300000
-        }
-        data_set = admin_client.create_data_set(data_set_config)
-        new_data_set = True
-
-    # try:
-    # modules = admin_client.list_modules_on_dashboard(data_group)
-    # for module in modules:
-    #     if module['data_type'] == DATA_TYPE_NAME and \
-    #             module['slug'] == 'digital-takeup':
-    # module already exists
-
-    # info and description is not being returned by
-    # list_modules_on_dashboard.
-    # if new_data_set:
-    #     module_config = {
-    #         "id": module.get("id"),
-    #         "data_set": data_set["name"],
-    #         "slug": module.get("slug"),
-    #         "type_id": module.get("type", {}).get("id"),
-    #         "title": module.get("title"),
-    #         "description": module.get("description"),
-    #         "info": module.get("info"),
-    #         "options": module.get("options"),
-    #         "query_parameters": module.get("query_parameters"),
-    #         "order": 1
-    #     }
-    #     admin_client.add_module_to_dashboard(
-    #         data_group, module_config)
-    # else:
+    data_set = get_or_create_data_set(
+        admin_client, uuid, data_group, DATA_TYPE_NAME, data_set_config)
 
     module_config = {
         "data_set": data_set["name"],
@@ -237,33 +233,20 @@ def upload_data_file_to_dashboard(admin_client, uuid):
         "order": 1
     }
 
-    module_types = admin_client.list_module_types()
-    for module_type in module_types:
-        if module_type['name'] == 'completion_rate':
-            module_config["type_id"] = module_type['id']
+    create_module_if_not_exists(
+        admin_client, data_group, module_config, 'completion_rate')
 
-    try:
-        admin_client.add_module_to_dashboard(
-            data_group, module_config)
-    except HTTPError as e:
-        exists = "Module with this Dashboard and Slug already exists"
-        if exists not in e.response.text:
-            raise
+    # problems, our_problem = \
+    #     upload_spreadsheet(data_set, request.files['file'])
+    #
+    # messages, status = get_messages_and_status_for_problems(our_problem,
+    #                                                         problems)
+    #
+    # return response(status, data_group, DATA_TYPE_NAME, messages,
+    #                 url_for('upload_digital_take_up_data_success',
+    #                         data_group=data_group))
 
-    # except:
-    #     raise Exception
-
-    problems, our_problem = \
-        upload_spreadsheet(data_set, request.files['file'])
-
-    messages, status = get_messages_and_status_for_problems(our_problem,
-                                                            problems)
-
-    # inspect the response. check for errors
-
-    return response(status, data_group, DATA_TYPE_NAME, messages,
-                    url_for('upload_digital_take_up_data_success',
-                            data_group=data_group))
+    return upload_post(data_group, DATA_TYPE_NAME)
 
 
 @app.route('/dashboard/<data_group>/digital-take-up/upload/success',
