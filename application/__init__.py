@@ -13,6 +13,7 @@ app = Flask(__name__)
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
 app.config['LOG_LEVEL'] = "INFO"
+app.config.from_object('application.config.default')
 app.config.from_object('application.config.{0}'.format(GOVUK_ENV))
 app.secret_key = app.config['COOKIE_SECRET_KEY']
 app.redis_instance = Redis(

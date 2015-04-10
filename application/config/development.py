@@ -31,8 +31,6 @@ FAKE_OAUTH_USER = {
 
 AWS_ACCESS_KEY_ID = 'AWS access key id'
 AWS_SECRET_ACCESS_KEY = 'AWS secret access key'
-NOTIFICATIONS_EMAIL = 'notifications@performance.service.gov.uk'
-NO_REPLY_EMAIL = 'no-reply@performance.service.gov.uk'
 
 # You can use development_local_overrides.py in this directory to set config
 # that is unique to your development environment, like OAuth IDs and secrets.
