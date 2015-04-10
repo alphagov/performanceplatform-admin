@@ -1,6 +1,5 @@
 from application import app
 from application.files.spreadsheet import Spreadsheet
-from application.forms import UploadDataForm
 from application.helpers import(
     requires_authentication,
     base_template_context,
@@ -60,9 +59,7 @@ def upload_post(data_group, data_type, admin_client):
             'There is no data set of for data-group: {} and data-type: {}'
             .format(data_group, data_type))
 
-    problems, our_problem = upload_spreadsheet(data_set, request.files['file'])
-    messages, status = get_messages_and_status_for_problems(our_problem,
-                                                            problems)
+    messages, status = upload_file_and_get_status(data_set)
 
     return response(status, data_group, data_type, messages,
                     url_for('upload_list_data_sets'))
@@ -171,6 +168,19 @@ def create_module_if_not_exists(admin_client, data_group, module_config, module_
             raise
 
 
+def upload_file_and_get_status(data_set):
+    problems, our_problem = \
+        upload_spreadsheet(data_set, request.files['file'])
+
+    if len(problems) == 0:
+        messages = []
+        status = 200
+    else:
+        messages = problems
+        status = 500 if our_problem else 400
+    return messages, status
+
+
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['POST'])
 @requires_authentication
@@ -236,17 +246,11 @@ def upload_data_file_to_dashboard(admin_client, uuid):
     create_module_if_not_exists(
         admin_client, data_group, module_config, 'completion_rate')
 
-    # problems, our_problem = \
-    #     upload_spreadsheet(data_set, request.files['file'])
-    #
-    # messages, status = get_messages_and_status_for_problems(our_problem,
-    #                                                         problems)
-    #
-    # return response(status, data_group, DATA_TYPE_NAME, messages,
-    #                 url_for('upload_digital_take_up_data_success',
-    #                         data_group=data_group))
+    messages, status = upload_file_and_get_status(data_set)
 
-    return upload_post(data_group, DATA_TYPE_NAME)
+    return response(status, data_group, DATA_TYPE_NAME, messages,
+                    url_for('upload_digital_take_up_data_success',
+                            data_group=data_group))
 
 
 @app.route('/dashboard/<data_group>/digital-take-up/upload/success',
