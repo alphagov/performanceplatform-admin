@@ -91,7 +91,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @staticmethod
     def params(options={}):
         params = {
-            'website': 'y',
+            'digital': 'y',
             'telephone_human': 'y'
         }
         params.update(options)
@@ -137,7 +137,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
         self.assert_session_contains(
-            'channel_choices', ['website', 'telephone_human'])
+            'channel_choices', ['digital', 'telephone_human'])
 
     def test_redirects_to_download_template_page(self):
         response = self.client.post(
