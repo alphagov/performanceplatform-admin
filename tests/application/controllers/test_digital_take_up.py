@@ -282,9 +282,10 @@ class UploadPageTestCase(FlaskAppTestCase):
 
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
+        dash_id = '77f1351a-e62f-47fe-bc09-fc69723573be'
         self.app = app.test_client()
         self.upload_url = \
-            '/dashboard/77f1351a-e62f-47fe-bc09-fc69723573be/digital-take-up/upload'
+            '/dashboard/{}/digital-take-up/upload'.format(dash_id)
         self.file_data = {
             'file': (StringIO('Week ending,API,Paper form\n2014-08-05,40,10'),
                      'test_upload.csv')}
