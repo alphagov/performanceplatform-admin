@@ -242,29 +242,6 @@ class UploadPageTestCase(FlaskAppTestCase):
         'max_age_expected': 1300000
     }
 
-    LIST_MODULES_RETURN_VALUE = [
-        {
-            "data_type": "transactions-by-channel",
-            "id": "a1234-b5-67g",
-            "data_group": "prison-visits",
-            "title": "Digital take-up",
-            "slug": "digital-takeup",
-            "dashboard": {
-                    "id": "a1234-b5-67d"
-            },
-            "type": {
-                "id": "d1234-b5-67e"
-            },
-            "description": "Online transactions",
-            "info": ["Data source: Department for Work and Pensions",
-                     "<a href='/service-manual/measurement/digital-takeup' "
-                     "rel='external'>Digital take-up</a> measures the "
-                     "percentage of completed applications that are made "
-                     "through a digital channel versus non-digital channels."],
-
-        }
-    ]
-
     LIST_MODULE_TYPES_RETURN_VALUE = [
         {
             "id": "3e06c1d4-1bac-4a23-80c6-ac071574fce8",
@@ -316,13 +293,13 @@ class UploadPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch(
-        'performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
     def test_create_digital_take_up_module_in_stagecraft(
-            self, add_module_patch, list_module_types_patch,
-            list_modules_patch, create_data_set_patch,
+            self,
+            add_module_patch,
+            list_module_types_patch,
+            create_data_set_patch,
             get_data_set_patch, get_dashboard_patch, client):
 
         get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
@@ -331,43 +308,11 @@ class UploadPageTestCase(FlaskAppTestCase):
 
         create_data_set_patch.return_value = self.CREATE_DATA_SET_RETURN_VALUE
 
-        list_modules_patch.return_value = \
-            [
-                {
-                    "data_type": "user-satisfaction-score",
-                    "id": "a1234-b5-67c",
-                    "data_group": "prison-visits",
-                    "title": "User satisfaction",
-                    "slug": "user-satisfaction",
-                    "dashboard": {
-                        "id": "b1234-b5-67c"
-                    },
-                    "type": {
-                        "id": "c1234-b5-67c"
-                    }
-                },
-                {
-                    "data_type": "completion-rate",
-                    "id": "a1234-b5-67f",
-                    "data_group": "prison-visits",
-                    "title": "Completion rate",
-                    "slug": "completion-rate",
-                    "dashboard": {
-                        "id": "a1234-b5-67d"
-                    },
-                    "type": {
-                        "id": "a1234-b5-67e"
-                    }
-                }
-            ]
-
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE
 
         response = client.post(self.upload_url, data=self.file_data)
         assert get_data_set_patch.called
-
-        assert list_modules_patch.called
 
         assert list_module_types_patch.called
 
@@ -391,78 +336,16 @@ class UploadPageTestCase(FlaskAppTestCase):
                     "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
 
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch(
-        'performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard')
-    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
-    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
-    def test_module_not_created_when_module_and_data_set_exist(
-            self, add_module_patch, list_module_types_patch,
-            list_modules_patch, create_data_set_patch,
-            get_data_set_patch):
-        get_data_set_patch.return_value = self.GET_DATA_SET_RETURN_VALUE
-
-        list_modules_patch.return_value = [
-            {
-                "data_type": "user-satisfaction-score",
-                "id": "a1234-b5-67c",
-                "data_group": "prison-visits",
-                "title": "User satisfaction",
-                "slug": "user-satisfaction",
-                "dashboard": {
-                    "id": "b1234-b5-67c"
-                },
-                "type": {
-                    "id": "c1234-b5-67c"
-                }
-            },
-            {
-                "data_type": "completion-rate",
-                "id": "a1234-b5-67f",
-                "data_group": "prison-visits",
-                "title": "Completion rate",
-                "slug": "completion-rate",
-                "dashboard": {
-                    "id": "a1234-b5-67d"
-                },
-                "type": {
-                    "id": "a1234-b5-67e"
-                }
-            },
-            {
-                "data_type": "transactions-by-channel",
-                "id": "a1234-b5-67g",
-                "data_group": "prison-visits",
-                "title": "Digital take up",
-                "slug": "digital-takeup",
-                "dashboard": {
-                    "id": "a1234-b5-67d"
-                },
-                "type": {
-                    "id": "d1234-b5-67e"
-                }
-            }
-        ]
-
-        response = self.app.post(self.upload_url, data=self.file_data)
-
-        assert not create_data_set_patch.called
-        assert not add_module_patch.called
-
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch(
-        'performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
     def test_new_data_set_added_to_existing_module(
             self,
             add_module_patch,
             list_module_types_patch,
-            list_modules_patch,
             create_data_set_patch,
             get_data_set_patch,
             get_dashboard_patch,
@@ -476,8 +359,6 @@ class UploadPageTestCase(FlaskAppTestCase):
 
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE
-
-        list_modules_patch.return_value = self.LIST_MODULES_RETURN_VALUE
 
         response = client.post(self.upload_url, data=self.file_data)
 
@@ -495,15 +376,12 @@ class UploadPageTestCase(FlaskAppTestCase):
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch(
-        'performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
     def test_handles_invalid_spreadsheet(
             self,
             add_module_patch,
             list_module_types_patch,
-            list_modules_patch,
             get_data_set_patch,
             get_dashboard_patch,
             client):
@@ -511,8 +389,6 @@ class UploadPageTestCase(FlaskAppTestCase):
         get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
 
         get_data_set_patch.return_value = self.GET_DATA_SET_RETURN_VALUE
-
-        list_modules_patch.return_value = self.LIST_MODULES_RETURN_VALUE
 
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE

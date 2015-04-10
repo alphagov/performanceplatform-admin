@@ -161,7 +161,7 @@ def upload_digital_take_up_data_file(admin_client, uuid):
             new_data_set = True
 
         # try:
-        modules = admin_client.list_modules_on_dashboard(data_group)
+        # modules = admin_client.list_modules_on_dashboard(data_group)
         # for module in modules:
         #     if module['data_type'] == DATA_TYPE_NAME and \
         #             module['slug'] == 'digital-takeup':
