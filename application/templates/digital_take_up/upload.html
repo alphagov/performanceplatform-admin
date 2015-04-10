@@ -30,7 +30,7 @@
   <a href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
 </section>
 
-<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_digital_take_up_data_file', uuid=uuid) }}" enctype="multipart/form-data">
+<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_data_file_to_dashboard', uuid=uuid) }}" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="row">
         <div class="col-sm-12 col-md-4">
