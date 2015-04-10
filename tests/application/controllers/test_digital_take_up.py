@@ -6,7 +6,10 @@ from hamcrest import (
     ends_with,
     contains_string,
     match_equality,
-    has_entries)
+    has_entries,
+    has_item,
+    not_none,
+)
 from application import app
 from tests.application.support.flask_app_test_case import (
     FlaskAppTestCase, signed_in)
@@ -419,8 +422,36 @@ class UploadPageTestCase(FlaskAppTestCase):
         # csv file matches.
         pass
 
-    def test_set_owning_organisation_in_info(self):
-        pass
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.upload.get_or_create_data_set')
+    @patch('application.controllers.upload.create_module_if_not_exists')
+    @patch('application.controllers.upload.upload_file_and_get_status')
+    def test_set_owning_organisation_in_info(
+        self,
+        upload_file_mock,
+        create_module_mock,
+        dataset_mock,
+        get_dashboard_mock,
+        client
+    ):
+        organisation = 'Cabinet Office'
+        get_dashboard_mock.return_value = {
+            'organisation': {'name': organisation},
+            'slug': 'apply-uk-visa'
+        }
+        upload_file_mock.return_value = ([], 200)
+        response = client.post(self.upload_url, data=self.file_data)
+        # match_equality(not_none()) is used because we dont care what any
+        # arguments are except for the 3rd argument
+        create_module_mock.assert_called_with(
+            match_equality(not_none()),
+            match_equality(not_none()),
+            match_equality(has_entries(
+                {'info': has_item(contains_string(organisation))}
+            )),
+            match_equality(not_none())
+        )
 
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     def test_data_added_to_backdrop(self, get_data_set_patch):

@@ -204,6 +204,8 @@ def upload_data_file_to_dashboard(admin_client, uuid):
     data_set = get_or_create_data_set(
         admin_client, uuid, data_group, DATA_TYPE_NAME, data_set_config)
 
+    owning_organisation = dashboard.get(
+        "organisation", {}).get("name", 'Unknown')
     module_config = {
         "data_set": data_set["name"],
         "data_group": data_group,
@@ -212,7 +214,7 @@ def upload_data_file_to_dashboard(admin_client, uuid):
         "title": "Digital take-up",
         "description": "What percentage of transactions were completed "
                        "using the online service",
-        "info": ["Data source: Department for Work and Pensions",
+        "info": ["Data source: {}".format(owning_organisation),
                  "<a href='/service-manual/measurement/digital-takeup' "
                  "rel='external'>Digital take-up</a> measures the "
                  "percentage of completed applications that are made "
