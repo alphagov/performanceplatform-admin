@@ -181,31 +181,23 @@ def upload_file_and_get_status(data_set):
     return messages, status
 
 
-@app.route('/dashboard/<uuid>/digital-take-up/upload',
-           methods=['POST'])
-@requires_authentication
-@requires_permission('dashboard')
-def upload_data_file_to_dashboard(admin_client, uuid):
-    DATA_TYPE_NAME = 'transactions-by-channel'
-    template_context = base_template_context()
-
+def create_dataset_and_module(data_type, admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
-
     data_set_config = {
-        'data_type': DATA_TYPE_NAME,
+        'data_type': data_type,
         'data_group': data_group,
         'bearer_token': 'abc123',
         'upload_format': 'csv',
         'auto_ids': '_timestamp, period, channel',
         'max_age_expected': 1300000
     }
-
     data_set = get_or_create_data_set(
-        admin_client, uuid, data_group, DATA_TYPE_NAME, data_set_config)
+        admin_client, uuid, data_group, data_type, data_set_config)
 
-    owning_organisation = dashboard.get(
-        "organisation", {}).get("name", 'Unknown')
+    owning_organisation = (dashboard.get('organisation') or {}).get(
+        "name", 'Unknown')
+
     module_config = {
         "data_set": data_set["name"],
         "data_group": data_group,
@@ -244,9 +236,29 @@ def upload_data_file_to_dashboard(admin_client, uuid):
         },
         "order": 1
     }
-
     create_module_if_not_exists(
         admin_client, data_group, module_config, 'completion_rate')
+    return data_group, data_set
+
+
+@app.route('/dashboard/<uuid>/digital-take-up/upload',
+           methods=['POST'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_data_file_to_dashboard(admin_client, uuid):
+    DATA_TYPE_NAME = 'transactions-by-channel'
+    template_context = base_template_context()
+
+    dashboard = admin_client.get_dashboard(uuid)
+    data_group = dashboard["slug"]
+
+    try:
+        data_set = admin_client.get_data_set(data_group, DATA_TYPE_NAME)
+    except HTTPError as err:
+        return response(500, data_group, DATA_TYPE_NAME,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_data_file_to_dashboard', uuid=uuid))
 
     messages, status = upload_file_and_get_status(data_set)
 

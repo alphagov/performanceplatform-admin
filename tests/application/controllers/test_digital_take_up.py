@@ -88,6 +88,41 @@ class UploadOptionsPageTestCase(FlaskAppTestCase):
 
 class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
+    GET_DATA_SET_RETURN_VALUE = {
+        'name': 'apply_uk_visa_transactions_by_channel',
+        'data_type': 'transactions-by-channel',
+        'data_group': 'apply-uk-visa',
+        'bearer_token': 'abc123',
+        'upload_format': 'csv',
+        'auto_ids': '_timestamp, period, channel',
+        'max_age_expected': 1300000
+    }
+
+    LIST_MODULE_TYPES_RETURN_VALUE = [
+        {
+            "id": "3e06c1d4-1bac-4a23-80c6-ac071574fce8",
+            "name": "realtime"
+        },
+        {
+            "id": "36546562-b2bd-44a9-b94a-e3cfc472ddf4",
+            "name": "single_timeseries"
+        },
+        {
+            "id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4",
+            "name": "completion_rate"
+        }
+    ]
+
+    CREATE_DATA_SET_RETURN_VALUE = {
+        'name': 'apply_uk_visa_transactions_by_channel',
+        'data_type': 'transactions-by-channel',
+        'data_group': 'apply-uk-visa',
+        'bearer_token': 'abc123',
+        'upload_format': 'csv',
+        'auto_ids': '_timestamp, period, channel',
+        'max_age_expected': 1300000
+    }
+
     @staticmethod
     def params(options={}):
         params = {
@@ -132,20 +167,173 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         assert_that(response.data, contains_string(
             'select one or more channel options'))
 
-    def test_stores_chosen_channel_options_in_the_session(self):
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    def test_stores_chosen_channel_options_in_the_session(self, create_mock):
         self.client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
         self.assert_session_contains(
             'channel_choices', ['digital', 'telephone_human'])
 
-    def test_redirects_to_download_template_page(self):
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    def test_redirects_to_download_template_page(self, create_mock):
         response = self.client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
         assert_that(response.status, equal_to('302 FOUND'))
         assert_that(response.headers['Location'],
                     ends_with('/upload'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
+    @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
+    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
+    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
+    def test_new_data_set_added_to_existing_module(
+            self,
+            add_module_patch,
+            list_module_types_patch,
+            create_data_set_patch,
+            get_data_set_patch,
+            get_dashboard_patch,
+            client):
+
+        get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
+
+        get_data_set_patch.return_value = None
+
+        create_data_set_patch.return_value = self.CREATE_DATA_SET_RETURN_VALUE
+
+        list_module_types_patch.return_value = \
+            self.LIST_MODULE_TYPES_RETURN_VALUE
+
+        response = client.post(
+            '/dashboard/dashboard-uuid/digital-take-up/channel-options',
+            data=self.params())
+
+        assert create_data_set_patch.called
+
+        add_module_patch.assert_called_with(
+            'apply-uk-visa', match_equality(has_entries(
+                {
+                    "data_set": 'apply_uk_visa_transactions_by_channel',
+                    "data_group": "apply-uk-visa",
+                    "data_type": "transactions-by-channel",
+                    "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
+                })))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.upload.get_or_create_data_set')
+    @patch('application.controllers.upload.create_module_if_not_exists')
+    def test_set_owning_organisation_in_info(
+        self,
+        create_module_mock,
+        dataset_mock,
+        get_dashboard_mock,
+        client
+    ):
+        organisation = 'Cabinet Office'
+        get_dashboard_mock.return_value = {
+            'organisation': {'name': organisation},
+            'slug': 'apply-uk-visa'
+        }
+
+        response = client.post(
+            '/dashboard/dashboard-uuid/digital-take-up/channel-options',
+            data=self.params())
+
+        # match_equality(not_none()) is used because we dont care what any
+        # arguments are except for the 3rd argument
+        create_module_mock.assert_called_with(
+            match_equality(not_none()),
+            match_equality(not_none()),
+            match_equality(has_entries(
+                {'info': has_item(contains_string(organisation))}
+            )),
+            match_equality(not_none())
+        )
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.upload.get_or_create_data_set')
+    @patch('application.controllers.upload.create_module_if_not_exists')
+    def test_sets_info_to_unknown_when_no_organisation(self,
+                                                       create_module_mock,
+                                                       dataset_mock,
+                                                       get_dashboard_mock,
+                                                       client):
+
+        get_dashboard_mock.return_value = {
+            'organisation': None,
+            'slug': 'apply-uk-visa'
+        }
+
+        response = client.post(
+            '/dashboard/dashboard-uuid/digital-take-up/channel-options',
+            data=self.params())
+
+        # match_equality(not_none()) is used because we dont care what any
+        # arguments are except for the 3rd argument
+        create_module_mock.assert_called_with(
+            match_equality(not_none()),
+            match_equality(not_none()),
+            match_equality(has_entries(
+                {'info': has_item(contains_string('Unknown'))}
+            )),
+            match_equality(not_none())
+        )
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
+    @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
+    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
+    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
+    def test_create_digital_take_up_module_in_stagecraft(
+            self,
+            add_module_patch,
+            list_module_types_patch,
+            create_data_set_patch,
+            get_data_set_patch, get_dashboard_patch, client):
+
+        get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
+
+        get_data_set_patch.return_value = None
+
+        create_data_set_patch.return_value = self.CREATE_DATA_SET_RETURN_VALUE
+
+        list_module_types_patch.return_value = \
+            self.LIST_MODULE_TYPES_RETURN_VALUE
+
+        response = client.post(
+            '/dashboard/dashboard-uuid/digital-take-up/channel-options',
+            data=self.params())
+
+        assert get_data_set_patch.called
+
+        assert list_module_types_patch.called
+
+        expected_dataset_post_data = {
+            'data_type': 'transactions-by-channel',
+            'data_group': 'apply-uk-visa',
+            'bearer_token': 'abc123',
+            'upload_format': 'csv',
+            'auto_ids': '_timestamp, period, channel',
+            'max_age_expected': 1300000
+        }
+
+        create_data_set_patch.assert_called_with(expected_dataset_post_data)
+
+        add_module_patch.assert_called_with(
+            'apply-uk-visa', match_equality(has_entries(
+                {
+                    "data_set": 'apply_uk_visa_transactions_by_channel',
+                    "data_group": "apply-uk-visa",
+                    "data_type": "transactions-by-channel",
+                    "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
+                })))
 
 
 class DownloadTemplatePageTestCase(FlaskAppTestCase):
@@ -225,41 +413,6 @@ class DownloadTemplatePageTestCase(FlaskAppTestCase):
 
 class UploadPageTestCase(FlaskAppTestCase):
 
-    GET_DATA_SET_RETURN_VALUE = {
-        'name': 'apply_uk_visa_transactions_by_channel',
-        'data_type': 'transactions-by-channel',
-        'data_group': 'apply-uk-visa',
-        'bearer_token': 'abc123',
-        'upload_format': 'csv',
-        'auto_ids': '_timestamp, period, channel',
-        'max_age_expected': 1300000
-    }
-
-    CREATE_DATA_SET_RETURN_VALUE = {
-        'name': 'apply_uk_visa_transactions_by_channel',
-        'data_type': 'transactions-by-channel',
-        'data_group': 'apply-uk-visa',
-        'bearer_token': 'abc123',
-        'upload_format': 'csv',
-        'auto_ids': '_timestamp, period, channel',
-        'max_age_expected': 1300000
-    }
-
-    LIST_MODULE_TYPES_RETURN_VALUE = [
-        {
-            "id": "3e06c1d4-1bac-4a23-80c6-ac071574fce8",
-            "name": "realtime"
-        },
-        {
-            "id": "36546562-b2bd-44a9-b94a-e3cfc472ddf4",
-            "name": "single_timeseries"
-        },
-        {
-            "id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4",
-            "name": "completion_rate"
-        }
-    ]
-
     def setUp(self):
         app.config['WTF_CSRF_ENABLED'] = False
         dash_id = '77f1351a-e62f-47fe-bc09-fc69723573be'
@@ -295,31 +448,16 @@ class UploadPageTestCase(FlaskAppTestCase):
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
-    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
-    def test_create_digital_take_up_module_in_stagecraft(
+    def test_handles_invalid_spreadsheet(
             self,
-            add_module_patch,
-            list_module_types_patch,
-            create_data_set_patch,
-            get_data_set_patch, get_dashboard_patch, client):
+            get_data_set_patch,
+            get_dashboard_patch,
+            client):
 
         get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
 
-        get_data_set_patch.return_value = None
-
-        create_data_set_patch.return_value = self.CREATE_DATA_SET_RETURN_VALUE
-
-        list_module_types_patch.return_value = \
-            self.LIST_MODULE_TYPES_RETURN_VALUE
-
-        response = client.post(self.upload_url, data=self.file_data)
-        assert get_data_set_patch.called
-
-        assert list_module_types_patch.called
-
-        expected_dataset_post_data = {
+        get_data_set_patch.return_value = {
+            'name': 'apply_uk_visa_transactions_by_channel',
             'data_type': 'transactions-by-channel',
             'data_group': 'apply-uk-visa',
             'bearer_token': 'abc123',
@@ -327,74 +465,6 @@ class UploadPageTestCase(FlaskAppTestCase):
             'auto_ids': '_timestamp, period, channel',
             'max_age_expected': 1300000
         }
-
-        create_data_set_patch.assert_called_with(expected_dataset_post_data)
-
-        add_module_patch.assert_called_with(
-            'apply-uk-visa', match_equality(has_entries(
-                {
-                    "data_set": 'apply_uk_visa_transactions_by_channel',
-                    "data_group": "apply-uk-visa",
-                    "data_type": "transactions-by-channel",
-                    "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
-                })))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
-    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
-    def test_new_data_set_added_to_existing_module(
-            self,
-            add_module_patch,
-            list_module_types_patch,
-            create_data_set_patch,
-            get_data_set_patch,
-            get_dashboard_patch,
-            client):
-
-        get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
-
-        get_data_set_patch.return_value = None
-
-        create_data_set_patch.return_value = self.CREATE_DATA_SET_RETURN_VALUE
-
-        list_module_types_patch.return_value = \
-            self.LIST_MODULE_TYPES_RETURN_VALUE
-
-        response = client.post(self.upload_url, data=self.file_data)
-
-        assert create_data_set_patch.called
-
-        add_module_patch.assert_called_with(
-            'apply-uk-visa', match_equality(has_entries(
-                {
-                    "data_set": 'apply_uk_visa_transactions_by_channel',
-                    "data_group": "apply-uk-visa",
-                    "data_type": "transactions-by-channel",
-                    "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
-                })))
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
-    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
-    def test_handles_invalid_spreadsheet(
-            self,
-            add_module_patch,
-            list_module_types_patch,
-            get_data_set_patch,
-            get_dashboard_patch,
-            client):
-
-        get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
-
-        get_data_set_patch.return_value = self.GET_DATA_SET_RETURN_VALUE
-
-        list_module_types_patch.return_value = \
-            self.LIST_MODULE_TYPES_RETURN_VALUE
 
         self.upload_spreadsheet_mock.return_value = \
             (['Message 1', 'Message 2'], False)
@@ -421,37 +491,6 @@ class UploadPageTestCase(FlaskAppTestCase):
         # if the data set already exists, check that the time period in the
         # csv file matches.
         pass
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.upload.get_or_create_data_set')
-    @patch('application.controllers.upload.create_module_if_not_exists')
-    @patch('application.controllers.upload.upload_file_and_get_status')
-    def test_set_owning_organisation_in_info(
-        self,
-        upload_file_mock,
-        create_module_mock,
-        dataset_mock,
-        get_dashboard_mock,
-        client
-    ):
-        organisation = 'Cabinet Office'
-        get_dashboard_mock.return_value = {
-            'organisation': {'name': organisation},
-            'slug': 'apply-uk-visa'
-        }
-        upload_file_mock.return_value = ([], 200)
-        response = client.post(self.upload_url, data=self.file_data)
-        # match_equality(not_none()) is used because we dont care what any
-        # arguments are except for the 3rd argument
-        create_module_mock.assert_called_with(
-            match_equality(not_none()),
-            match_equality(not_none()),
-            match_equality(has_entries(
-                {'info': has_item(contains_string(organisation))}
-            )),
-            match_equality(not_none())
-        )
 
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     def test_data_added_to_backdrop(self, get_data_set_patch):
