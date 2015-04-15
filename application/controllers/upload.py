@@ -129,6 +129,9 @@ def json_request(request):
 def upload_digital_take_up_data_file(admin_client, uuid):
     DATA_TYPE_NAME = 'transactions-by-channel'
     template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
 
     return render_template('digital_take_up/upload.html',
                            uuid=uuid,
@@ -269,6 +272,9 @@ def create_dataset_and_module(data_type, admin_client, uuid):
 def upload_data_file_to_dashboard(admin_client, uuid):
     DATA_TYPE_NAME = 'transactions-by-channel'
     template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
 
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
@@ -294,6 +300,9 @@ def upload_data_file_to_dashboard(admin_client, uuid):
 @requires_permission('dashboard')
 def upload_digital_take_up_data_success(admin_client, data_group):
     template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
     return render_template('digital_take_up/upload_success.html',
                            data_group=data_group,
                            **template_context)
