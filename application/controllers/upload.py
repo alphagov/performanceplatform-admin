@@ -181,26 +181,47 @@ def upload_file_and_get_status(data_set):
     return messages, status
 
 
+def get_or_create_data_group(admin_client, data_group_config, data_type, uuid):
+    try:
+        data_group = admin_client.get_data_group(data_group_config.get("name"))
+    except HTTPError as err:
+        return response(500, data_group_config, data_type,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
+    if not data_group:
+        data_group = admin_client.create_data_group(data_group_config)
+
+    return data_group
+
+
 def create_dataset_and_module(data_type, admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
-    data_group = dashboard["slug"]
+    data_group_config = {"name": dashboard["slug"]}
+
+    data_group = get_or_create_data_group(
+        admin_client, data_group_config, data_type, uuid)
+
+    data_group_name = data_group['name']
+
     data_set_config = {
         'data_type': data_type,
-        'data_group': data_group,
+        'data_group': data_group_name,
         'bearer_token': 'abc123',
         'upload_format': 'csv',
         'auto_ids': '_timestamp, period, channel',
         'max_age_expected': 1300000
     }
     data_set = get_or_create_data_set(
-        admin_client, uuid, data_group, data_type, data_set_config)
+        admin_client, uuid, data_group_name, data_type, data_set_config)
 
     owning_organisation = (dashboard.get('organisation') or {}).get(
         "name", 'Unknown')
 
     module_config = {
         "data_set": data_set["name"],
-        "data_group": data_group,
+        "data_group": data_group_name,
         "data_type": data_set["data_type"],
         "slug": "digital-takeup",
         "title": "Digital take-up",
@@ -237,8 +258,8 @@ def create_dataset_and_module(data_type, admin_client, uuid):
         "order": 1
     }
     create_module_if_not_exists(
-        admin_client, data_group, module_config, 'completion_rate')
-    return data_group, data_set
+        admin_client, data_group_name, module_config, 'completion_rate')
+    return data_group_name, data_set
 
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload',

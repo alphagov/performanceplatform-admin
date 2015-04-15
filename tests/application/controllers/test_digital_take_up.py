@@ -186,6 +186,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
@@ -196,10 +197,13 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             list_module_types_patch,
             create_data_set_patch,
             get_data_set_patch,
+            get_data_group_patch,
             get_dashboard_patch,
             client):
 
         get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
+
+        get_data_group_patch.return_value = {'name': 'apply-uk-visa'}
 
         get_data_set_patch.return_value = None
 
@@ -225,12 +229,14 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.upload.get_or_create_data_group')
     @patch('application.controllers.upload.get_or_create_data_set')
     @patch('application.controllers.upload.create_module_if_not_exists')
     def test_set_owning_organisation_in_info(
         self,
         create_module_mock,
         dataset_mock,
+        datagroup_mock,
         get_dashboard_mock,
         client
     ):
@@ -257,13 +263,17 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.upload.get_or_create_data_group')
     @patch('application.controllers.upload.get_or_create_data_set')
     @patch('application.controllers.upload.create_module_if_not_exists')
-    def test_sets_info_to_unknown_when_no_organisation(self,
-                                                       create_module_mock,
-                                                       dataset_mock,
-                                                       get_dashboard_mock,
-                                                       client):
+    def test_sets_info_to_unknown_when_no_organisation(
+            self,
+            create_module_mock,
+            dataset_mock,
+            datagroup_mock,
+            get_dashboard_mock,
+            client
+    ):
 
         get_dashboard_mock.return_value = {
             'organisation': None,
@@ -287,6 +297,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
+    @patch('performanceplatform.client.admin.AdminAPI.create_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
@@ -296,9 +308,18 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             add_module_patch,
             list_module_types_patch,
             create_data_set_patch,
-            get_data_set_patch, get_dashboard_patch, client):
+            get_data_set_patch,
+            create_data_group_patch,
+            get_data_group_patch,
+            get_dashboard_patch,
+            client
+    ):
 
         get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
+
+        get_data_group_patch.return_value = None
+
+        create_data_group_patch.return_value = {'name': 'apply-uk-visa'}
 
         get_data_set_patch.return_value = None
 
@@ -310,6 +331,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         response = client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
+
+        assert get_data_group_patch.called
 
         assert get_data_set_patch.called
 
@@ -323,6 +346,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'auto_ids': '_timestamp, period, channel',
             'max_age_expected': 1300000
         }
+
+        create_data_group_patch.assert_called_with(
+            create_data_group_patch.return_value)
 
         create_data_set_patch.assert_called_with(expected_dataset_post_data)
 
