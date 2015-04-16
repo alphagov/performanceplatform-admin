@@ -122,23 +122,6 @@ def json_request(request):
     return request.headers.get('Accept', 'text/html') == 'application/json'
 
 
-@app.route('/dashboard/<uuid>/digital-take-up/upload',
-           methods=['GET'])
-@requires_authentication
-@requires_permission('dashboard')
-def upload_digital_take_up_data_file(admin_client, uuid):
-    DATA_TYPE_NAME = 'transactions-by-channel'
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user'],
-    })
-
-    return render_template('digital_take_up/upload.html',
-                           uuid=uuid,
-                           data_type=DATA_TYPE_NAME,
-                           **template_context)
-
-
 def get_or_create_data_set(admin_client, uuid, data_group, data_type,
                            data_set_config):
     try:
@@ -264,6 +247,25 @@ def create_dataset_and_module(data_type, admin_client, uuid):
         admin_client, data_group_name, module_config, 'completion_rate')
     return data_group_name, data_set
 
+@app.route('/dashboard/<uuid>/digital-take-up/upload',
+           methods=['GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_digital_take_up_data_file(admin_client, uuid):
+    DATA_TYPE_NAME = 'transactions-by-channel'
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
+
+    if 'upload_data' in session:
+        upload_data = session.pop('upload_data')
+        template_context['upload_data'] = upload_data
+
+    return render_template('digital_take_up/upload.html',
+                           uuid=uuid,
+                           data_type=DATA_TYPE_NAME,
+                           **template_context)
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['POST'])
@@ -288,6 +290,13 @@ def upload_data_file_to_dashboard(admin_client, uuid):
                         url_for('upload_data_file_to_dashboard', uuid=uuid))
 
     messages, status = upload_file_and_get_status(data_set)
+
+    app.logger.info(messages)
+
+    if messages:
+        return response(status, data_group, DATA_TYPE_NAME, messages,
+                    url_for('upload_digital_take_up_data_file',
+                            uuid=uuid))
 
     return response(status, data_group, DATA_TYPE_NAME, messages,
                     url_for('upload_digital_take_up_data_success',

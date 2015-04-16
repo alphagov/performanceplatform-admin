@@ -59,11 +59,42 @@
             <div class="step">
                 <input id="digital-take-up-file" type="file" name="file">
             </div>
+            {% if upload_data %}
+                <div class="upload-messages">
+                    {% if upload_data.payload|length == 0 %}
+                      <p>Your data uploaded successfully</p>
+                    {% else %}
+                      <p class="text-danger">Upload failed - errors:</p>
+                      <ul class="upload-messages">
+                        {% for message in upload_data.payload %}
+                        <li class="text-danger">{{message}}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
+    {% if upload_data %}
+    <div class="upload-messages">
+        {% if upload_data.payload|length == 0 %}
+          <p>Your data uploaded successfully</p>
+        {% else %}
+          <p class="text-danger">Upload failed - errors:</p>
+          <ul class="upload-messages">
+            {% for message in upload_data.payload %}
+            <li class="text-danger">{{message}}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+    </div>
+    {% endif %}
     <p></p>
     <input type="submit" class="btn btn-success" value="Continue" name="continue">
 </form>
 
+{% if upload_data %}
+    <p>{{ upload_data }}</p>
+{% endif %}
 
 {% endblock %}
