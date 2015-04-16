@@ -246,7 +246,7 @@ def create_dataset_and_module(data_type, admin_client, uuid, period):
             "group_by": ["channel"],
             "period": period
         },
-        "order": 1
+        "order": 2
     }
     create_module_if_not_exists(
         admin_client, data_group_name, module_config, 'completion_rate')
