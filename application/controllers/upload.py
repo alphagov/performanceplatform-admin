@@ -282,7 +282,7 @@ def upload_data_file_to_dashboard(admin_client, uuid):
     DATA_TYPE_NAME = 'transactions-by-channel'
     template_context = base_template_context()
     template_context.update({
-        'user': session['oauth_user'],
+        'user': session['oauth_user']
     })
 
     dashboard = admin_client.get_dashboard(uuid)
@@ -297,8 +297,6 @@ def upload_data_file_to_dashboard(admin_client, uuid):
                         url_for('upload_data_file_to_dashboard', uuid=uuid))
 
     messages, status = upload_file_and_get_status(data_set)
-
-    app.logger.info(messages)
 
     if messages:
         return response(status, data_group, DATA_TYPE_NAME, messages,
@@ -321,9 +319,14 @@ def upload_digital_take_up_data_success(admin_client, uuid):
     })
 
     dashboard = admin_client.get_dashboard(uuid)
-    data_group = dashboard["slug"]
+
+    template_context.update(({
+        'dashboard': {
+            'title': dashboard["title"]
+        },
+        'admin_host': app.config['ADMIN_HOST']
+    }))
 
     return render_template('digital_take_up/upload_success.html',
                            uuid=uuid,
-                           data_group=data_group,
                            **template_context)

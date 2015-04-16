@@ -1,9 +1,29 @@
 {% extends "base.html" %}
 
 {% block body %}
+
+<div class="confirmation-box">
+      <h1 class="h3">
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        Digital take-up data <br>
+        successfully added
+      </h1>
+</div>
+
 <h3>What happens next</h3>
 
-<a href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
+<p>Your digital take-up data has been saved and added to the dashboard <br>
+{{ dashboard.title }}
+</p>
 
+<p>You will need to manually upload the data weekly at <br>
+<a href="{{ url_for('upload_list_data_sets') }}">{{ admin_host }}/upload-data</a>
+</p>
+
+<a class='btn btn-primary' href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
+
+<p>
+    {{ data_set }}
+</p>
 
 {% endblock %}
