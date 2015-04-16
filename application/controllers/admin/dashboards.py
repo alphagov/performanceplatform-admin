@@ -35,8 +35,17 @@ def update_modules_form_and_redirect(func):
         module_types = ModuleTypes(admin_client)
         data_sources = DataSources(
             admin_client, session['oauth_token']['access_token'])
+
         form = DashboardCreationForm(
             admin_client, module_types, data_sources, request.form)
+
+        if 'modules_order' in request.form:
+            form = reorder_modules(request.form,
+                                   form,
+                                   admin_client,
+                                   module_types,
+                                   data_sources)
+
         session['pending_dashboard'] = form.data
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
@@ -54,11 +63,10 @@ def update_modules_form_and_redirect(func):
                           modules=current_module_count(form) + 1)
             return redirect(url)
 
-        if move_or_remove(request.form, session):
+        if remove(request.form, session):
             return redirect(url_for('dashboard_form', uuid=uuid))
 
         form.modules = set_section_module_choices(form.modules)
-
         if uuid is None:
             return func(admin_client, module_types, form)
         else:
@@ -196,10 +204,6 @@ def dashboard_create(admin_client, module_types, form):
         return redirect(url_for('dashboard_form'))
 
 
-def create_or_udpate(admin_client, form):
-    pass
-
-
 def build_dict_for_post(form, module_types):
     def section_modules(modules):
         parent_module = None
@@ -296,8 +300,8 @@ def current_module_count(form):
     return len(form.modules)
 
 
-def move_or_remove(request_form, session):
-    """Move or remove a module and return True if a redirect is needed"""
+def remove(request_form, session):
+    """Remove a module and return True if a redirect is needed"""
     def get_module_index(field_prefix, form):
         for field in form.keys():
             if field.startswith(field_prefix):
@@ -311,23 +315,20 @@ def move_or_remove(request_form, session):
         session['pending_dashboard']['modules'].pop(index)
         return True
 
-    # Move a module down in the list (increment it's index number)
-    index = get_module_index('move_module_down_', request.form)
-    if index is not None:
-        modules = session['pending_dashboard']['modules']
-        if index < len(modules) - 1:
-            modules[index], modules[
-                index + 1] = modules[index + 1], modules[index]
-            session['pending_dashboard']['modules'] = modules
-        return True
-
-    # Move a module up in the list (decrement it's index number)
-    index = get_module_index('move_module_up_', request.form)
-    if index is not None:
-        modules = session['pending_dashboard']['modules']
-        if index > 0:
-            modules[index], modules[
-                index - 1] = modules[index - 1], modules[index]
-            session['pending_dashboard']['modules'] = modules
-        return True
     return False
+
+
+def reorder_modules(request_data,
+                    form,
+                    admin_client,
+                    module_types,
+                    data_sources):
+    form_data = form.data
+    new_modules = []
+    new_order = request_data.get('modules_order').split(',')
+    for idx, val in enumerate(new_order):
+        new_modules.append(
+            form_data['modules'][int(val) - 1])
+    form_data['modules'] = new_modules
+    return DashboardCreationForm(
+        admin_client, module_types, data_sources, data=form_data)
