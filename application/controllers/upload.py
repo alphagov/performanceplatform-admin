@@ -182,7 +182,7 @@ def get_or_create_data_group(admin_client, data_group_config, data_type, uuid):
     return data_group
 
 
-def create_dataset_and_module(data_type, admin_client, uuid):
+def create_dataset_and_module(data_type, admin_client, uuid, period):
     dashboard = admin_client.get_dashboard(uuid)
     data_group_config = {"name": dashboard["slug"]}
 
@@ -191,13 +191,18 @@ def create_dataset_and_module(data_type, admin_client, uuid):
 
     data_group_name = data_group['name']
 
+    if period == 'week':
+        max_age_expected = 1300000
+    else:
+        max_age_expected = 5200000
+
     data_set_config = {
         'data_type': data_type,
         'data_group': data_group_name,
         'bearer_token': 'abc123',
         'upload_format': 'csv',
         'auto_ids': '_timestamp, period, channel',
-        'max_age_expected': 1300000
+        'max_age_expected': max_age_expected
     }
     data_set = get_or_create_data_set(
         admin_client, uuid, data_group_name, data_type, data_set_config)
@@ -239,13 +244,14 @@ def create_dataset_and_module(data_type, admin_client, uuid):
         "query_parameters": {
             "collect": ["count:sum"],
             "group_by": ["channel"],
-            "period": "month"
+            "period": period
         },
         "order": 1
     }
     create_module_if_not_exists(
         admin_client, data_group_name, module_config, 'completion_rate')
     return data_group_name, data_set
+
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['GET'])
@@ -266,6 +272,7 @@ def upload_digital_take_up_data_file(admin_client, uuid):
                            uuid=uuid,
                            data_type=DATA_TYPE_NAME,
                            **template_context)
+
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['POST'])
@@ -295,23 +302,28 @@ def upload_data_file_to_dashboard(admin_client, uuid):
 
     if messages:
         return response(status, data_group, DATA_TYPE_NAME, messages,
-                    url_for('upload_digital_take_up_data_file',
-                            uuid=uuid))
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
 
     return response(status, data_group, DATA_TYPE_NAME, messages,
                     url_for('upload_digital_take_up_data_success',
-                            data_group=data_group))
+                            uuid=uuid))
 
 
-@app.route('/dashboard/<data_group>/digital-take-up/upload/success',
+@app.route('/dashboard/<uuid>/digital-take-up/upload/success',
            methods=['GET', 'POST'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_digital_take_up_data_success(admin_client, data_group):
+def upload_digital_take_up_data_success(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
     })
+
+    dashboard = admin_client.get_dashboard(uuid)
+    data_group = dashboard["slug"]
+
     return render_template('digital_take_up/upload_success.html',
+                           uuid=uuid,
                            data_group=data_group,
                            **template_context)

@@ -86,7 +86,8 @@ def channel_options(admin_client, uuid):
             session['channel_choices'] = [
                 key for key, val in form.data.items() if val]
             create_dataset_and_module('transactions-by-channel',
-                                      admin_client, uuid)
+                                      admin_client, uuid,
+                                      session['upload_choice'])
 
             return redirect(url_for('upload_digital_take_up_data_file',
                                     uuid=uuid))

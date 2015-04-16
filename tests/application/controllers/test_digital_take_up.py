@@ -169,6 +169,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @patch('application.controllers.digital_take_up.create_dataset_and_module')
     def test_stores_chosen_channel_options_in_the_session(self, create_mock):
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
+
         self.client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
@@ -177,6 +180,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @patch('application.controllers.digital_take_up.create_dataset_and_module')
     def test_redirects_to_download_template_page(self, create_mock):
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
+
         response = self.client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
@@ -212,6 +218,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE
 
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
+
         response = client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
@@ -246,6 +255,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'slug': 'apply-uk-visa'
         }
 
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
+
         response = client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
@@ -279,6 +291,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'organisation': None,
             'slug': 'apply-uk-visa'
         }
+
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
 
         response = client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
@@ -327,6 +342,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE
+
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
 
         response = client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
