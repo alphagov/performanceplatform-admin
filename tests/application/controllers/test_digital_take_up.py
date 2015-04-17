@@ -356,19 +356,18 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         assert list_module_types_patch.called
 
-        expected_dataset_post_data = {
-            'data_type': 'transactions-by-channel',
-            'data_group': 'apply-uk-visa',
-            'bearer_token': 'abc123',
-            'upload_format': 'csv',
-            'auto_ids': '_timestamp, period, channel',
-            'max_age_expected': 1300000
-        }
-
         create_data_group_patch.assert_called_with(
             create_data_group_patch.return_value)
 
-        create_data_set_patch.assert_called_with(expected_dataset_post_data)
+        create_data_set_patch.assert_called_with(match_equality(has_entries(
+            {
+                'data_type': 'transactions-by-channel',
+                'data_group': 'apply-uk-visa',
+                'upload_format': 'csv',
+                'auto_ids': '_timestamp, period, channel',
+                'max_age_expected': 1300000
+            }
+        )))
 
         add_module_patch.assert_called_with(
             'apply-uk-visa', match_equality(has_entries(

@@ -1,3 +1,5 @@
+import random
+import string
 from application import app
 from application.files.spreadsheet import Spreadsheet
 from application.helpers import(
@@ -182,6 +184,11 @@ def get_or_create_data_group(admin_client, data_group_config, data_type, uuid):
     return data_group
 
 
+def generate_bearer_token():
+    return ''.join(random.choice(string.lowercase + string.digits)
+                   for i in range(64))
+
+
 def create_dataset_and_module(data_type, admin_client, uuid, period):
     dashboard = admin_client.get_dashboard(uuid)
     data_group_config = {"name": dashboard["slug"]}
@@ -199,7 +206,7 @@ def create_dataset_and_module(data_type, admin_client, uuid, period):
     data_set_config = {
         'data_type': data_type,
         'data_group': data_group_name,
-        'bearer_token': 'abc123',
+        'bearer_token': generate_bearer_token(),
         'upload_format': 'csv',
         'auto_ids': '_timestamp, period, channel',
         'max_age_expected': max_age_expected
