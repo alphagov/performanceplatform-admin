@@ -2,28 +2,40 @@
 
 {% block body %}
 
-<div class="confirmation-box">
-      <h1 class="h3">
-        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-        Digital take-up data <br>
-        successfully added
-      </h1>
+<div class="row">
+  <div class="col-sm-8 col-md-6">
+    <div class="confirmation-box">
+          <h1 class="h3">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            {{ dashboard.module.title }} data <br>
+            successfully added
+          </h1>
+    </div>
+ </div>
 </div>
 
-<h3>What happens next</h3>
+<h2 class="h4">What happens next</h2>
 
-<p>Your digital take-up data has been saved and added to the dashboard <br>
-{{ dashboard.title }}
-</p>
+<div class="row">
+  <p class="col-sm-8 col-md-12">
+    Your {{ dashboard.module.title|lower }} data has been saved and added to the dashboard
+    <br>
+    {{ dashboard.title }}
+  </p>
+</div>
 
-<p>You will need to manually upload the data weekly at <br>
-<a href="{{ url_for('upload_list_data_sets') }}">{{ admin_host }}/upload-data</a>
-</p>
-
-<a class='btn btn-primary' href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
-
-<p>
-    {{ data_set }}
-</p>
+<div class="row">
+  <p class="col-sm-8 col-md-12">
+    You will need to manually upload the data {{ upload_period }}ly at
+    <br>
+    <a href="{{ url_for('upload_list_data_sets') }}">{{ admin_host }}/upload-data</a>
+  </p>
+    
+</div>
+<div class="row">
+  <p class="col-sm-8 col-md-12">
+    <a class='btn btn-primary' href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
+  </p>
+</div>
 
 {% endblock %}

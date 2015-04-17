@@ -250,6 +250,9 @@ def create_dataset_and_module(data_type, admin_client, uuid, period):
     }
     create_module_if_not_exists(
         admin_client, data_group_name, module_config, 'completion_rate')
+
+    session['module'] = module_config['title']
+
     return data_group_name, data_set
 
 
@@ -322,9 +325,13 @@ def upload_digital_take_up_data_success(admin_client, uuid):
 
     template_context.update(({
         'dashboard': {
-            'title': dashboard["title"]
+            'title': dashboard["title"],
+            'module': {
+                'title': session['module']
+            }
         },
-        'admin_host': app.config['ADMIN_HOST']
+        'admin_host': app.config['ADMIN_HOST'],
+        'upload_period': session['upload_choice']
     }))
 
     return render_template('digital_take_up/upload_success.html',
