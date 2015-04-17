@@ -1,1 +1,11 @@
-{}
+{
+  "query": {},
+  "visualisation": {
+      "classes": [
+          "cols2"
+      ], 
+      "label-attr": "pageTitle", 
+      "label-regex": "^(.*)\\s-[^-]+$", 
+      "link-attr": "pagePath"
+  }
+}

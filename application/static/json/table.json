@@ -1,3 +1,23 @@
 {
-  "start_at": "2015-01-01T00:00:00Z"
+  "query": {
+    "start_at": "2015-01-01T00:00:00Z"
+  },
+  "visualisation" : {
+    "axes": {
+        "x": {
+            "format": "url", 
+            "key": "url", 
+            "label": "URL"
+        }, 
+        "y": [
+            {
+                "format": "integer", 
+                "key": "comment_count:sum", 
+                "label": "Total comments"
+            }
+        ]
+    }, 
+    "sort-by": "comment_count:sum", 
+    "sort-order": "descending"
+  }
 }

@@ -1,10 +1,50 @@
 {
-  "duration": 52,
-  "collect": [
-    "count:sum"
-  ],
-  "group_by": [
-    "channel"
-  ],
-  "period": "week"
+  "query": {
+    "duration": 52,
+    "collect": [
+      "count:sum"
+    ],
+    "group_by": [
+      "channel"
+    ],
+    "period": "week"
+  },
+  "visualisation" : {
+    "axes": {
+        "x": {
+            "format": {
+                "format": "D MMM YYYY", 
+                "type": "date"
+            }, 
+            "key": [
+                "_start_at", 
+                "_end_at"
+            ], 
+            "label": "Date"
+        }, 
+        "y": [
+            {
+                "format": "percent", 
+                "groupId": "desktop", 
+                "label": "Desktop"
+            }, 
+            {
+                "format": "percent", 
+                "groupId": "mobile", 
+                "label": "Mobile"
+            }, 
+            {
+                "format": "percent", 
+                "groupId": "tablet", 
+                "label": "Tablet"
+            }
+        ]
+    }, 
+    "axis-period": "month", 
+    "category": "deviceCategory", 
+    "one-hundred-percent": true, 
+    "show-line-labels": true, 
+    "use_stack": false, 
+    "value-attribute": "visitors:sum"
+  }
 }

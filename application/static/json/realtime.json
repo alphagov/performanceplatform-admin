@@ -1,4 +1,8 @@
-{
-  "limit": 722,
-  "sort_by": "_timestamp:descending"
+{  
+  "query": {
+    "limit": 722,
+    "sort_by": "_timestamp:descending"
+  },
+  "visualisation" : {
+  }
 }

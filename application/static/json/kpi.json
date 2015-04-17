@@ -1,7 +1,18 @@
-{
-  "sort_by": "_timestamp:descending",
-  "filter_by": [
-    "service_id:<service-id>",
-    "type:seasonally-adjusted"
-  ]
+{  
+  "query": {
+    "sort_by": "_timestamp:descending",
+    "filter_by": [
+      "service_id:<service-id>",
+      "type:seasonally-adjusted"
+    ]
+  },
+  "visualisation" : {
+    "classes": "cols3", 
+    "format": {
+        "magnitude": true, 
+        "sigfigs": 3, 
+        "type": "number"
+    }, 
+    "value-attribute": "number_of_transactions"
+  }
 }

@@ -1,1 +1,49 @@
-{}
+{
+  "query": {},
+  "visualisation": {
+    "axes": {
+        "x": {
+            "format": "date", 
+            "key": "_start_at", 
+            "label": "Date"
+        }, 
+        "y": [
+            {
+                "format": "percent", 
+                "key": "score", 
+                "label": "User satisfaction"
+            }, 
+            {
+                "format": "integer", 
+                "key": "rating_1", 
+                "label": "Very dissatisfied"
+            }, 
+            {
+                "format": "integer", 
+                "key": "rating_2", 
+                "label": "Dissatisfied"
+            }, 
+            {
+                "format": "integer", 
+                "key": "rating_3", 
+                "label": "Neither satisfied or dissatisfied"
+            }, 
+            {
+                "format": "integer", 
+                "key": "rating_4", 
+                "label": "Satisfied"
+            }, 
+            {
+                "format": "integer", 
+                "key": "rating_5", 
+                "label": "Very satisfied"
+            }
+        ]
+    }, 
+    "axis-period": "month", 
+    "migrated": true, 
+    "total-attribute": "num_responses", 
+    "trim": false, 
+    "value-attribute": "score"
+  }
+}

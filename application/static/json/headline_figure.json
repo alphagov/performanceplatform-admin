@@ -1,1 +1,23 @@
-{}
+{
+  "query": {},
+  "visualisation": {
+    "axes": {
+        "x": {
+            "format": "string", 
+            "key": "metric", 
+            "label": "Applications recieved"
+        }, 
+        "y": [
+            {
+                "format": "integer", 
+                "key": "value:sum", 
+                "label": "Number of applications"
+            }
+        ]
+    }, 
+    "classes": "cols3", 
+    "pin-to": "metric", 
+    "target": "applications_recieved", 
+    "value-attribute": "value:sum"
+  }
+}
