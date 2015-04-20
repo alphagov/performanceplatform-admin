@@ -9,29 +9,45 @@ import requests
 import json
 
 
+def convert_to_module_for_form(module, module_types, cloned=False):
+    module['info'] = json.dumps(module['info'])
+    if module['query_parameters'] is not None:
+        module['query_parameters'] = json.dumps(module['query_parameters'])
+    module['options'] = json.dumps(module['options'])
+    module['module_type'] = module['type']['id']
+    if module['module_type'] == module_types.get_section_type()['id']:
+        module['category'] = 'container'
+    if cloned:
+        module['id'] = None
+    module['uuid'] = module['id']
+    return module
+
+
+def flatten_module(module, module_types):
+    if module['type']['id'] == module_types.get_section_type()['id']:
+        child_modules = module['modules']
+        modules = [module]
+        modules.extend(flatten_modules(child_modules, module_types))
+        return modules
+    else:
+        return [module]
+
+
+def flatten_modules(modules, module_types):
+    flattened_modules = []
+    for module in modules:
+        flattened_modules.extend(flatten_module(module, module_types))
+    return flattened_modules
+
+
 def convert_to_dashboard_form(
         dashboard_dict, admin_client, module_types, data_sources):
-    def flatten_modules(modules):
-        flattened_modules = []
-        for module in modules:
-            if module['type']['id'] == module_types.get_section_type()['id']:
-                child_modules = module['modules']
-                flattened_modules.append(module)
-                flattened_modules.extend(flatten_modules(child_modules))
-            else:
-                flattened_modules.append(module)
-        return flattened_modules
 
-    dashboard_dict['modules'] = flatten_modules(dashboard_dict['modules'])
+    dashboard_dict['modules'] = flatten_modules(
+        dashboard_dict['modules'],
+        module_types)
     for module in dashboard_dict['modules']:
-        module['info'] = json.dumps(module['info'])
-        if module['query_parameters'] is not None:
-            module['query_parameters'] = json.dumps(module['query_parameters'])
-        module['options'] = json.dumps(module['options'])
-        module['module_type'] = module['type']['id']
-        if module['module_type'] == module_types.get_section_type()['id']:
-            module['category'] = 'container'
-        module['uuid'] = module['id']
+        convert_to_module_for_form(module, module_types)
     transaction_link = [link for link
                         in dashboard_dict['links']
                         if link['type'] == 'transaction']
