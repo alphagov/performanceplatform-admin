@@ -9,7 +9,9 @@ from flask import (
     flash, redirect, render_template, request,
     session, url_for
 )
-from application.forms import convert_to_dashboard_form
+from application.forms import(
+    convert_to_dashboard_form,
+    convert_to_module_for_form)
 
 import cgi
 import json
@@ -50,6 +52,11 @@ def update_modules_form_and_redirect(func):
         if uuid is not None:
             session['pending_dashboard']['uuid'] = uuid
 
+        if 'clone_module' in request.form:
+            url = url_for('clone_module',
+                          target_dashboard_uuid=uuid)
+            return redirect(url)
+
         if 'add_section' in request.form:
             url = url_for('dashboard_form',
                           uuid=uuid,
@@ -89,17 +96,29 @@ def dashboard_form(admin_client, uuid=None):
             return True
         return False
 
+    def append_cloned_module():
+        if request.args.get('clone_module'):
+            module = admin_client.get_module(
+                request.args.get('clone_module'))
+            module_form = convert_to_module_for_form(
+                module, module_types, cloned=True)
+            form.modules.append_entry(module_form)
+            add_select_options_to_module()
+
     def append_new_module_forms():
         total_modules = int(request.args.get('modules'))
         modules_required = total_modules - len(form.modules)
         for i in range(modules_required):
             form.modules.append_entry()
-            choices = module_types.get_visualisation_choices()
-            form.modules[-1].module_type.choices = choices
-            choices = data_sources.group_choices()
-            form.modules[-1].data_group.choices = choices
-            choices = data_sources.type_choices()
-            form.modules[-1].data_type.choices = choices
+            add_select_options_to_module()
+
+    def add_select_options_to_module():
+        choices = module_types.get_visualisation_choices()
+        form.modules[-1].module_type.choices = choices
+        choices = data_sources.group_choices()
+        form.modules[-1].data_group.choices = choices
+        choices = data_sources.type_choices()
+        form.modules[-1].data_type.choices = choices
 
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
@@ -131,10 +150,62 @@ def dashboard_form(admin_client, uuid=None):
         append_new_module_forms()
         if request.args.get('section'):
             form.modules[-1].category.data = 'container'
+    if request.args.get('clone_module'):
+        append_cloned_module()
 
     return render_template('dashboards/create.html',
                            form=form,
+                           current_url=request.path,
                            **template_context)
+
+
+@app.route('{0}/clone_module/<target_dashboard_uuid>'.format(
+    DASHBOARD_ROUTE), methods=['POST', 'GET'])
+@app.route('{0}/clone_module'.format(
+    DASHBOARD_ROUTE), methods=['POST', 'GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def clone_module(admin_client, target_dashboard_uuid=None):
+    modules = None
+    dashboards = None
+    target_dashboard_url = None
+    source_dashboard_uuid = None
+
+    if request.form and 'dashboard_uuid' in request.form:
+        source_dashboard_uuid = request.form['dashboard_uuid']
+
+    dashboards_url = '{0}/dashboards'.format(
+        app.config['STAGECRAFT_HOST'])
+    access_token = session['oauth_token']['access_token']
+    headers = {
+        'Authorization': 'Bearer {0}'.format(access_token),
+    }
+    dashboard_response = requests.get(dashboards_url, headers=headers)
+    if dashboard_response.status_code == 200:
+        dashboards = dashboard_response.json()['dashboards']
+
+    if source_dashboard_uuid:
+        modules_url = '{0}/dashboard/{1}/module'.format(
+            app.config['STAGECRAFT_HOST'],
+            source_dashboard_uuid)
+        access_token = session['oauth_token']['access_token']
+        headers = {
+            'Authorization': 'Bearer {0}'.format(access_token),
+        }
+        modules_response = requests.get(modules_url, headers=headers)
+        if modules_response.status_code == 200:
+            modules = modules_response.json()
+
+    if target_dashboard_uuid:
+        target_dashboard_url = '/admin/dashboards{}'.format(
+            target_dashboard_uuid)
+    else:
+        target_dashboard_url = '/admin/dashboards/new'
+
+    return render_template('dashboards/clone_module.html',
+                           modules=modules,
+                           dashboards=dashboards,
+                           target_dashboard_url=target_dashboard_url)
 
 
 @app.route('{0}/clone'.format(DASHBOARD_ROUTE), methods=['GET'])
