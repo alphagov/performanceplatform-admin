@@ -1,3 +1,5 @@
+import random
+import string
 from application import app
 from flask import abort, session, redirect, request, url_for
 from functools import wraps
@@ -191,3 +193,8 @@ def to_error_list(form_errors):
     for field_name, field_errors in form_errors.items():
         messages.append('; '.join(map(format_error, field_errors)))
     return 'You have errors in your form: ' + '; '.join(messages) + '.'
+
+
+def generate_bearer_token():
+    return ''.join(random.choice(string.lowercase + string.digits)
+                   for i in range(64))

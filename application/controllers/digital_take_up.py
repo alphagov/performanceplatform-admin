@@ -1,5 +1,6 @@
+from requests import HTTPError
 from application import app
-from application.controllers.upload import create_dataset_and_module
+from application.controllers.upload import response, upload_file_and_get_status
 from application.forms import UploadOptionsForm, ChannelOptionsForm
 from flask import (
     session,
@@ -14,8 +15,8 @@ from application.helpers import (
     base_template_context,
     requires_authentication,
     requires_permission,
-    to_error_list
-)
+    to_error_list,
+    generate_bearer_token)
 from application.utils.datetimeutil import (
     a_week_ago,
     a_month_ago,
@@ -85,9 +86,23 @@ def channel_options(admin_client, uuid):
         if True in form.data.values():
             session['channel_choices'] = [
                 key for key, val in form.data.items() if val]
+
+            auto_ids = '_timestamp, period, channel'
+
+            dashboard = admin_client.get_dashboard(uuid)
+            owning_organisation = (dashboard.get('organisation') or {}).get(
+                "name", 'Unknown')
+
+            module_config = get_module_config_for_digital_takeup(
+                owning_organisation)
+
             create_dataset_and_module('transactions-by-channel',
                                       admin_client, uuid,
-                                      session['upload_choice'])
+                                      session['upload_choice'],
+                                      auto_ids,
+                                      'completion_rate',
+                                      module_config,
+                                      dashboard["slug"])
 
             return redirect(url_for('upload_digital_take_up_data_file',
                                     uuid=uuid))
@@ -126,3 +141,229 @@ def make_csv():
             session['upload_choice'],
             channel)
     return csv
+
+
+def create_dataset_and_module(data_type,
+                              admin_client,
+                              uuid,
+                              period,
+                              auto_ids,
+                              module_type,
+                              module_config,
+                              data_group_name):
+
+    # DATA GROUP
+    data_group = get_or_create_data_group(
+        admin_client, data_group_name, data_type, uuid)
+
+    # DATA SET
+    data_set = get_or_create_data_set(
+        admin_client, uuid, data_group['name'], data_type, period, auto_ids)
+
+    # MODULE
+    create_module_if_not_exists(
+        admin_client, data_group['name'], data_set, module_config, module_type)
+
+    session['module'] = module_config['title']
+
+
+def get_module_config_for_digital_takeup(owning_organisation):
+    module_config = {
+        "slug": "digital-takeup",
+        "title": "Digital take-up",
+        "description": "What percentage of transactions were completed "
+                       "using the online service",
+        "info": ["Data source: {}".format(owning_organisation),
+                 "<a href='/service-manual/measurement/digital-takeup' "
+                 "rel='external'>Digital take-up</a> measures the "
+                 "percentage of completed applications that are made "
+                 "through a digital channel versus non-digital channels."],
+        "options": {
+            "value-attribute": "count:sum",
+            "axis-period": "month",
+            "axes": {"y": [{
+                               "format": "percent",
+                               "key": "completion",
+                               "label": "Digital take-up"
+            }],
+                "x": {
+                "format": "date",
+                "key": ["_start_at", "_end_at"],
+                "label": "Date"
+            }
+            },
+            "numerator-matcher": "(digital)",
+            "denominator-matcher": ".+",
+            "matching-attribute": "channel"
+        },
+        "query_parameters": {
+            "collect": ["count:sum"],
+            "group_by": ["channel"],
+            "period": session['upload_choice']
+        },
+        "order": 2
+    }
+    return module_config
+
+
+def create_module_if_not_exists(admin_client,
+                                data_group,
+                                data_set,
+                                module_config,
+                                module_type_name):
+    module_config.update({
+        "data_set": data_set["name"],
+        "data_group": data_group,
+        "data_type": data_set["data_type"]
+    })
+
+    module_types = admin_client.list_module_types()
+    for module_type in module_types:
+        if module_type['name'] == module_type_name:
+            module_config["type_id"] = module_type['id']
+    try:
+        admin_client.add_module_to_dashboard(
+            data_group, module_config)
+    except HTTPError as e:
+        exists = "Module with this Dashboard and Slug already exists"
+        if exists not in e.response.text:
+            raise
+
+
+def get_or_create_data_set(admin_client, uuid, data_group, data_type,
+                           period, auto_ids):
+
+    data_set_config = get_data_set_config(data_group, data_type,
+                                          period, auto_ids)
+
+    try:
+        data_set = admin_client.get_data_set(
+            data_group, data_type)
+    except HTTPError as err:
+        return response(500, data_group, data_type,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
+
+    if not data_set:
+        data_set = admin_client.create_data_set(data_set_config)
+
+    return data_set
+
+
+def get_data_set_config(data_group_name, data_type, period, auto_ids):
+    if period == 'week':
+        max_age_expected = 1300000
+    else:
+        max_age_expected = 5200000
+
+    data_set_config = {
+        'data_type': data_type,
+        'data_group': data_group_name,
+        'bearer_token': generate_bearer_token(),
+        'upload_format': 'csv',
+        'auto_ids': auto_ids,
+        'max_age_expected': max_age_expected
+    }
+    return data_set_config
+
+
+def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
+    data_group_config = {"name": data_group_name}
+
+    try:
+        data_group = admin_client.get_data_group(data_group_name)
+    except HTTPError as err:
+        return response(500, data_group_config, data_type,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
+    if not data_group:
+        data_group = admin_client.create_data_group(data_group_config)
+
+    return data_group
+
+
+@app.route('/dashboard/<uuid>/digital-take-up/upload',
+           methods=['GET'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_digital_take_up_data_file(admin_client, uuid):
+    DATA_TYPE_NAME = 'transactions-by-channel'
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
+
+    if 'upload_data' in session:
+        upload_data = session.pop('upload_data')
+        template_context['upload_data'] = upload_data
+
+    return render_template('digital_take_up/upload.html',
+                           uuid=uuid,
+                           data_type=DATA_TYPE_NAME,
+                           **template_context)
+
+
+@app.route('/dashboard/<uuid>/digital-take-up/upload',
+           methods=['POST'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_data_file_to_dashboard(admin_client, uuid):
+    DATA_TYPE_NAME = 'transactions-by-channel'
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user']
+    })
+
+    dashboard = admin_client.get_dashboard(uuid)
+    data_group = dashboard["slug"]
+
+    try:
+        data_set = admin_client.get_data_set(data_group, DATA_TYPE_NAME)
+    except HTTPError as err:
+        return response(500, data_group, DATA_TYPE_NAME,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_data_file_to_dashboard', uuid=uuid))
+
+    messages, status = upload_file_and_get_status(data_set)
+
+    if messages:
+        return response(status, data_group, DATA_TYPE_NAME, messages,
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
+
+    return response(status, data_group, DATA_TYPE_NAME, messages,
+                    url_for('upload_digital_take_up_data_success',
+                            uuid=uuid))
+
+
+@app.route('/dashboard/<uuid>/digital-take-up/upload/success',
+           methods=['GET', 'POST'])
+@requires_authentication
+@requires_permission('dashboard')
+def upload_digital_take_up_data_success(admin_client, uuid):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
+
+    dashboard = admin_client.get_dashboard(uuid)
+
+    template_context.update(({
+        'dashboard': {
+            'title': dashboard["title"],
+            'module': {
+                'title': session['module']
+            }
+        },
+        'admin_host': app.config['ADMIN_HOST'],
+        'upload_period': session['upload_choice']
+    }))
+
+    return render_template('digital_take_up/upload_success.html',
+                           uuid=uuid,
+                           **template_context)

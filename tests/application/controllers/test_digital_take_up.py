@@ -167,8 +167,17 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         assert_that(response.data, contains_string(
             'select one or more channel options'))
 
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    def test_stores_chosen_channel_options_in_the_session(self, create_mock):
+    def test_stores_chosen_channel_options_in_the_session(self, create_mock,
+                                                          get_dashboard_mock):
+
+        organisation = 'Cabinet Office'
+        get_dashboard_mock.return_value = {
+            'organisation': {'name': organisation},
+            'slug': 'apply-uk-visa'
+        }
+
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
@@ -178,8 +187,17 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         self.assert_session_contains(
             'channel_choices', ['digital', 'telephone_human'])
 
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    def test_redirects_to_download_template_page(self, create_mock):
+    def test_redirects_to_download_template_page(self, create_mock,
+                                                 get_dashboard_mock):
+
+        organisation = 'Cabinet Office'
+        get_dashboard_mock.return_value = {
+            'organisation': {'name': organisation},
+            'slug': 'apply-uk-visa'
+        }
+
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
@@ -238,9 +256,10 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.upload.get_or_create_data_group')
-    @patch('application.controllers.upload.get_or_create_data_set')
-    @patch('application.controllers.upload.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.get_or_create_data_group')
+    @patch('application.controllers.digital_take_up.get_or_create_data_set')
+    @patch(
+        'application.controllers.digital_take_up.create_module_if_not_exists')
     def test_set_owning_organisation_in_info(
         self,
         create_module_mock,
@@ -267,6 +286,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         create_module_mock.assert_called_with(
             match_equality(not_none()),
             match_equality(not_none()),
+            match_equality(not_none()),
             match_equality(has_entries(
                 {'info': has_item(contains_string(organisation))}
             )),
@@ -275,9 +295,10 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.upload.get_or_create_data_group')
-    @patch('application.controllers.upload.get_or_create_data_set')
-    @patch('application.controllers.upload.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.get_or_create_data_group')
+    @patch('application.controllers.digital_take_up.get_or_create_data_set')
+    @patch(
+        'application.controllers.digital_take_up.create_module_if_not_exists')
     def test_sets_info_to_unknown_when_no_organisation(
             self,
             create_module_mock,
@@ -302,6 +323,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         # match_equality(not_none()) is used because we dont care what any
         # arguments are except for the 3rd argument
         create_module_mock.assert_called_with(
+            match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
             match_equality(has_entries(
