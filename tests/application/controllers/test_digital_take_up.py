@@ -168,13 +168,23 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'select one or more channel options'))
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    def test_stores_chosen_channel_options_in_the_session(self, create_mock,
-                                                          get_dashboard_mock):
+    # @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    @patch('application.controllers.digital_take_up.get_or_create_data_group')
+    @patch('application.controllers.digital_take_up.get_or_create_data_set')
+    @patch(
+        'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set_transform')
+    def test_stores_chosen_channel_options_in_the_session(
+            self,
+            transform_mock,
+            module_mock,
+            data_set_mock,
+            data_group_mock,
+            get_dashboard_mock
+    ):
 
-        organisation = 'Cabinet Office'
         get_dashboard_mock.return_value = {
-            'organisation': {'name': organisation},
             'slug': 'apply-uk-visa'
         }
 
@@ -188,8 +198,18 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'channel_choices', ['digital', 'telephone_human'])
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    def test_redirects_to_download_template_page(self, create_mock,
+    # @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    @patch('application.controllers.digital_take_up.get_or_create_data_group')
+    @patch('application.controllers.digital_take_up.get_or_create_data_set')
+    @patch(
+        'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set_transform')
+    def test_redirects_to_download_template_page(self,
+                                                 transform_mock,
+                                                 module_mock,
+                                                 data_set_mock,
+                                                 data_group_mock,
                                                  get_dashboard_mock):
 
         organisation = 'Cabinet Office'
@@ -197,6 +217,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'organisation': {'name': organisation},
             'slug': 'apply-uk-visa'
         }
+
+        transform_mock.return_value = []
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -213,19 +235,26 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set_transform')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
     def test_new_data_set_added_to_existing_module(
             self,
             add_module_patch,
             list_module_types_patch,
+            transform_patch,
             create_data_set_patch,
             get_data_set_patch,
             get_data_group_patch,
             get_dashboard_patch,
             client):
 
-        get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
+        organisation = 'Cabinet Office'
+        get_dashboard_patch.return_value = {
+            'organisation': {'name': organisation},
+            'slug': 'apply-uk-visa'
+        }
 
         get_data_group_patch.return_value = {'name': 'apply-uk-visa'}
 
@@ -243,8 +272,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
-        assert create_data_set_patch.called
-
         add_module_patch.assert_called_with(
             'apply-uk-visa', match_equality(has_entries(
                 {
@@ -260,8 +287,11 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('application.controllers.digital_take_up.get_or_create_data_set')
     @patch(
         'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set_transform')
     def test_set_owning_organisation_in_info(
         self,
+        transform_mock,
         create_module_mock,
         dataset_mock,
         datagroup_mock,
@@ -299,9 +329,12 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('application.controllers.digital_take_up.get_or_create_data_set')
     @patch(
         'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set_transform')
     def test_sets_info_to_unknown_when_no_organisation(
             self,
-            create_module_mock,
+            transform_mock,
+            module_mock,
             dataset_mock,
             datagroup_mock,
             get_dashboard_mock,
@@ -322,7 +355,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         # match_equality(not_none()) is used because we dont care what any
         # arguments are except for the 3rd argument
-        create_module_mock.assert_called_with(
+        module_mock.assert_called_with(
             match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
@@ -340,8 +373,12 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
+    @patch('performanceplatform.client.admin.AdminAPI.create_transform')
     def test_create_digital_take_up_module_in_stagecraft(
             self,
+            create_transform_patch,
+            get_transform_patch,
             add_module_patch,
             list_module_types_patch,
             create_data_set_patch,
@@ -364,6 +401,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE
+
+        get_transform_patch.return_value = []
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -399,6 +438,33 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                     "data_type": "transactions-by-channel",
                     "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
+
+        assert get_transform_patch.called
+
+        create_transform_patch.assert_called_with(
+            {
+                "type_id": "8e8d973b-3937-430d-944f-56bbeee13af2",
+                "input": {
+                    "data-type": "transactions-by-channel",
+                    "data-group": "apply-uk-visa"
+                },
+                "query-parameters": {
+                    "collect": ["count:sum"],
+                    "group_by": ["channel"],
+                    "period": "week"
+                },
+                "options": {
+                    "denominatorMatcher": ".+",
+                    "numeratorMatcher": "(digital)",
+                    "matchingAttribute": "channel",
+                    "valueAttribute": "count:sum"
+                },
+                "output": {
+                    "data-type": "digital-takeup",
+                    "data-group": "apply-uk-visa"
+                }
+            }
+        )
 
 
 class DownloadTemplatePageTestCase(FlaskAppTestCase):

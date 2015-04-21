@@ -71,6 +71,24 @@ def api_get_in_touch(admin_client, uuid):
         **template_context)
 
 
+def get_or_create_data_set_transform(
+        admin_client, uuid, transform_config, data_set):
+
+    try:
+        transform = admin_client.get_data_set_transforms(data_set["name"])
+    except HTTPError as err:
+        return response(500, transform_config, data_set,
+                        ['[{}] {}'.format(err.response.status_code,
+                                          err.response.json())],
+                        url_for('upload_digital_take_up_data_file',
+                                uuid=uuid))
+
+    if not transform:
+        transform = admin_client.create_transform(transform_config)
+
+    return transform
+
+
 @app.route(
     '{0}/<uuid>/digital-take-up/channel-options'.format(DASHBOARD_ROUTE),
     methods=['GET', 'POST'])
@@ -96,13 +114,51 @@ def channel_options(admin_client, uuid):
             module_config = get_module_config_for_digital_takeup(
                 owning_organisation)
 
-            create_dataset_and_module('transactions-by-channel',
-                                      admin_client, uuid,
-                                      session['upload_choice'],
-                                      auto_ids,
-                                      'completion_rate',
-                                      module_config,
-                                      dashboard["slug"])
+            app.logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            app.logger.info(dashboard["slug"])
+            app.logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+
+            data_group, data_set, module = create_dataset_and_module(
+                'transactions-by-channel',
+                admin_client,
+                uuid,
+                session['upload_choice'],
+                auto_ids,
+                'completion_rate',
+                module_config,
+                dashboard["slug"]
+            )
+
+            transform_config = {
+                "type_id": "8e8d973b-3937-430d-944f-56bbeee13af2",
+                "input": {
+                    "data-type": "transactions-by-channel",
+                    "data-group": dashboard["slug"]
+                },
+                "query-parameters": {
+                    "collect": ["count:sum"],
+                    "group_by": ["channel"],
+                    "period": session["upload_choice"]
+                },
+                "options": {
+                    "denominatorMatcher": ".+",
+                    "numeratorMatcher": "(digital)",
+                    "matchingAttribute": "channel",
+                    "valueAttribute": "count:sum"
+                },
+                "output": {
+                    "data-type": "digital-takeup",
+                    "data-group": dashboard["slug"]
+                }
+            }
+            transform = get_or_create_data_set_transform(admin_client,
+                                                         uuid,
+                                                         transform_config,
+                                                         data_set)
+
+            app.logger.info("**********************************************")
+            app.logger.info(transform)
+            app.logger.info("**********************************************")
 
             return redirect(url_for('upload_digital_take_up_data_file',
                                     uuid=uuid))
@@ -161,10 +217,12 @@ def create_dataset_and_module(data_type,
         admin_client, uuid, data_group['name'], data_type, period, auto_ids)
 
     # MODULE
-    create_module_if_not_exists(
+    module = create_module_if_not_exists(
         admin_client, data_group['name'], data_set, module_config, module_type)
 
     session['module'] = module_config['title']
+
+    return data_group, data_set, module
 
 
 def get_module_config_for_digital_takeup(owning_organisation):
@@ -222,8 +280,9 @@ def create_module_if_not_exists(admin_client,
         if module_type['name'] == module_type_name:
             module_config["type_id"] = module_type['id']
     try:
-        admin_client.add_module_to_dashboard(
+        module = admin_client.add_module_to_dashboard(
             data_group, module_config)
+        return module
     except HTTPError as e:
         exists = "Module with this Dashboard and Slug already exists"
         if exists not in e.response.text:
