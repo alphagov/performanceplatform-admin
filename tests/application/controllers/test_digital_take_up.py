@@ -123,6 +123,11 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         'max_age_expected': 1300000
     }
 
+    GET_DASHBOARD_RETURN_VALUE = {
+        'organisation': {'name': 'Cabinet Office'},
+        'slug': 'apply-uk-visa'
+    }
+
     @staticmethod
     def params(options={}):
         params = {
@@ -168,25 +173,17 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'select one or more channel options'))
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    # @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    @patch('application.controllers.digital_take_up.get_or_create_data_group')
-    @patch('application.controllers.digital_take_up.get_or_create_data_set')
-    @patch(
-        'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
     @patch('application.controllers.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_stores_chosen_channel_options_in_the_session(
             self,
             transform_mock,
-            module_mock,
-            data_set_mock,
-            data_group_mock,
+            data_set_module_mock,
             get_dashboard_mock
     ):
 
-        get_dashboard_mock.return_value = {
-            'slug': 'apply-uk-visa'
-        }
+        data_set_module_mock.return_value = {}, {}, {}
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -198,27 +195,15 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'channel_choices', ['digital', 'telephone_human'])
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    # @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    @patch('application.controllers.digital_take_up.get_or_create_data_group')
-    @patch('application.controllers.digital_take_up.get_or_create_data_set')
-    @patch(
-        'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
     @patch('application.controllers.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_redirects_to_download_template_page(self,
                                                  transform_mock,
-                                                 module_mock,
-                                                 data_set_mock,
-                                                 data_group_mock,
+                                                 data_set_module_mock,
                                                  get_dashboard_mock):
 
-        organisation = 'Cabinet Office'
-        get_dashboard_mock.return_value = {
-            'organisation': {'name': organisation},
-            'slug': 'apply-uk-visa'
-        }
-
-        transform_mock.return_value = []
+        data_set_module_mock.return_value = {}, {}, {}
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -250,12 +235,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             get_dashboard_patch,
             client):
 
-        organisation = 'Cabinet Office'
-        get_dashboard_patch.return_value = {
-            'organisation': {'name': organisation},
-            'slug': 'apply-uk-visa'
-        }
-
         get_data_group_patch.return_value = {'name': 'apply-uk-visa'}
 
         get_data_set_patch.return_value = None
@@ -283,26 +262,23 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.get_or_create_data_group')
-    @patch('application.controllers.digital_take_up.get_or_create_data_set')
-    @patch(
-        'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
     @patch('application.controllers.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_set_owning_organisation_in_info(
         self,
         transform_mock,
-        create_module_mock,
-        dataset_mock,
-        datagroup_mock,
+        dataset_module_mock,
         get_dashboard_mock,
         client
     ):
-        organisation = 'Cabinet Office'
+        organisation = 'BIS'
         get_dashboard_mock.return_value = {
             'organisation': {'name': organisation},
             'slug': 'apply-uk-visa'
         }
+
+        dataset_module_mock.return_value = {}, {}, {}
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -312,8 +288,11 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             data=self.params())
 
         # match_equality(not_none()) is used because we dont care what any
-        # arguments are except for the 3rd argument
-        create_module_mock.assert_called_with(
+        # arguments are except for the 7th argument
+        dataset_module_mock.assert_called_with(
+            match_equality(not_none()),
+            match_equality(not_none()),
+            match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
@@ -325,18 +304,13 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.get_or_create_data_group')
-    @patch('application.controllers.digital_take_up.get_or_create_data_set')
-    @patch(
-        'application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
     @patch('application.controllers.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_sets_info_to_unknown_when_no_organisation(
             self,
             transform_mock,
-            module_mock,
-            dataset_mock,
-            datagroup_mock,
+            dataset_module_mock,
             get_dashboard_mock,
             client
     ):
@@ -345,6 +319,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'organisation': None,
             'slug': 'apply-uk-visa'
         }
+
+        dataset_module_mock.return_value = {}, {}, {}
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -355,7 +331,10 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         # match_equality(not_none()) is used because we dont care what any
         # arguments are except for the 3rd argument
-        module_mock.assert_called_with(
+        dataset_module_mock.assert_called_with(
+            match_equality(not_none()),
+            match_equality(not_none()),
+            match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
@@ -411,12 +390,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
-        assert get_data_group_patch.called
-
-        assert get_data_set_patch.called
-
-        assert list_module_types_patch.called
-
         create_data_group_patch.assert_called_with(
             create_data_group_patch.return_value)
 
@@ -438,8 +411,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                     "data_type": "transactions-by-channel",
                     "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
-
-        assert get_transform_patch.called
 
         create_transform_patch.assert_called_with(
             {
@@ -465,6 +436,70 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                 }
             }
         )
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
+    @patch('performanceplatform.client.admin.AdminAPI.create_transform')
+    def test_transform_created(
+            self,
+            create_transform_patch,
+            get_transform_patch,
+            dataset_module_mock,
+            get_dashboard_mock,
+            client
+    ):
+        get_dashboard_mock.return_value = self.GET_DASHBOARD_RETURN_VALUE
+
+        get_transform_patch.return_value = []
+
+        dataset_module_mock.return_value = {
+            'name': 'apply-uk-visa'}, {'name': 'apply_uk_visa_transactions_by_channel'}, {}
+
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
+
+        response = client.post(
+            '/dashboard/dashboard-uuid/digital-take-up/channel-options',
+            data=self.params())
+
+        create_transform_patch.assert_called_with(
+            {
+                "type_id": "8e8d973b-3937-430d-944f-56bbeee13af2",
+                "input": {
+                    "data-type": "transactions-by-channel",
+                    "data-group": "apply-uk-visa"
+                },
+                "query-parameters": {
+                    "collect": ["count:sum"],
+                    "group_by": ["channel"],
+                    "period": "week"
+                },
+                "options": {
+                    "denominatorMatcher": ".+",
+                    "numeratorMatcher": "(digital)",
+                    "matchingAttribute": "channel",
+                    "valueAttribute": "count:sum"
+                },
+                "output": {
+                    "data-type": "digital-takeup",
+                    "data-group": "apply-uk-visa"
+                }
+            }
+        )
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
+    @patch('performanceplatform.client.admin.AdminAPI.create_transform')
+    def test_only_one_transform_created(
+            self,
+            create_transform_patch,
+            get_transform_patch,
+            get_dashboard_mock,
+            client):
+        pass
 
 
 class DownloadTemplatePageTestCase(FlaskAppTestCase):
