@@ -89,6 +89,33 @@ def get_or_create_data_set_transform(
     return transform
 
 
+def get_transform_config_for_digital_takeup(data_group, period):
+    transform_config = {
+        "type_id": "8e8d973b-3937-430d-944f-56bbeee13af2",
+        "input": {
+            "data-type": "transactions-by-channel",
+            "data-group": data_group
+        },
+        "query-parameters": {
+            "collect": ["count:sum"],
+            "group_by": ["channel"],
+            "period": period
+        },
+        "options": {
+            "denominatorMatcher": ".+",
+            "numeratorMatcher": "(digital)",
+            "matchingAttribute": "channel",
+            "valueAttribute": "count:sum"
+        },
+        "output": {
+            "data-type": "digital-takeup",
+            "data-group": data_group
+        }
+    }
+
+    return transform_config
+
+
 @app.route(
     '{0}/<uuid>/digital-take-up/channel-options'.format(DASHBOARD_ROUTE),
     methods=['GET', 'POST'])
@@ -114,10 +141,6 @@ def channel_options(admin_client, uuid):
             module_config = get_module_config_for_digital_takeup(
                 owning_organisation)
 
-            app.logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-            app.logger.info(dashboard["slug"])
-            app.logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-
             data_group, data_set, module = create_dataset_and_module(
                 'transactions-by-channel',
                 admin_client,
@@ -129,36 +152,13 @@ def channel_options(admin_client, uuid):
                 dashboard["slug"]
             )
 
-            transform_config = {
-                "type_id": "8e8d973b-3937-430d-944f-56bbeee13af2",
-                "input": {
-                    "data-type": "transactions-by-channel",
-                    "data-group": dashboard["slug"]
-                },
-                "query-parameters": {
-                    "collect": ["count:sum"],
-                    "group_by": ["channel"],
-                    "period": session["upload_choice"]
-                },
-                "options": {
-                    "denominatorMatcher": ".+",
-                    "numeratorMatcher": "(digital)",
-                    "matchingAttribute": "channel",
-                    "valueAttribute": "count:sum"
-                },
-                "output": {
-                    "data-type": "digital-takeup",
-                    "data-group": dashboard["slug"]
-                }
-            }
+            transform_config = get_transform_config_for_digital_takeup(
+                dashboard["slug"], session["upload_choice"])
+
             transform = get_or_create_data_set_transform(admin_client,
                                                          uuid,
                                                          transform_config,
                                                          data_set)
-
-            app.logger.info("**********************************************")
-            app.logger.info(transform)
-            app.logger.info("**********************************************")
 
             return redirect(url_for('upload_digital_take_up_data_file',
                                     uuid=uuid))
