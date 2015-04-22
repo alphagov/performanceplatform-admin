@@ -352,12 +352,11 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
-    @patch('performanceplatform.client.admin.AdminAPI.create_transform')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set_transform')
     def test_create_digital_take_up_module_in_stagecraft(
             self,
-            create_transform_patch,
-            get_transform_patch,
+            transform_patch,
             add_module_patch,
             list_module_types_patch,
             create_data_set_patch,
@@ -380,8 +379,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         list_module_types_patch.return_value = \
             self.LIST_MODULE_TYPES_RETURN_VALUE
-
-        get_transform_patch.return_value = []
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -411,6 +408,35 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                     "data_type": "transactions-by-channel",
                     "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
+    @patch('performanceplatform.client.admin.AdminAPI.create_transform')
+    def test_transform_created(
+            self,
+            create_transform_patch,
+            get_transform_patch,
+            dataset_module_mock,
+            get_dashboard_mock,
+            client
+    ):
+        get_dashboard_mock.return_value = self.GET_DASHBOARD_RETURN_VALUE
+
+        get_transform_patch.return_value = []
+
+        dataset_module_mock.return_value = \
+            {'name': 'apply-uk-visa'}, \
+            {'name': 'apply_uk_visa_transactions_by_channel'}, \
+            {}
+
+        with self.client.session_transaction() as session:
+            session['upload_choice'] = 'week'
+
+        response = client.post(
+            '/dashboard/dashboard-uuid/digital-take-up/channel-options',
+            data=self.params())
 
         create_transform_patch.assert_called_with(
             {
@@ -442,7 +468,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('application.controllers.digital_take_up.create_dataset_and_module')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
     @patch('performanceplatform.client.admin.AdminAPI.create_transform')
-    def test_transform_created(
+    def test_only_one_transform_created(
             self,
             create_transform_patch,
             get_transform_patch,
@@ -452,10 +478,41 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     ):
         get_dashboard_mock.return_value = self.GET_DASHBOARD_RETURN_VALUE
 
-        get_transform_patch.return_value = []
+        get_transform_patch.return_value = {
+            "id": "abc1234",
+            "query-parameters": {
+                "collect": [
+                    "count:sum"
+                ],
+                "group_by": [
+                    "channel"
+                ],
+                "period": "week"
+            },
+            "output": {
+                "data-group": "apply-uk-visa",
+                "data-type": "digital-takeup"
+            },
+            "input": {
+                "data-group": "apply-uk-visa",
+                "data-type": "transactions-by-channel"
+            },
+            "type": {
+                "function": "backdrop.transformers.tasks.rate.compute",
+                "id": "8e8d973b-3937-430d-944f-56bbeee13af2"
+            },
+            "options": {
+                "denominatorMatcher": ".+",
+                "numeratorMatcher": "(digital)",
+                "matchingAttribute": "channel",
+                "valueAttribute": "count:sum"
+            }
+        }
 
-        dataset_module_mock.return_value = {
-            'name': 'apply-uk-visa'}, {'name': 'apply_uk_visa_transactions_by_channel'}, {}
+        dataset_module_mock.return_value = \
+            {'name': 'apply-uk-visa'}, \
+            {'name': 'apply_uk_visa_transactions_by_channel'}, \
+            {}
 
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
@@ -464,42 +521,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
-        create_transform_patch.assert_called_with(
-            {
-                "type_id": "8e8d973b-3937-430d-944f-56bbeee13af2",
-                "input": {
-                    "data-type": "transactions-by-channel",
-                    "data-group": "apply-uk-visa"
-                },
-                "query-parameters": {
-                    "collect": ["count:sum"],
-                    "group_by": ["channel"],
-                    "period": "week"
-                },
-                "options": {
-                    "denominatorMatcher": ".+",
-                    "numeratorMatcher": "(digital)",
-                    "matchingAttribute": "channel",
-                    "valueAttribute": "count:sum"
-                },
-                "output": {
-                    "data-type": "digital-takeup",
-                    "data-group": "apply-uk-visa"
-                }
-            }
-        )
-
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
-    @patch('performanceplatform.client.admin.AdminAPI.create_transform')
-    def test_only_one_transform_created(
-            self,
-            create_transform_patch,
-            get_transform_patch,
-            get_dashboard_mock,
-            client):
-        pass
+        assert not create_transform_patch.called
 
 
 class DownloadTemplatePageTestCase(FlaskAppTestCase):
