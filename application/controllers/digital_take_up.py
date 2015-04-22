@@ -147,7 +147,7 @@ def channel_options(admin_client, uuid):
                 uuid,
                 session['upload_choice'],
                 auto_ids,
-                'completion_rate',
+                'single_timeseries',
                 module_config,
                 dashboard["slug"]
             )
@@ -237,27 +237,28 @@ def get_module_config_for_digital_takeup(owning_organisation):
                  "percentage of completed applications that are made "
                  "through a digital channel versus non-digital channels."],
         "options": {
-            "value-attribute": "count:sum",
-            "axis-period": "month",
-            "axes": {"y": [{
-                               "format": "percent",
-                               "key": "completion",
-                               "label": "Digital take-up"
-            }],
+            "axes": {
                 "x": {
-                "format": "date",
-                "key": ["_start_at", "_end_at"],
-                "label": "Date"
-            }
+                    "format": "date",
+                    "key": [
+                        "_start_at",
+                        "_end_at"
+                    ],
+                    "label": "Date"
+                },
+                "y": [
+                    {
+                        "label": "Completion percentage"
+                    }
+                ]
             },
-            "numerator-matcher": "(digital)",
-            "denominator-matcher": ".+",
-            "matching-attribute": "channel"
+            "format-options": {
+                "type": "percent"
+            },
+            "value-attribute": "rate"
         },
         "query_parameters": {
-            "collect": ["count:sum"],
-            "group_by": ["channel"],
-            "period": session['upload_choice']
+            "sort_by": "_timestamp:ascending"
         },
         "order": 2
     }
@@ -279,6 +280,7 @@ def create_module_if_not_exists(admin_client,
     for module_type in module_types:
         if module_type['name'] == module_type_name:
             module_config["type_id"] = module_type['id']
+
     try:
         module = admin_client.add_module_to_dashboard(
             data_group, module_config)
