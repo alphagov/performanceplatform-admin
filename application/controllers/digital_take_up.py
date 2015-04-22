@@ -132,8 +132,6 @@ def channel_options(admin_client, uuid):
             session['channel_choices'] = [
                 key for key, val in form.data.items() if val]
 
-            auto_ids = '_timestamp, period, channel'
-
             dashboard = admin_client.get_dashboard(uuid)
             owning_organisation = (dashboard.get('organisation') or {}).get(
                 "name", 'Unknown')
@@ -146,7 +144,6 @@ def channel_options(admin_client, uuid):
                 admin_client,
                 uuid,
                 session['upload_choice'],
-                auto_ids,
                 'single_timeseries',
                 module_config,
                 dashboard["slug"]
@@ -195,7 +192,6 @@ def create_dataset_and_module(data_type,
                               admin_client,
                               uuid,
                               period,
-                              auto_ids,
                               module_type,
                               module_config,
                               data_group_name):
@@ -206,10 +202,10 @@ def create_dataset_and_module(data_type,
 
     # DATA SET
     input_data_set = get_or_create_data_set(
-        admin_client, uuid, data_group['name'], data_type, period, auto_ids)
+        admin_client, uuid, data_group['name'], data_type, period)
 
     output_data_set = get_or_create_data_set(
-        admin_client, uuid, data_group['name'], 'digital-takeup', period, auto_ids)
+        admin_client, uuid, data_group['name'], 'digital-takeup', period)
 
     transform_config = get_transform_config_for_digital_takeup(
         data_group_name, session["upload_choice"])
@@ -294,10 +290,10 @@ def create_module_if_not_exists(admin_client,
 
 
 def get_or_create_data_set(admin_client, uuid, data_group, data_type,
-                           period, auto_ids):
+                           period):
 
     data_set_config = get_data_set_config(data_group, data_type,
-                                          period, auto_ids)
+                                          period)
 
     try:
         data_set = admin_client.get_data_set(
@@ -315,7 +311,7 @@ def get_or_create_data_set(admin_client, uuid, data_group, data_type,
     return data_set
 
 
-def get_data_set_config(data_group_name, data_type, period, auto_ids):
+def get_data_set_config(data_group_name, data_type, period):
     if period == 'week':
         max_age_expected = 1300000
     else:
@@ -326,7 +322,6 @@ def get_data_set_config(data_group_name, data_type, period, auto_ids):
         'data_group': data_group_name,
         'bearer_token': generate_bearer_token(),
         'upload_format': 'csv',
-        'auto_ids': auto_ids,
         'max_age_expected': max_age_expected
     }
     return data_set_config

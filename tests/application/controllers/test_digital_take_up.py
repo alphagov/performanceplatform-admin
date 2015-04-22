@@ -94,7 +94,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         'data_group': 'apply-uk-visa',
         'bearer_token': 'abc123',
         'upload_format': 'csv',
-        'auto_ids': '_timestamp, period, channel',
         'max_age_expected': 1300000
     }
 
@@ -119,7 +118,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         'data_group': 'apply-uk-visa',
         'bearer_token': 'abc123',
         'upload_format': 'csv',
-        'auto_ids': '_timestamp, period, channel',
         'max_age_expected': 1300000
     }
 
@@ -294,7 +292,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
-            match_equality(not_none()),
             match_equality(has_entries(
                 {'info': has_item(contains_string(organisation))}
             )),
@@ -336,11 +333,10 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             match_equality(not_none()),
             match_equality(not_none()),
             match_equality(not_none()),
-            match_equality(not_none()),
             match_equality(has_entries(
                 {'info': has_item(contains_string('Unknown'))}
             )),
-            match_equality(not_none())
+            match_equality(not_none()),
         )
 
     @signed_in(permissions=['signin', 'dashboard'])
@@ -394,7 +390,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                 'data_type': 'digital-takeup',
                 'data_group': 'apply-uk-visa',
                 'upload_format': 'csv',
-                'auto_ids': '_timestamp, period, channel',
                 'max_age_expected': 1300000
             }
         )))
