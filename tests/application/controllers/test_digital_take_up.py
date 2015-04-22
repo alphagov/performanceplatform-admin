@@ -254,10 +254,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         add_module_patch.assert_called_with(
             'apply-uk-visa', match_equality(has_entries(
                 {
-                    "data_set": 'apply_uk_visa_transactions_by_channel',
                     "data_group": "apply-uk-visa",
-                    "data_type": "transactions-by-channel",
-                    "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
+                    "data_type": "digital-takeup",
+                    "type_id": "36546562-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
 
     @signed_in(permissions=['signin', 'dashboard'])
@@ -392,7 +391,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         create_data_set_patch.assert_called_with(match_equality(has_entries(
             {
-                'data_type': 'transactions-by-channel',
+                'data_type': 'digital-takeup',
                 'data_group': 'apply-uk-visa',
                 'upload_format': 'csv',
                 'auto_ids': '_timestamp, period, channel',
@@ -403,22 +402,26 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         add_module_patch.assert_called_with(
             'apply-uk-visa', match_equality(has_entries(
                 {
-                    "data_set": 'apply_uk_visa_transactions_by_channel',
                     "data_group": "apply-uk-visa",
-                    "data_type": "transactions-by-channel",
-                    "type_id": "12323445-b2bd-44a9-b94a-e3cfc472ddf4"
+                    "data_type": "digital-takeup",
+                    "type_id": "36546562-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    @patch('application.controllers.digital_take_up.get_or_create_data_group')
+    @patch('application.controllers.digital_take_up.'
+           'get_or_create_data_set')
+    @patch('application.controllers.digital_take_up.create_module_if_not_exists')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
     @patch('performanceplatform.client.admin.AdminAPI.create_transform')
     def test_transform_created(
             self,
             create_transform_patch,
             get_transform_patch,
-            dataset_module_mock,
+            create_module_patch,
+            data_set_patch,
+            data_group_patch,
             get_dashboard_mock,
             client
     ):
@@ -426,7 +429,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
         get_transform_patch.return_value = []
 
-        dataset_module_mock.return_value = \
+        create_module_patch.return_value = \
             {'name': 'apply-uk-visa'}, \
             {'name': 'apply_uk_visa_transactions_by_channel'}, \
             {}
@@ -447,12 +450,12 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                 },
                 "query-parameters": {
                     "collect": ["count:sum"],
-                    "group_by": ["channel"],
+                    "group_by": "channel",
                     "period": "week"
                 },
                 "options": {
                     "denominatorMatcher": ".+",
-                    "numeratorMatcher": "(digital)",
+                    "numeratorMatcher": "^digital$",
                     "matchingAttribute": "channel",
                     "valueAttribute": "count:sum"
                 },

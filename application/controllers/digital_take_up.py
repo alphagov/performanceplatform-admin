@@ -98,12 +98,12 @@ def get_transform_config_for_digital_takeup(data_group, period):
         },
         "query-parameters": {
             "collect": ["count:sum"],
-            "group_by": ["channel"],
+            "group_by": "channel",
             "period": period
         },
         "options": {
             "denominatorMatcher": ".+",
-            "numeratorMatcher": "(digital)",
+            "numeratorMatcher": "^digital$",
             "matchingAttribute": "channel",
             "valueAttribute": "count:sum"
         },
@@ -151,14 +151,6 @@ def channel_options(admin_client, uuid):
                 module_config,
                 dashboard["slug"]
             )
-
-            transform_config = get_transform_config_for_digital_takeup(
-                dashboard["slug"], session["upload_choice"])
-
-            transform = get_or_create_data_set_transform(admin_client,
-                                                         uuid,
-                                                         transform_config,
-                                                         data_set)
 
             return redirect(url_for('upload_digital_take_up_data_file',
                                     uuid=uuid))
@@ -213,16 +205,27 @@ def create_dataset_and_module(data_type,
         admin_client, data_group_name, data_type, uuid)
 
     # DATA SET
-    data_set = get_or_create_data_set(
+    input_data_set = get_or_create_data_set(
         admin_client, uuid, data_group['name'], data_type, period, auto_ids)
+
+    output_data_set = get_or_create_data_set(
+        admin_client, uuid, data_group['name'], 'digital-takeup', period, auto_ids)
+
+    transform_config = get_transform_config_for_digital_takeup(
+        data_group_name, session["upload_choice"])
+
+    transform = get_or_create_data_set_transform(admin_client,
+                                                 uuid,
+                                                 transform_config,
+                                                 input_data_set)
 
     # MODULE
     module = create_module_if_not_exists(
-        admin_client, data_group['name'], data_set, module_config, module_type)
+        admin_client, data_group['name'], 'digital-takeup', module_config, module_type)
 
     session['module'] = module_config['title']
 
-    return data_group, data_set, module
+    return data_group, output_data_set, module
 
 
 def get_module_config_for_digital_takeup(owning_organisation):
@@ -267,13 +270,12 @@ def get_module_config_for_digital_takeup(owning_organisation):
 
 def create_module_if_not_exists(admin_client,
                                 data_group,
-                                data_set,
+                                data_type,
                                 module_config,
                                 module_type_name):
     module_config.update({
-        "data_set": data_set["name"],
         "data_group": data_group,
-        "data_type": data_set["data_type"]
+        "data_type": data_type
     })
 
     module_types = admin_client.list_module_types()
