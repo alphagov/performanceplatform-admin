@@ -139,14 +139,15 @@ def channel_options(admin_client, uuid):
             module_config = get_module_config_for_digital_takeup(
                 owning_organisation)
 
-            data_group, data_set, module = create_dataset_and_module(
+            create_dataset_and_module(
                 'transactions-by-channel',
                 admin_client,
                 uuid,
                 session['upload_choice'],
                 'single_timeseries',
                 module_config,
-                dashboard["slug"]
+                dashboard["slug"],
+                'digital-takeup'
             )
 
             return redirect(url_for('upload_digital_take_up_data_file',
@@ -188,40 +189,45 @@ def make_csv():
     return csv
 
 
-def create_dataset_and_module(data_type,
+def create_dataset_and_module(input_data_type,
                               admin_client,
                               uuid,
                               period,
                               module_type,
                               module_config,
-                              data_group_name):
+                              data_group_name,
+                              output_data_type=None):
 
     # DATA GROUP
     data_group = get_or_create_data_group(
-        admin_client, data_group_name, data_type, uuid)
+        admin_client, data_group_name, input_data_type, uuid)
 
     # DATA SET
     input_data_set = get_or_create_data_set(
-        admin_client, uuid, data_group['name'], data_type, period)
+        admin_client, uuid, data_group['name'], input_data_type, period)
 
-    output_data_set = get_or_create_data_set(
-        admin_client, uuid, data_group['name'], 'digital-takeup', period)
+    if output_data_type:
+        output_data_set = get_or_create_data_set(
+            admin_client, uuid, data_group['name'], output_data_type, period)
 
-    transform_config = get_transform_config_for_digital_takeup(
-        data_group_name, session["upload_choice"])
+        transform_config = get_transform_config_for_digital_takeup(
+            data_group_name, session["upload_choice"])
 
-    transform = get_or_create_data_set_transform(admin_client,
-                                                 uuid,
-                                                 transform_config,
-                                                 input_data_set)
+        transform = get_or_create_data_set_transform(admin_client,
+                                                     uuid,
+                                                     transform_config,
+                                                     input_data_set)
+        input_data_type = output_data_type
 
     # MODULE
     module = create_module_if_not_exists(
-        admin_client, data_group['name'], 'digital-takeup', module_config, module_type)
+        admin_client,
+        data_group['name'],
+        input_data_type,
+        module_config,
+        module_type)
 
     session['module'] = module_config['title']
-
-    return data_group, output_data_set, module
 
 
 def get_module_config_for_digital_takeup(owning_organisation):

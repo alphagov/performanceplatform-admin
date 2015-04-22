@@ -295,6 +295,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             match_equality(has_entries(
                 {'info': has_item(contains_string(organisation))}
             )),
+            match_equality(not_none()),
             match_equality(not_none())
         )
 
@@ -337,6 +338,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                 {'info': has_item(contains_string('Unknown'))}
             )),
             match_equality(not_none()),
+            match_equality(not_none())
         )
 
     @signed_in(permissions=['signin', 'dashboard'])
@@ -407,7 +409,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('application.controllers.digital_take_up.get_or_create_data_group')
     @patch('application.controllers.digital_take_up.'
            'get_or_create_data_set')
-    @patch('application.controllers.digital_take_up.create_module_if_not_exists')
+    @patch(
+        'application.controllers.digital_take_up.create_module_if_not_exists')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
     @patch('performanceplatform.client.admin.AdminAPI.create_transform')
     def test_transform_created(
