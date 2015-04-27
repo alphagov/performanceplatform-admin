@@ -10,7 +10,7 @@ from flask import (
 )
 
 from application import app
-from application.controllers.upload import response, upload_file_and_get_status
+from application.controllers.upload import response
 from application.forms import UploadOptionsForm, ChannelOptionsForm
 from application.helpers import (
     base_template_context,
@@ -27,9 +27,12 @@ from application.utils.datetimeutil import (
     start_of_month,
     to_datetime
 )
+from application.controllers.builder.common import(
+    upload_data_and_respond)
 
 
 DASHBOARD_ROUTE = '/dashboard'
+DATA_TYPE = 'transactions-by-channel'
 
 
 @app.route(
@@ -54,7 +57,7 @@ def upload_options(admin_client, uuid):
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
     return render_template(
-        'digital_take_up/upload-options.html',
+        'builder/digital_take_up/upload-options.html',
         uuid=uuid,
         upload_options=[option for option in form.upload_option],
         form=form,
@@ -71,7 +74,7 @@ def api_get_in_touch(admin_client, uuid):
         'user': session['oauth_user']
     })
     return render_template(
-        'digital_take_up/api-get-in-touch.html',
+        'builder/digital_take_up/api-get-in-touch.html',
         email=app.config['NOTIFICATIONS_EMAIL'],
         uuid=uuid,
         **template_context)
@@ -86,7 +89,7 @@ def get_or_create_data_set_transform(
         return response(500, transform_config, data_set,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
+                        url_for('upload_digital_take_up',
                                 uuid=uuid))
 
     if not transform:
@@ -163,13 +166,13 @@ def channel_options(admin_client, uuid):
                 'digital-takeup'
             )
 
-            return redirect(url_for('upload_digital_take_up_data_file',
+            return redirect(url_for('upload_digital_take_up',
                                     uuid=uuid))
         else:
             error = 'Please select one or more channel options.'
             flash(error, 'danger')
     return render_template(
-        'digital_take_up/channel-options.html',
+        'builder/digital_take_up/channel-options.html',
         uuid=uuid,
         form=form,
         **template_context)
@@ -220,21 +223,21 @@ def create_dataset_and_module(input_data_type,
         admin_client, uuid, data_group['name'], input_data_type, period)
 
     if output_data_type:
-        output_data_set = get_or_create_data_set(
+        get_or_create_data_set(
             admin_client, uuid, data_group['name'], output_data_type, period)
 
         transform_config = get_transform_config_for_digital_takeup(
             data_group_name, session["upload_choice"])
 
-        transform = get_or_create_data_set_transform(admin_client,
-                                                     uuid,
-                                                     transform_config,
-                                                     input_data_set,
-                                                     "rate")
+        get_or_create_data_set_transform(admin_client,
+                                         uuid,
+                                         transform_config,
+                                         input_data_set,
+                                         "rate")
         input_data_type = output_data_type
 
     # MODULE
-    module = create_module_if_not_exists(
+    create_module_if_not_exists(
         admin_client,
         data_group['name'],
         input_data_type,
@@ -297,7 +300,7 @@ def create_module_if_not_exists(admin_client,
     module_types = admin_client.list_module_types()
     for module_type in module_types:
         if module_type['name'] == module_type_name:
-            module_config["type_id"] = module_type['id']
+            module_config['type_id'] = module_type['id']
 
     try:
         module = admin_client.add_module_to_dashboard(
@@ -322,7 +325,7 @@ def get_or_create_data_set(admin_client, uuid, data_group, data_type,
         return response(500, data_group, data_type,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
+                        url_for('upload_digital_take_up',
                                 uuid=uuid))
 
     if not data_set:
@@ -356,7 +359,7 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
         return response(500, data_group_config, data_type,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
+                        url_for('upload_digital_take_up',
                                 uuid=uuid))
     if not data_group:
         data_group = admin_client.create_data_group(data_group_config)
@@ -368,8 +371,7 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
            methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_digital_take_up_data_file(admin_client, uuid):
-    DATA_TYPE_NAME = 'transactions-by-channel'
+def upload_digital_take_up(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
@@ -379,9 +381,9 @@ def upload_digital_take_up_data_file(admin_client, uuid):
         upload_data = session.pop('upload_data')
         template_context['upload_data'] = upload_data
 
-    return render_template('digital_take_up/upload.html',
+    return render_template('builder/digital_take_up/upload.html',
                            uuid=uuid,
-                           data_type=DATA_TYPE_NAME,
+                           data_type=DATA_TYPE,
                            **template_context)
 
 
@@ -389,41 +391,23 @@ def upload_digital_take_up_data_file(admin_client, uuid):
            methods=['POST'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_data_file_to_dashboard(admin_client, uuid):
-    DATA_TYPE_NAME = 'transactions-by-channel'
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user']
-    })
-
+def upload_digital_take_up_file(admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
 
-    try:
-        data_set = admin_client.get_data_set(data_group, DATA_TYPE_NAME)
-    except HTTPError as err:
-        return response(500, data_group, DATA_TYPE_NAME,
-                        ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
-                        url_for('upload_data_file_to_dashboard', uuid=uuid))
-
-    messages, status = upload_file_and_get_status(data_set)
-
-    if messages:
-        return response(status, data_group, DATA_TYPE_NAME, messages,
-                        url_for('upload_digital_take_up_data_file',
-                                uuid=uuid))
-
-    return response(status, data_group, DATA_TYPE_NAME, messages,
-                    url_for('upload_digital_take_up_data_success',
-                            uuid=uuid))
+    return upload_data_and_respond(
+        admin_client,
+        DATA_TYPE,
+        data_group,
+        uuid,
+        'digital_take_up')
 
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload/success',
-           methods=['GET', 'POST'])
+           methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_digital_take_up_data_success(admin_client, uuid):
+def upload_digital_take_up_success(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
@@ -442,6 +426,6 @@ def upload_digital_take_up_data_success(admin_client, uuid):
         'upload_period': session['upload_choice']
     }))
 
-    return render_template('digital_take_up/upload_success.html',
+    return render_template('builder/digital_take_up/upload_success.html',
                            uuid=uuid,
                            **template_context)

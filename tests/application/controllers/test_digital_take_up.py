@@ -216,8 +216,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'select one or more channel options'))
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
+           'create_dataset_and_module')
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_stores_chosen_channel_options_in_the_session(
             self,
@@ -238,8 +239,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             'channel_choices', ['digital', 'telephone_human'])
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
+           'create_dataset_and_module')
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_redirects_to_download_template_page(self,
                                                  transform_mock,
@@ -263,7 +265,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set_transform')
     @patch('performanceplatform.client.admin.AdminAPI.get_transform_types')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
@@ -292,7 +294,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -306,8 +308,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
+           'create_dataset_and_module')
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_set_owning_organisation_in_info(
         self,
@@ -327,7 +330,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -348,8 +351,9 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
+           'create_dataset_and_module')
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set_transform')
     def test_sets_info_to_unknown_when_no_organisation(
             self,
@@ -369,7 +373,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -396,7 +400,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
     @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set_transform')
     @patch('performanceplatform.client.admin.AdminAPI.get_transform_types')
     def test_create_digital_take_up_module_in_stagecraft(
@@ -429,7 +433,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -455,11 +459,13 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.get_or_create_data_group')
-    @patch('application.controllers.digital_take_up.'
+    @patch('application.controllers.builder.digital_take_up.'
+           'get_or_create_data_group')
+    @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_set')
     @patch(
-        'application.controllers.digital_take_up.create_module_if_not_exists')
+        'application.controllers.builder.digital_take_up.'
+        'create_module_if_not_exists')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
     @patch('performanceplatform.client.admin.AdminAPI.create_transform')
     @patch('performanceplatform.client.admin.AdminAPI.get_transform_types')
@@ -491,7 +497,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -522,7 +528,8 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
-    @patch('application.controllers.digital_take_up.create_dataset_and_module')
+    @patch('application.controllers.builder.digital_take_up.'
+           'create_dataset_and_module')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set_transforms')
     @patch('performanceplatform.client.admin.AdminAPI.create_transform')
     def test_only_one_transform_created(
@@ -574,7 +581,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -732,7 +739,7 @@ class UploadPageTestCase(FlaskAppTestCase):
         self.upload_spreadsheet_mock.return_value = \
             (['Message 1', 'Message 2'], False)
 
-        response = client.post(self.upload_url, data=self.file_data)
+        client.post(self.upload_url, data=self.file_data)
 
         assert_that(
             self.get_from_session('upload_data')['payload'],
