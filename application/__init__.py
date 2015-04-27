@@ -1,12 +1,14 @@
+from os import getenv, path
+
 from flask import Flask
 from flask.ext.scss import Scss
 from flask_wtf.csrf import CsrfProtect
-from os import getenv, path
 from raven.contrib.flask import Sentry
 from redis import Redis
 
 from application.core import log_handler
 from application.redis_session import RedisSessionInterface
+
 
 app = Flask(__name__)
 
@@ -38,7 +40,8 @@ import application.controllers.admin.dashboards
 import application.controllers.registrations
 import application.controllers.dashboards
 import application.controllers.user_satisfaction
-import application.controllers.digital_take_up
+import application.controllers.builder.digital_take_up
+import application.controllers.builder.cost_per_transaction
 import application.controllers.admin.transforms
 import application.controllers.upload
 
