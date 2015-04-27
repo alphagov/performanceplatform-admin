@@ -1,5 +1,8 @@
+import random
+import string
+from werkzeug.utils import redirect
 from application import app
-from flask import abort, session, redirect, request, url_for
+from flask import abort, session, redirect, request, url_for, flash
 from functools import wraps
 from os import getenv
 from performanceplatform.client.admin import AdminAPI
@@ -196,3 +199,27 @@ def to_error_list(form_errors):
 @app.template_filter('format_status')
 def format_status(s):
     return s.title().replace('-', ' ')
+
+
+def generate_bearer_token():
+    return ''.join(random.choice(string.lowercase + string.digits)
+                   for i in range(64))
+
+
+def redirect_if_module_exists(module_name):
+    def wrap(func):
+        @wraps(func)
+        def check_and_redirect(*args, **kwargs):
+            admin_client = kwargs['admin_client']
+            uuid = kwargs['uuid']
+            dashboard_dict = admin_client.get_dashboard(uuid)
+            if "modules" in dashboard_dict.keys():
+                data_types = [module["data_type"]
+                              for module in dashboard_dict["modules"]]
+                if module_name in data_types:
+                    flash("Module already exists", 'info')
+                    return redirect(url_for(
+                        'dashboard_hub', uuid=uuid))
+            return func(*args, **kwargs)
+        return check_and_redirect
+    return wrap
