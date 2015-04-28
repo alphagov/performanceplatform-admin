@@ -131,6 +131,18 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_dashboard_is_updated(
+            self, mock_update_dashboard, mock_get_dashboard):
+        data = self.params()
+        self.client.post('/dashboards/dashboard-uuid', data=data)
+        post_json = mock_update_dashboard.call_args[0][1]
+        assert_that(
+            mock_update_dashboard.call_args[0][0], equal_to('dashboard-uuid'))
+        assert_that(post_json, has_entries(data))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
     def test_renders_a_section_for_digital_take_up(
             self, mock_get_dashboard):
         response = self.client.get('/dashboards/dashboard-uuid')
@@ -146,38 +158,34 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
     def test_advises_digital_take_up_has_been_added(self, mock_get_dashboard):
-
-        mock_get_dashboard.return_value = {
-            'id': 'dashboard-uuid',
-            'title': 'A dashboard',
-            'description': 'All about this dashboard',
-            'slug': 'valid-slug',
-            'owning_organisation': 'organisation-uuid',
-            'dashboard_type': 'transaction',
-            'customer_type': 'Business',
-            'strapline': 'Dashboard',
-            'business_model': 'Department budget',
-            'published': False,
-            'status': 'unpublished',
-            'modules': [{
-                'data_type': 'digital-takeup'
-            }]
-        }
-
+        mock_get_dashboard.return_value = dashboard_data(
+            {'modules': [{'data_type': 'user-satisfaction-score'}]})
         response = self.client.get('/dashboards/dashboard-uuid')
         assert_that(response.data, contains_string('Data successfully set up'))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
-    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
-    def test_dashboard_is_updated(
-            self, mock_update_dashboard, mock_get_dashboard):
-        data = self.params()
-        self.client.post('/dashboards/dashboard-uuid', data=data)
-        post_json = mock_update_dashboard.call_args[0][1]
+    def test_renders_a_section_for_user_satisfaction(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
         assert_that(
-            mock_update_dashboard.call_args[0][0], equal_to('dashboard-uuid'))
-        assert_that(post_json, has_entries(data))
+            response.data, contains_string('<h1>User satisfaction</h1>'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    def test_renders_a_link_to_add_user_satisfaction(
+            self, mock_get_dashboard):
+        response = self.client.get('/dashboards/dashboard-uuid')
+        url = '/dashboard-uuid/user-satisfaction/add'
+        assert_that(response.data, contains_string(url))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    def test_advises_user_satisfaction_has_been_added(
+            self, mock_get_dashboard):
+        mock_get_dashboard.return_value = dashboard_data(
+            {'modules': [{'data_type': 'user-satisfaction-score'}]})
+        response = self.client.get('/dashboards/dashboard-uuid')
+        assert_that(response.data, contains_string('Data successfully set up'))
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())

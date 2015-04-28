@@ -53,6 +53,32 @@
     <section class="dashboard-data-item">
       <div class="row">
         <header class="col-md-3">
+          <h1>User satisfaction</h1>
+        </header>
+
+
+        {% if "user-satisfaction-score" in modules %}
+          <p class="advisory col-sm-12"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Data successfully set up</p>
+        {% else %}
+          <div class="col-md-5">
+            <p>
+              To calculate your user satisfaction you will need:
+            </p>
+
+            <ul>
+              <li>a feedback page on GOV.UK</li>
+            </ul>
+
+            <p><a href="https://www.gov.uk/service-manual/measurement/user-satisfaction.html">Find out more about feedback pages and user satisfaction</a></p>
+            <p><a href="{{ url_for('add_user_satisfaction', uuid=uuid) }}" class="btn btn-info">Add user satisfaction</a></p>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dashboard-data-item">
+      <div class="row">
+        <header class="col-md-3">
           <h1>Digital take-up</h1>
         </header>
 

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<section>
+  <header class="form">
+    <span class="hint">Add user satisfaction</span>
+    <div class="row">
+      <h1 class="col-md-6">Help us locate your data</h1>
+    </div>
+    <div class="row">
+      <p class="col-md-6 small">
+        To add user satisfaction data to your dashboard we require you to have a
+        done page with a user satisfaction survey. We use this to automatically
+        retrieve your user satisfaction data.
+      </p>
+    </div>
+  </header>
+
+  <form method="POST" action="{{ url_for('add_user_satisfaction', uuid=uuid) }}" role="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <div class="row">
+      <div class="form-group col-md-5">
+        {{ form.done_page_url.label }}
+        <p class="hint">eg https://www.gov.uk/done/apply-carers-allowance</p>
+        {{ form.done_page_url(class='form-control') }}
+      </div>
+    </div>
+
+    <input type="submit" class="btn btn-success" value="Submit done page URL" name="submit-done-page-url">
+  </form>
+</section>
+
+{% endblock %}

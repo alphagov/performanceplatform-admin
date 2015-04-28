@@ -237,6 +237,15 @@ class AboutYourServiceForm(FlaskWTFForm):
         validators=[Required(message='Service description cannot be blank')])
 
 
+class DonePageURLForm(FlaskWTFForm):
+    done_page_url = TextField(
+        'Done page URL',
+        validators=[
+            URL(message='Done page URL format is invalid'),
+            Required(message='Done page URL cannot be blank')
+        ])
+
+
 class DashboardHubForm(FlaskWTFForm):
     title = TextField(
         'Dashboard title',

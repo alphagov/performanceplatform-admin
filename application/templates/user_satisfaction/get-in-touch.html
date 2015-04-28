@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+  <div class="col-sm-8 col-md-6">
+    <div class="confirmation-box">
+      <h1 class="h3">
+        <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+        Done page not found
+      </h1>
+      <p>
+        Please email
+        {{ email }}
+      </p>
+    </div>
+  </div>
+</div>
+
+<h2 class="h4">What happens next</h2>
+
+<div class="row">
+  <p class="col-sm-8 col-md-6">
+    One of our team will respond to your email
+    and work with you to configure your done page.
+  </p>
+</div>
+
+<a href="{{ url_for('dashboard_hub', uuid=uuid) }}">Back to dashboard</a>
+
+{% endblock %}
