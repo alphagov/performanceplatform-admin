@@ -1,1 +1,17 @@
-{}
+{
+  "query": {},
+  "visualisation": {
+    "axes": {
+        "y": [
+            {
+                "label": "Percentage digital take-up"
+            }
+        ]
+    }, 
+    "axis-period": "quarter", 
+    "format": {
+        "type": "percent"
+    }, 
+    "value-attribute": "digital_takeup"
+  }
+}

@@ -4,13 +4,16 @@
     $('.js-module-type-selector').on('change', function () {
       var type = $(this).find('[value="' + $(this).val() + '"]').text(),
         $queryParams = $(this).closest('.module').find('.js-query-parameters');
+        $visualisationParams = $(this).closest('.module').find('.js-visualisation-parameters');
 
       $.getJSON('/static/json/' + type + '.json')
         .done(function (data) {
-          $queryParams.val(JSON.stringify(data, null, '\t'));
+          $queryParams.val(JSON.stringify(data['query'], null, '\t'));
+          $visualisationParams.val(JSON.stringify(data['visualisation'], null, '\t'));
         })
         .fail(function() {
           $queryParams.val('{}');
+          $visualisationParams.val('{}');
         });
     });
   }

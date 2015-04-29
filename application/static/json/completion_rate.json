@@ -1,10 +1,36 @@
 {
-  "duration": 52,
-  "collect": [
-    "count:sum"
-  ],
-  "group_by": [
-    "channel"
-  ],
-  "period": "week"
+  "query": {
+    "duration": 52,
+    "collect": [
+      "count:sum"
+    ],
+    "group_by": [
+      "channel"
+    ],
+    "period": "week"
+  },
+  "visualisation" : {
+    "axes": {
+        "x": {
+            "format": "date", 
+            "key": [
+                "_start_at", 
+                "_end_at"
+            ], 
+            "label": "Date"
+        }, 
+        "y": [
+            {
+                "format": "percent", 
+                "key": "completion", 
+                "label": "Digital take-up"
+            }
+        ]
+    }, 
+    "axis-period": "month", 
+    "denominator-matcher": ".+", 
+    "matching-attribute": "channel", 
+    "numerator-matcher": "(Digital)", 
+    "value-attribute": "count:sum"
+  }
 }

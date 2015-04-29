@@ -1,1 +1,24 @@
-{}
+{
+  "query": {},
+  "visualisation": {  
+    "pin-to":"handling_time",
+    "max-bars":22,
+    "value-attribute":"count:sum",
+    "axes":{  
+      "y":[  
+        {  
+          "format":"integer",
+          "key":"count:sum",
+          "label":"Number of civil applications"
+        }
+      ],
+      "x":{  
+        "format":"string",
+        "key":"title",
+        "label":""
+      }
+    },
+    "target":20
+  }
+}
+

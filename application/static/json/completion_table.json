@@ -1,1 +1,26 @@
-{}
+{
+  "query": {},
+  "visualisation": {
+    "category":"borrower_category",
+    "value-attribute":"count:sum",
+    "matching-attribute":"channel",
+    "axes":{  
+      "y":[  
+        {  
+          "label":"Digital take-up",
+          "key":"completion",
+          "format":"percent"
+        }
+      ],
+      "x":{  
+        "label":"User demographic",
+        "key":"borrower_category",
+        "format":"sentence"
+      }
+    },
+    "numerator-matcher":"^online$",
+    "denominator-matcher":"^(.)*$",
+    "sort-by":"completion",
+    "sort-order":"ascending"
+  }
+}

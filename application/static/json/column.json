@@ -1,1 +1,11 @@
-{}
+{
+  "query": {},
+  "visualisation": {
+    "axis-period": "quarter", 
+    "format": {
+        "sigfigs": 3, 
+        "type": "percent"
+    }, 
+    "value-attribute": "count"
+  }
+}

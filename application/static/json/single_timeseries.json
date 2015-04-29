@@ -1,13 +1,38 @@
-{
-  "duration": 52,
-  "collect": [
-    "avgSessionDuration:sum"
-  ],
-  "group_by": [
-    "stage"
-  ],
-  "period": "week",
-  "filter_by": [
-    "stage:thank-you"
-  ]
+{  
+  "query": {
+    "duration": 52,
+    "collect": [
+      "avgSessionDuration:sum"
+    ],
+    "group_by": [
+      "stage"
+    ],
+    "period": "week",
+    "filter_by": [
+      "stage:thank-you"
+    ]
+  },
+  "visualisation" : {
+    "axes": {
+        "x": {
+            "format": "date", 
+            "key": [
+                "_start_at", 
+                "_end_at"
+            ], 
+            "label": "Date"
+        }, 
+        "y": [
+            {
+                "format": "integer", 
+                "label": "Completed applications"
+            }
+        ]
+    }, 
+    "category": "stage", 
+    "show-line-labels": true, 
+    "show-total-lines": true, 
+    "use_stack": false, 
+    "value-attribute": "count:sum"
+  }
 }
