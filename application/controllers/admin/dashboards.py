@@ -246,7 +246,7 @@ def build_dict_for_post(form, module_types):
             'modules': [],
         })
     return {
-        'published': form.published.data,
+        'published': form.published.data == 'True',
         'page-type': 'dashboard',
         'dashboard-type': form.dashboard_type.data,
         'slug': form.slug.data,

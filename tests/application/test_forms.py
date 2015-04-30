@@ -4,7 +4,6 @@ from hamcrest import assert_that, equal_to, contains_inanyorder, contains
 from mock import Mock
 import os
 import json
-from application.controllers.admin.dashboards import build_dict_for_post
 from tests.application.controllers.admin.test_dashboards import data_sets_list
 
 
@@ -30,33 +29,35 @@ class DashboardTestCase(TestCase):
                                                    self.mock_admin_client,
                                                    self.mock_module_types,
                                                    self.mock_data_sources)
-        dict_for_post = build_dict_for_post(dashboard_form,
-                                            self.mock_module_types)
         assert_that(
-            dict_for_post['description'],
-            equal_to(dashboard_dict['description']))
+            dashboard_form['description'].data,
+            equal_to(
+                ("Applications by foreign nationals for visas to "
+                 "reside in the UK on a temporary or permanent basis.")))
         assert_that(
-            dict_for_post['dashboard-type'],
-            equal_to(dashboard_dict['dashboard_type']))
+            dashboard_form['dashboard_type'].data,
+            equal_to('high-volume-transaction'))
         assert_that(
-            dict_for_post['modules'][0]['type_id'],
-            equal_to(dashboard_dict['modules'][0]['type']['id']))
+            dashboard_form.modules[0]['module_type'].data,
+            equal_to('35b41563-277d-487c-9830-c912d74adda7'))
         assert_that(
-            dict_for_post['modules'][0]['data_group'],
-            equal_to(dashboard_dict['modules'][0]['data_group']))
+            dashboard_form.modules[0]['data_group'].data,
+            equal_to('transactional-services'))
         assert_that(
-            dict_for_post['modules'][0]['data_type'],
-            equal_to(dashboard_dict['modules'][0]['data_type']))
+            dashboard_form.modules[0]['data_type'].data,
+            equal_to('summaries'))
         assert_that(
-            dict_for_post['modules'][0]['id'],
-            equal_to(dashboard_dict['modules'][0]['id']))
+            dashboard_form.modules[0]['id'].data,
+            equal_to('18e2ce49-c5d9-4546-b391-093f78344dea'))
         assert_that(
-            dict_for_post['modules'][0]['description'],
-            equal_to(dashboard_dict['modules'][0]['description']))
+            dashboard_form.modules[0]['description'].data,
+            equal_to('description'))
         assert_that(
-            dict_for_post['links'], equal_to(dashboard_dict['links']))
+            dashboard_form['transaction_link'].data,
+            equal_to('https://www.gov.uk/uk-visa'))
         assert_that(
-            dict_for_post['published'], equal_to(dashboard_dict['published']))
+            dashboard_form['published'].data,
+            equal_to(True))
 
     def test_convert_to_dashboard_form_returns_flattened_modules(self):
         dashboard_dict = json.loads(self.dashboard_json)
