@@ -197,7 +197,7 @@ def clone_module(admin_client, target_dashboard_uuid=None):
             modules = modules_response.json()
 
     if target_dashboard_uuid:
-        target_dashboard_url = '/admin/dashboards{}'.format(
+        target_dashboard_url = '/admin/dashboards/{}'.format(
             target_dashboard_uuid)
     else:
         target_dashboard_url = '/admin/dashboards/new'
@@ -205,7 +205,8 @@ def clone_module(admin_client, target_dashboard_uuid=None):
     return render_template('dashboards/clone_module.html',
                            modules=modules,
                            dashboards=dashboards,
-                           target_dashboard_url=target_dashboard_url)
+                           target_dashboard_url=target_dashboard_url,
+                           target_dashboard_uuid=target_dashboard_uuid)
 
 
 @app.route('{0}/clone'.format(DASHBOARD_ROUTE), methods=['GET'])

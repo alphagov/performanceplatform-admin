@@ -20,7 +20,7 @@
               <div class="col-lg-6">
                 {% if dashboards %}
                   <h1>Select Dashboard</h1>
-                  <form method="post" action="{{ url_for('clone_module') }}" role="form" class="form-horizontal frm-dashboard">
+                  <form method="post" action="{{ url_for('clone_module', target_dashboard_uuid=target_dashboard_uuid) }}" role="form" class="form-horizontal frm-dashboard">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <select name="dashboard_uuid">
                     {% for dashboard in dashboards %}
