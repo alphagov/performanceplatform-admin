@@ -170,9 +170,7 @@ def clone_module(admin_client, target_dashboard_uuid=None):
     dashboards = None
     target_dashboard_url = None
     source_dashboard_uuid = None
-
-    if request.form and 'dashboard_uuid' in request.form:
-        source_dashboard_uuid = request.form['dashboard_uuid']
+    selected_dashboard = None
 
     dashboards_url = '{0}/dashboards'.format(
         app.config['STAGECRAFT_HOST'])
@@ -183,18 +181,13 @@ def clone_module(admin_client, target_dashboard_uuid=None):
     dashboard_response = requests.get(dashboards_url, headers=headers)
     if dashboard_response.status_code == 200:
         dashboards = dashboard_response.json()['dashboards']
-
-    if source_dashboard_uuid:
-        modules_url = '{0}/dashboard/{1}/module'.format(
-            app.config['STAGECRAFT_HOST'],
-            source_dashboard_uuid)
-        access_token = session['oauth_token']['access_token']
-        headers = {
-            'Authorization': 'Bearer {0}'.format(access_token),
-        }
-        modules_response = requests.get(modules_url, headers=headers)
-        if modules_response.status_code == 200:
-            modules = modules_response.json()
+        if request.form and 'dashboard_uuid' in request.form:
+            source_dashboard_uuid = request.form['dashboard_uuid']
+            modules = admin_client.list_modules_on_dashboard(
+                source_dashboard_uuid)
+            selected_dashboard = next(
+                dashboard for dashboard in dashboards
+                if dashboard['id'] == source_dashboard_uuid)
 
     if target_dashboard_uuid:
         target_dashboard_url = '/admin/dashboards/{}'.format(
@@ -202,11 +195,17 @@ def clone_module(admin_client, target_dashboard_uuid=None):
     else:
         target_dashboard_url = '/admin/dashboards/new'
 
+    template_context = base_template_context()
+    template_context['user'] = session['oauth_user']
+
     return render_template('dashboards/clone_module.html',
                            modules=modules,
                            dashboards=dashboards,
                            target_dashboard_url=target_dashboard_url,
-                           target_dashboard_uuid=target_dashboard_uuid)
+                           source_dashboard_uuid=source_dashboard_uuid,
+                           selected_dashboard=selected_dashboard,
+                           target_dashboard_uuid=target_dashboard_uuid,
+                           **template_context)
 
 
 @app.route('{0}/clone'.format(DASHBOARD_ROUTE), methods=['GET'])
