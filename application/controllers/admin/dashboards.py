@@ -191,8 +191,16 @@ def clone_module(admin_client, target_dashboard_uuid=None):
     if target_dashboard_uuid:
         target_dashboard_url = '/admin/dashboards/{}'.format(
             target_dashboard_uuid)
+        if 'pending_dashboard' not in session:
+            # Flash something here? This has happened
+            # because the user has got to the clone dashboard page
+            # via the url, not via the clone dashboard button.
+            # As a result there is no pending dashboard data.
+            return redirect(target_dashboard_url)
+        target_dashboard_name = session['pending_dashboard']['title']
     else:
         target_dashboard_url = '/admin/dashboards/new'
+        target_dashboard_name = 'new dashboard'
 
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
@@ -204,6 +212,7 @@ def clone_module(admin_client, target_dashboard_uuid=None):
                            source_dashboard_uuid=source_dashboard_uuid,
                            selected_dashboard=selected_dashboard,
                            target_dashboard_uuid=target_dashboard_uuid,
+                           target_dashboard_name=target_dashboard_name,
                            **template_context)
 
 

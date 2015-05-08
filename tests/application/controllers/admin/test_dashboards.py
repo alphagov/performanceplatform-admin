@@ -520,6 +520,7 @@ class DashboardTestCase(FlaskAppTestCase):
             source_dashboard_uuid=None,
             selected_dashboard=None,
             target_dashboard_uuid=None,
+            target_dashboard_name='new dashboard',
             user={'permissions': ['signin', 'dashboard']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/new')
@@ -535,6 +536,10 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_list_data_sets,
             mock_list_module_types,
             client):
+        with client.session_transaction() as session:
+            session['pending_dashboard'] = {
+                'title': 'Dashboard title!'
+            }
         mock_render.return_value = ''
         dashboards = {'dashboards': [
             {
@@ -559,6 +564,7 @@ class DashboardTestCase(FlaskAppTestCase):
             source_dashboard_uuid=None,
             selected_dashboard=None,
             target_dashboard_uuid='target_dashboard_uuid',
+            target_dashboard_name='Dashboard title!',
             user={'permissions': ['signin', 'dashboard']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/target_dashboard_uuid')
@@ -612,6 +618,7 @@ class DashboardTestCase(FlaskAppTestCase):
             source_dashboard_uuid='uuid',
             selected_dashboard=dashboards['dashboards'][0],
             target_dashboard_uuid=None,
+            target_dashboard_name='new dashboard',
             user={'permissions': ['signin', 'dashboard']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/new')
@@ -630,6 +637,10 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_list_data_sets,
             mock_list_module_types,
             client):
+        with client.session_transaction() as session:
+            session['pending_dashboard'] = {
+                'title': 'Dashboard title!'
+            }
         mock_render.return_value = ''
         dashboards = {'dashboards': [
             {
@@ -665,6 +676,7 @@ class DashboardTestCase(FlaskAppTestCase):
             source_dashboard_uuid='uuid',
             selected_dashboard=dashboards['dashboards'][0],
             target_dashboard_uuid='target_dashboard_uuid',
+            target_dashboard_name='Dashboard title!',
             user={'permissions': ['signin', 'dashboard']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/target_dashboard_uuid')
