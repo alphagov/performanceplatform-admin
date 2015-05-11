@@ -69,7 +69,24 @@ class DownloadPageTestCase(FlaskAppTestCase):
     @freeze_time("2015-03-26")
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard',
            return_value={})
-    def test_serves_quarterly_dates(
+    def test_serves_quarterly_dates_full_year(
+            self, mock_get_dashboard):
+        response = self.client.get(
+            '/dashboard/dashboard-uuid/cost-per-transaction/'
+            'spreadsheet-template')
+        expected_content = (
+            "_timestamp,end_at,period,channel,count,comment\n"
+            "2014-01-01T00:00:00,2014-03-31T00:00:00,quarterly,cost_per_transaction_digital,0,\n"  # noqa
+            "2014-04-01T00:00:00,2014-06-30T00:00:00,quarterly,cost_per_transaction_digital,0,\n"  # noqa
+            "2014-07-01T00:00:00,2014-09-30T00:00:00,quarterly,cost_per_transaction_digital,0,\n"  # noqa
+            "2014-10-01T00:00:00,2014-12-31T00:00:00,quarterly,cost_per_transaction_digital,0,\n"  # noqa
+        )
+        assert_that(response.data, equal_to(expected_content))
+
+    @freeze_time("2015-04-26")
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard',
+           return_value={})
+    def test_serves_quarterly_dates_cross_year(
             self, mock_get_dashboard):
         response = self.client.get(
             '/dashboard/dashboard-uuid/cost-per-transaction/'

@@ -29,7 +29,16 @@ def start_of_week(date):
 def previous_year_quarters():
 
     today = date.today()
-    dtstart = datetime(today.year - 1, today.month - 3, 1)
+    day = 1
+    month = range(1, 13)[(today.month - 1) - 3]
+    if month > 9:
+        start_year = today.year - 2
+        end_year = today.year - 1
+    else:
+        start_year = today.year - 1
+        end_year = today.year
+    dtstart = datetime(start_year, month, day)
+    dtend = datetime(end_year, month, today.day)
 
     quarters = rrule(
         MONTHLY,
@@ -37,8 +46,7 @@ def previous_year_quarters():
         dtstart=dtstart,
         count=5
     )
-    # Omit last quarter in list as it is the current quarter (incomplete).
-    return quarters.between(after=dtstart, before=datetime.today())[:-1]
+    return quarters.between(after=dtstart, before=dtend)
 
 
 def end_of_quarter(date):
