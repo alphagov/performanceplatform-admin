@@ -39,7 +39,7 @@ import application.controllers.authentication
 import application.controllers.admin.dashboards
 import application.controllers.registrations
 import application.controllers.dashboards
-import application.controllers.user_satisfaction
+import application.controllers.builder.user_satisfaction
 import application.controllers.builder.digital_take_up
 import application.controllers.builder.cost_per_transaction
 import application.controllers.admin.transforms
