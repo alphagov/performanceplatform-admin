@@ -99,3 +99,37 @@ class DownloadPageTestCase(FlaskAppTestCase):
             "2015-01-01T00:00:00,2015-03-31T00:00:00,quarterly,cost_per_transaction_digital,0,\n"  # noqa
         )
         assert_that(response.data, equal_to(expected_content))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
+    def test_handles_invalid_spreadsheet(
+            self,
+            get_data_set_patch,
+            get_dashboard_patch,
+            client):
+
+        get_dashboard_patch.return_value = {'slug': 'apply-uk-visa'}
+
+        get_data_set_patch.return_value = {
+            'name': 'apply_uk_visa_transactions_by_channel',
+            'data_type': 'transactions-by-channel',
+            'data_group': 'apply-uk-visa',
+            'bearer_token': 'abc123',
+            'upload_format': 'csv',
+            'auto_ids': '_timestamp, period, channel',
+            'max_age_expected': 1300000
+        }
+
+        self.upload_spreadsheet_mock.return_value = \
+            (['Message 1', 'Message 2'], False)
+
+        response = client.post(self.upload_url, data=self.file_data)
+
+        assert_that(
+            self.get_from_session('upload_data')['payload'],
+            equal_to(['Message 1', 'Message 2']))
+
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
+    def test_data_added_to_backdrop(self, get_data_set_patch):
+        pass
