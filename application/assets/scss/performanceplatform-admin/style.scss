@@ -258,3 +258,14 @@ ul.checkbox-set {
 .steps {
   padding-bottom: 10px;
 }
+
+span.bold {
+  font-weight: bold;
+}
+
+//Arguably this should be responsive but this is only an internal tool
+#dashboard-uuid {
+  max-width: 600px;
+}
+
+

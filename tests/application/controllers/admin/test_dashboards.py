@@ -335,6 +335,352 @@ class DashboardTestCase(FlaskAppTestCase):
             contains_string('admin/dashboards/new?modules=1')
         )
 
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_clone_module_new_dashboard_redirects_with_correct_query_params(
+            self,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        resp = client.post('/admin/dashboards',
+                           data={'clone_module': 1})
+
+        assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['location'],
+            ends_with('/clone_module'))
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_clone_module_existing_dashboard_redirects_correct_query_params(
+            self,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        dashboard_id = "def123abc"
+        resp = client.post('/admin/dashboards/{}'.format(dashboard_id),
+                           data={'clone_module': 1})
+
+        assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['location'],
+            ends_with('/clone_module/{}'
+                      .format(dashboard_id))
+        )
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_module")
+    @patch("application.controllers.admin.dashboards.render_template")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_clone_module_appends_to_the_form_with_the_correct_modules(
+            self,
+            mock_render,
+            mock_get_module,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        with open(os.path.join(
+                  os.path.dirname(__file__),
+                  '../../../fixtures/example-dashboard.json')) as file:
+            module_dict = json.loads(file.read())['modules'][0]
+        mock_render.return_value = ''
+        mock_get_module.return_value = module_dict
+        module_id = "abc123def"
+        resp = client.get(
+            'admin/dashboards/new?clone_module={}'.format(module_id))
+
+        rendered_template = 'admin/dashboards/create.html'
+        assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
+        kwargs = mock_render.call_args[1]
+        form = kwargs['form']
+        modules = form.modules
+        assert_that(len(modules), equal_to(1))
+        cloned_module = form.modules[0]
+        assert_that(
+            cloned_module['id'].data, equal_to(None))
+        assert_that(
+            cloned_module['module_type'].data, equal_to(
+                module_dict['module_type']))
+        assert_that(
+            cloned_module['data_group'].data, equal_to(
+                module_dict['data_group']))
+        assert_that(
+            cloned_module['data_type'].data, equal_to(
+                module_dict['data_type']))
+        assert_that(
+            cloned_module['slug'].data, equal_to(module_dict['slug']))
+        assert_that(
+            cloned_module['title'].data, equal_to(module_dict['title']))
+        assert_that(
+            cloned_module['description'].data, equal_to(
+                module_dict['description']))
+        assert_that(
+            cloned_module['info'].data, equal_to(module_dict['info']))
+        assert_that(
+            cloned_module['query_parameters'].data, equal_to(
+                module_dict['query_parameters']))
+        assert_that(
+            cloned_module['options'].data, equal_to(module_dict['options']))
+        assert_that(resp.status_code, equal_to(200))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    @patch("performanceplatform.client.admin.AdminAPI.get_module")
+    @patch("application.controllers.admin.dashboards.render_template")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_clone_module_appends_correct_modules_to_form_existing_dashboard(
+            self,
+            mock_render,
+            mock_get_module,
+            mock_get_dashboard,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        dashboard_id = "def123abc"
+        with open(os.path.join(
+                  os.path.dirname(__file__),
+                  '../../../fixtures/example-dashboard.json')) as file:
+            dashboard_dict = json.loads(file.read())
+            module_dict = dashboard_dict['modules'][0].copy()
+        mock_render.return_value = ''
+        mock_get_module.return_value = module_dict
+        mock_get_dashboard.return_value = dashboard_dict
+        module_id = "abc123def"
+        # modules are seven because there is a section in the example data
+        resp = client.get(
+            'admin/dashboards/{}?clone_module={}'.format(
+                dashboard_id, module_id))
+
+        rendered_template = 'admin/dashboards/create.html'
+        assert_that(mock_render.call_args[0][0], equal_to(rendered_template))
+        kwargs = mock_render.call_args[1]
+        form = kwargs['form']
+        modules = form.modules
+        assert_that(len(modules), equal_to(7))
+        cloned_module = form.modules[-1]
+        assert_that(
+            cloned_module['id'].data, equal_to(None))
+        assert_that(
+            cloned_module['module_type'].data, equal_to(
+                module_dict['module_type']))
+        assert_that(
+            cloned_module['data_group'].data, equal_to(
+                module_dict['data_group']))
+        assert_that(
+            cloned_module['data_type'].data, equal_to(
+                module_dict['data_type']))
+        assert_that(
+            cloned_module['slug'].data, equal_to(module_dict['slug']))
+        assert_that(
+            cloned_module['title'].data, equal_to(module_dict['title']))
+        assert_that(
+            cloned_module['description'].data, equal_to(
+                module_dict['description']))
+        assert_that(
+            cloned_module['info'].data, equal_to(module_dict['info']))
+        assert_that(
+            cloned_module['query_parameters'].data, equal_to(
+                module_dict['query_parameters']))
+        assert_that(
+            cloned_module['options'].data, equal_to(module_dict['options']))
+        assert_that(resp.status_code, equal_to(200))
+
+    @patch('requests.get')
+    @patch("application.controllers.admin.dashboards.render_template")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_get_clone_module_no_target_uuid_renders_with_correct_args(
+            self,
+            mock_render,
+            get_patch,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        mock_render.return_value = ''
+        dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=dashboards)
+        get_patch.return_value = response
+        client.get(
+            'admin/dashboards/clone_module')
+        rendered_template = 'dashboards/clone_module.html'
+        mock_render.assert_called_once_with(
+            rendered_template,
+            modules=None,
+            dashboards=dashboards['dashboards'],
+            source_dashboard_uuid=None,
+            selected_dashboard=None,
+            target_dashboard_uuid=None,
+            target_dashboard_name='new dashboard',
+            user={'permissions': ['signin', 'dashboard']},
+            environment={'human_name': 'Development', 'name': 'development'},
+            target_dashboard_url='/admin/dashboards/new')
+
+    @patch('requests.get')
+    @patch("application.controllers.admin.dashboards.render_template")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_get_clone_module_with_target_uuid_renders_with_correct_args(
+            self,
+            mock_render,
+            get_patch,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        with client.session_transaction() as session:
+            session['pending_dashboard'] = {
+                'title': 'Dashboard title!'
+            }
+        mock_render.return_value = ''
+        dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=dashboards)
+        get_patch.return_value = response
+        client.get(
+            'admin/dashboards/clone_module/target_dashboard_uuid')
+        rendered_template = 'dashboards/clone_module.html'
+        mock_render.assert_called_once_with(
+            rendered_template,
+            modules=None,
+            dashboards=dashboards['dashboards'],
+            source_dashboard_uuid=None,
+            selected_dashboard=None,
+            target_dashboard_uuid='target_dashboard_uuid',
+            target_dashboard_name='Dashboard title!',
+            user={'permissions': ['signin', 'dashboard']},
+            environment={'human_name': 'Development', 'name': 'development'},
+            target_dashboard_url='/admin/dashboards/target_dashboard_uuid')
+
+    @patch('requests.get')
+    @patch("application.controllers.admin.dashboards.render_template")
+    @patch(
+        "performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_post_clone_module_no_target_uuid_renders_with_correct_args(
+            self,
+            mock_list_modules_on_dashboard,
+            mock_render,
+            get_patch,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        mock_render.return_value = ''
+        dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+        modules = [
+            {
+                'id': 'abc',
+                'title': 'def'
+            }
+        ]
+
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=dashboards)
+        get_patch.return_value = response
+
+        mock_list_modules_on_dashboard.return_value = modules
+
+        client.post(
+            'admin/dashboards/clone_module',
+            data={'dashboard_uuid': 'uuid'})
+        rendered_template = 'dashboards/clone_module.html'
+        mock_render.assert_called_once_with(
+            rendered_template,
+            modules=[{'id': 'abc', 'title': 'def'}],
+            dashboards=dashboards['dashboards'],
+            source_dashboard_uuid='uuid',
+            selected_dashboard=dashboards['dashboards'][0],
+            target_dashboard_uuid=None,
+            target_dashboard_name='new dashboard',
+            user={'permissions': ['signin', 'dashboard']},
+            environment={'human_name': 'Development', 'name': 'development'},
+            target_dashboard_url='/admin/dashboards/new')
+
+    @patch('requests.get')
+    @patch("application.controllers.admin.dashboards.render_template")
+    @patch(
+        "performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard")
+    @signed_in(permissions=['signin', 'dashboard'])
+    def test_post_clone_module_with_target_uuid_renders_with_correct_args(
+            self,
+            mock_list_modules_on_dashboard,
+            mock_render,
+            get_patch,
+            mock_list_organisations,
+            mock_list_data_sets,
+            mock_list_module_types,
+            client):
+        with client.session_transaction() as session:
+            session['pending_dashboard'] = {
+                'title': 'Dashboard title!'
+            }
+        mock_render.return_value = ''
+        dashboards = {'dashboards': [
+            {
+                'url': 'http://stagecraft/dashboard/uuid',
+                'public-url': 'http://spotlight/performance/carers-allowance',
+                'published': True,
+                'id': 'uuid',
+                'title': 'Name of service'
+            }
+        ]}
+        modules = [
+            {
+                'id': 'abc',
+                'title': 'def'
+            }
+        ]
+
+        response = requests.Response()
+        response.status_code = 200
+        response.json = Mock(return_value=dashboards)
+        get_patch.return_value = response
+
+        mock_list_modules_on_dashboard.return_value = modules
+
+        client.post(
+            'admin/dashboards/clone_module/target_dashboard_uuid',
+            data={'dashboard_uuid': 'uuid'})
+        rendered_template = 'dashboards/clone_module.html'
+        mock_render.assert_called_once_with(
+            rendered_template,
+            modules=[{'id': 'abc', 'title': 'def'}],
+            dashboards=dashboards['dashboards'],
+            source_dashboard_uuid='uuid',
+            selected_dashboard=dashboards['dashboards'][0],
+            target_dashboard_uuid='target_dashboard_uuid',
+            target_dashboard_name='Dashboard title!',
+            user={'permissions': ['signin', 'dashboard']},
+            environment={'human_name': 'Development', 'name': 'development'},
+            target_dashboard_url='/admin/dashboards/target_dashboard_uuid')
+
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_updating_existing_dashboard(self,
                                          update_mock,
