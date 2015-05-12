@@ -1,6 +1,7 @@
 from requests import HTTPError
 
 from flask import (
+    flash,
     session,
     render_template,
     make_response,
@@ -9,8 +10,7 @@ from flask import (
 
 from application import app
 from application.controllers.upload import (
-    response,
-    upload_file_and_get_status
+    response
 )
 from application.helpers import (
     base_template_context,
@@ -22,6 +22,8 @@ from application.utils.datetimeutil import (
     previous_year_quarters,
     end_of_quarter
 )
+from application.controllers.builder.common import(
+    upload_data_and_respond)
 
 
 DATA_TYPE = 'cost-per-transaction'
@@ -63,14 +65,8 @@ def get_module_config_for_cost_per_transaction(owning_organisation):
 def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
     data_group_config = {"name": data_group_name}
 
-    try:
-        data_group = admin_client.get_data_group(data_group_name)
-    except HTTPError as err:
-        return response(500, data_group_config, data_type,
-                        ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
-                        url_for('upload_cost_per_transaction',
-                                uuid=uuid))
+    data_group = admin_client.get_data_group(data_group_name)
+
     if not data_group:
         data_group = admin_client.create_data_group(data_group_config)
 
@@ -78,21 +74,14 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
 
 
 def get_or_create_data_set(admin_client, uuid, data_group, data_type):
-
     data_set_config = get_data_set_config(data_group, data_type)
 
-    try:
-        data_set = admin_client.get_data_set(
-            data_group, data_type)
-    except HTTPError as err:
-        return response(500, data_group, data_type,
-                        ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
-                        url_for('upload_cost_per_transaction',
-                                uuid=uuid))
+    data_set = admin_client.get_data_set(
+        data_group, data_type)
 
     if not data_set:
         data_set = admin_client.create_data_set(data_set_config)
+
     return data_set
 
 
@@ -128,7 +117,7 @@ def create_module_if_not_exists(admin_client,
         return module
     except HTTPError as e:
         exists = "Module with this Dashboard and Slug already exists"
-        if exists not in e.response.text:
+        if exists not in e.response.json()['message']:
             raise
 
 
@@ -138,13 +127,18 @@ def create_dataset_and_module(input_data_type, admin_client, uuid, period,
 
     data_group = get_or_create_data_group(admin_client, data_group_name,
                                           input_data_type, uuid)
-    get_or_create_data_set(admin_client, uuid, data_group['name'],
-                           input_data_type)
+    data_set = get_or_create_data_set(admin_client, uuid, data_group['name'],
+                                      input_data_type)
 
-    create_module_if_not_exists(admin_client, data_group['name'],
-                                input_data_type, module_config, module_type)
+    module = create_module_if_not_exists(admin_client,
+                                         data_group['name'],
+                                         input_data_type,
+                                         module_config,
+                                         module_type)
 
     session['module'] = module_config['title']
+
+    return data_group, data_set, module
 
 
 def make_csv():
@@ -185,61 +179,53 @@ def upload_cost_per_transaction(admin_client, uuid):
 @requires_permission('dashboard')
 def cost_per_transaction_spreadsheet_template(admin_client, uuid):
     csv = make_csv()
-    response = make_response(csv)
-    response.headers[
+    csv_response = make_response(csv)
+    csv_response.headers[
         "Content-Disposition"] = "attachment;filename=cost_per_transaction.csv"
-    return response
+    return csv_response
 
 
 @app.route('/dashboard/<uuid>/cost-per-transaction/upload', methods=['POST'])
 @requires_authentication
 @requires_permission('dashboard')
 def upload_cost_per_transaction_file(admin_client, uuid):
+    dashboard = admin_client.get_dashboard(uuid)
+    data_group = dashboard["slug"]
 
     # Create dashboard module and dataset.
-    dashboard = admin_client.get_dashboard(uuid)
     owning_organisation = (
         dashboard.get('organisation', {})).get("name", 'Unknown')
 
     module_config = get_module_config_for_cost_per_transaction(
         owning_organisation)
 
-    create_dataset_and_module(
-        DATA_TYPE,
-        admin_client,
-        uuid,
-        session.get('upload_choice', 'quarterly'),
-        'single_timeseries',
-        module_config,
-        dashboard["slug"]
-    )
-
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user']
-    })
-
-    dashboard = admin_client.get_dashboard(uuid)
-    data_group = dashboard["slug"]
-
     try:
-        data_set = admin_client.get_data_set(data_group, DATA_TYPE)
+        data_group, data_set, module = create_dataset_and_module(
+            DATA_TYPE,
+            admin_client,
+            uuid,
+            session.get('upload_choice', 'quarterly'),
+            'single_timeseries',
+            module_config,
+            dashboard["slug"]
+        )
     except HTTPError as err:
+        flash(
+            "There was a problem setting up the module, please "
+            "contact the Performance Platform if the problem persists.",
+            'error')
         return response(500, data_group, DATA_TYPE,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_cost_per_transaction_file', uuid=uuid))
-
-    messages, status = upload_file_and_get_status(data_set)
-
-    if messages:
-        return response(status, data_group, DATA_TYPE, messages,
                         url_for('upload_cost_per_transaction',
                                 uuid=uuid))
 
-    return response(status, data_group, DATA_TYPE, messages,
-                    url_for('upload_cost_per_transaction_success',
-                            uuid=uuid))
+    return upload_data_and_respond(
+        admin_client,
+        DATA_TYPE,
+        data_group,
+        uuid,
+        data_set=data_set)
 
 
 @app.route('/dashboard/<uuid>/cost-per-transaction/upload/success',

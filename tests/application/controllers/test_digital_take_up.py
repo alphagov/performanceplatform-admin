@@ -294,7 +294,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -330,7 +330,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -373,7 +373,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -433,7 +433,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -497,7 +497,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -581,7 +581,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['upload_choice'] = 'week'
 
-        response = client.post(
+        client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
 
@@ -739,7 +739,7 @@ class UploadPageTestCase(FlaskAppTestCase):
         self.upload_spreadsheet_mock.return_value = \
             (['Message 1', 'Message 2'], False)
 
-        response = client.post(self.upload_url, data=self.file_data)
+        client.post(self.upload_url, data=self.file_data)
 
         assert_that(
             self.get_from_session('upload_data')['payload'],

@@ -10,7 +10,7 @@ from flask import (
 )
 
 from application import app
-from application.controllers.upload import response, upload_file_and_get_status
+from application.controllers.upload import response
 from application.forms import UploadOptionsForm, ChannelOptionsForm
 from application.helpers import (
     base_template_context,
@@ -27,9 +27,12 @@ from application.utils.datetimeutil import (
     start_of_month,
     to_datetime
 )
+from application.controllers.builder.common import(
+    upload_data_and_respond)
 
 
 DASHBOARD_ROUTE = '/dashboard'
+DATA_TYPE = 'transactions-by-channel'
 
 
 @app.route(
@@ -220,21 +223,21 @@ def create_dataset_and_module(input_data_type,
         admin_client, uuid, data_group['name'], input_data_type, period)
 
     if output_data_type:
-        output_data_set = get_or_create_data_set(
+        get_or_create_data_set(
             admin_client, uuid, data_group['name'], output_data_type, period)
 
         transform_config = get_transform_config_for_digital_takeup(
             data_group_name, session["upload_choice"])
 
-        transform = get_or_create_data_set_transform(admin_client,
-                                                     uuid,
-                                                     transform_config,
-                                                     input_data_set,
-                                                     "rate")
+        get_or_create_data_set_transform(admin_client,
+                                         uuid,
+                                         transform_config,
+                                         input_data_set,
+                                         "rate")
         input_data_type = output_data_type
 
     # MODULE
-    module = create_module_if_not_exists(
+    create_module_if_not_exists(
         admin_client,
         data_group['name'],
         input_data_type,
@@ -369,7 +372,6 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
 @requires_authentication
 @requires_permission('dashboard')
 def upload_digital_take_up_data_file(admin_client, uuid):
-    DATA_TYPE_NAME = 'transactions-by-channel'
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
@@ -381,7 +383,7 @@ def upload_digital_take_up_data_file(admin_client, uuid):
 
     return render_template('builder/digital_take_up/upload.html',
                            uuid=uuid,
-                           data_type=DATA_TYPE_NAME,
+                           data_type=DATA_TYPE,
                            **template_context)
 
 
@@ -390,33 +392,14 @@ def upload_digital_take_up_data_file(admin_client, uuid):
 @requires_authentication
 @requires_permission('dashboard')
 def upload_data_file_to_dashboard(admin_client, uuid):
-    DATA_TYPE_NAME = 'transactions-by-channel'
-    template_context = base_template_context()
-    template_context.update({
-        'user': session['oauth_user']
-    })
-
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
 
-    try:
-        data_set = admin_client.get_data_set(data_group, DATA_TYPE_NAME)
-    except HTTPError as err:
-        return response(500, data_group, DATA_TYPE_NAME,
-                        ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
-                        url_for('upload_data_file_to_dashboard', uuid=uuid))
-
-    messages, status = upload_file_and_get_status(data_set)
-
-    if messages:
-        return response(status, data_group, DATA_TYPE_NAME, messages,
-                        url_for('upload_digital_take_up_data_file',
-                                uuid=uuid))
-
-    return response(status, data_group, DATA_TYPE_NAME, messages,
-                    url_for('upload_digital_take_up_data_success',
-                            uuid=uuid))
+    return upload_data_and_respond(
+        admin_client,
+        DATA_TYPE,
+        data_group,
+        uuid)
 
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload/success',
