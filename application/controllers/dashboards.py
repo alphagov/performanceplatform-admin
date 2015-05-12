@@ -50,7 +50,7 @@ def dashboard_hub(admin_client, uuid):
     preview_url = "{0}/performance/{1}".format(
         app.config['GOVUK_SITE_URL'], dashboard_dict['slug'])
     return render_template(
-        'dashboards/dashboard-hub.html',
+        'builder/dashboard-hub.html',
         uuid=uuid,
         dashboard_title=dashboard.title,
         preview_url=preview_url,

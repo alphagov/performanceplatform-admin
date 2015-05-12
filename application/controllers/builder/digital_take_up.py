@@ -54,7 +54,7 @@ def upload_options(admin_client, uuid):
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
     return render_template(
-        'digital_take_up/upload-options.html',
+        'builder/digital_take_up/upload-options.html',
         uuid=uuid,
         upload_options=[option for option in form.upload_option],
         form=form,
@@ -71,7 +71,7 @@ def api_get_in_touch(admin_client, uuid):
         'user': session['oauth_user']
     })
     return render_template(
-        'digital_take_up/api-get-in-touch.html',
+        'builder/digital_take_up/api-get-in-touch.html',
         email=app.config['NOTIFICATIONS_EMAIL'],
         uuid=uuid,
         **template_context)
@@ -169,7 +169,7 @@ def channel_options(admin_client, uuid):
             error = 'Please select one or more channel options.'
             flash(error, 'danger')
     return render_template(
-        'digital_take_up/channel-options.html',
+        'builder/digital_take_up/channel-options.html',
         uuid=uuid,
         form=form,
         **template_context)
@@ -297,7 +297,7 @@ def create_module_if_not_exists(admin_client,
     module_types = admin_client.list_module_types()
     for module_type in module_types:
         if module_type['name'] == module_type_name:
-            module_config["type_id"] = module_type['id']
+            module_config['type_id'] = module_type['id']
 
     try:
         module = admin_client.add_module_to_dashboard(
@@ -379,7 +379,7 @@ def upload_digital_take_up_data_file(admin_client, uuid):
         upload_data = session.pop('upload_data')
         template_context['upload_data'] = upload_data
 
-    return render_template('digital_take_up/upload.html',
+    return render_template('builder/digital_take_up/upload.html',
                            uuid=uuid,
                            data_type=DATA_TYPE_NAME,
                            **template_context)
@@ -420,7 +420,7 @@ def upload_data_file_to_dashboard(admin_client, uuid):
 
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload/success',
-           methods=['GET', 'POST'])
+           methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
 def upload_digital_take_up_data_success(admin_client, uuid):
@@ -442,6 +442,6 @@ def upload_digital_take_up_data_success(admin_client, uuid):
         'upload_period': session['upload_choice']
     }))
 
-    return render_template('digital_take_up/upload_success.html',
+    return render_template('builder/digital_take_up/upload_success.html',
                            uuid=uuid,
                            **template_context)
