@@ -243,7 +243,7 @@ def upload_cost_per_transaction_file(admin_client, uuid):
 
 
 @app.route('/dashboard/<uuid>/cost-per-transaction/upload/success',
-           methods=['GET', 'POST'])
+           methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
 def upload_cost_per_transaction_success(admin_client, uuid):

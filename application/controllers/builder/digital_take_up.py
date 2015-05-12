@@ -420,7 +420,7 @@ def upload_data_file_to_dashboard(admin_client, uuid):
 
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload/success',
-           methods=['GET', 'POST'])
+           methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
 def upload_digital_take_up_data_success(admin_client, uuid):
