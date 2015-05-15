@@ -15,6 +15,7 @@ def upload_data_and_respond(
         data_type,
         data_group,
         uuid,
+        module_name,
         data_set=None):
     if not data_set:
         try:
@@ -24,15 +25,16 @@ def upload_data_and_respond(
                             ['[{}] {}'.format(err.response.status_code,
                                               err.response.json())],
                             url_for(
-                                'upload_cost_per_transaction_file', uuid=uuid))
+                                'upload_{}_file'.format(module_name),
+                                uuid=uuid))
 
     messages, status = upload_file_and_get_status(data_set)
 
     if messages:
         return response(status, data_group, data_type, messages,
-                        url_for('upload_cost_per_transaction',
+                        url_for('upload_{}'.format(module_name),
                                 uuid=uuid))
 
     return response(status, data_group, data_type, messages,
-                    url_for('upload_cost_per_transaction_success',
+                    url_for('upload_{}_success'.format(module_name),
                             uuid=uuid))

@@ -63,6 +63,20 @@ class DownloadPageTestCase(FlaskAppTestCase):
 
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard',
            return_value={})
+    def test_render_download_template_page_contains_any_errors(
+            self, mock_get_dashboard):
+        with self.client.session_transaction() as session:
+            session['upload_data'] = {
+                'payload': ['Message 1', 'Message 2']
+            }
+        response = self.client.get(
+            '/dashboard/dashboard-uuid/cost-per-transaction/upload')
+        assert_that(response.status, equal_to('200 OK'))
+        assert_that(response.data, contains_string('Message 1'))
+        assert_that(response.data, contains_string('Message 2'))
+
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard',
+           return_value={})
     def test_csv_file_download(
             self, mock_get_dashboard):
         response = self.client.get(
@@ -132,8 +146,73 @@ class UploadPageTestCase(FlaskAppTestCase):
         self.generate_bearer_token_mock.return_value = "abc123def"
 
     def tearDown(self):
+        patch.stopall()
+
+    @signed_in(permissions=['signin', 'dashboard'])
+    @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
+    @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
+    @patch("application.controllers.builder"
+           ".cost_per_transaction.get_module_config_for_cost_per_transaction")
+    @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
+    @patch('performanceplatform.client.admin.AdminAPI.create_data_group')
+    @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
+    @patch('performanceplatform.client.admin.AdminAPI.add_module_to_dashboard')
+    def test_handles_no_spreadsheet(
+            self,
+            add_module_to_dashboard_patch,
+            list_module_types_patch,
+            create_data_group_patch,
+            get_data_group_patch,
+            get_module_config_patch,
+            create_data_set_patch,
+            get_data_set_patch,
+            get_dashboard_patch,
+            client):
+
         self.upload_spreadsheet_patcher.stop()
-        self.generate_bearer_token_patcher.stop()
+
+        get_module_config_patch.return_value = {
+            'title': 'Cost per transaction'}
+
+        get_dashboard_patch.return_value = {
+            'slug': 'visas'}
+
+        get_data_set_patch.return_value = {
+            'name': 'apply_uk_visa_transactions_by_channel',
+            'data_type': 'transactions-by-channel',
+            'data_group': 'apply-uk-visa',
+            'bearer_token': 'abc123',
+            'upload_format': 'csv',
+            'auto_ids': '_timestamp, period, channel',
+            'max_age_expected': 1300000
+        }
+        get_data_group_patch.return_value = {
+            'name': 'visas'
+        }
+        add_module_to_dashboard_patch.return_value = {}
+
+        self.file_data = {
+            'file': (StringIO('Week ending,API,Paper form\n2014-08-05,40,10'),
+                     '')}
+
+        response = client.post(self.upload_url, data=self.file_data)
+
+        # see line 117 of application/controllers/upload.py
+        # to see why this is expected.
+        assert_that(
+            self.get_from_session('upload_data')['payload'],
+            equal_to(['Please choose a file to upload']))
+        assert_that(response.status, equal_to('302 FOUND'))
+        assert_that(
+            response.headers['Location'],
+            ends_with("/dashboard/{}"
+                      "/cost-per-transaction/upload".format(
+                          self.dash_id)))
+        with client.session_transaction() as session:
+            assert_that(
+                '_flashes' in session,
+                equal_to(False))
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
@@ -526,12 +605,9 @@ class UploadPageTestCase(FlaskAppTestCase):
             'name': 'visas'
         }
         # ===
-        response_json_mock = Mock()
-        response_json_mock.return_value = {
-            'message': 'Module with this Dashboard and Slug already exists'}
-        response = Response()
+        response = Mock()
         response.status_code = 400
-        response.json = response_json_mock
+        response.text = 'Module with this Dashboard and Slug already exists'
         error = HTTPError('Error message', response=response)
         # ===
         add_module_to_dashboard_patch.side_effect = error

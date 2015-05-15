@@ -89,7 +89,7 @@ def get_or_create_data_set_transform(
         return response(500, transform_config, data_set,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
+                        url_for('upload_digital_take_up',
                                 uuid=uuid))
 
     if not transform:
@@ -166,7 +166,7 @@ def channel_options(admin_client, uuid):
                 'digital-takeup'
             )
 
-            return redirect(url_for('upload_digital_take_up_data_file',
+            return redirect(url_for('upload_digital_take_up',
                                     uuid=uuid))
         else:
             error = 'Please select one or more channel options.'
@@ -325,7 +325,7 @@ def get_or_create_data_set(admin_client, uuid, data_group, data_type,
         return response(500, data_group, data_type,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
+                        url_for('upload_digital_take_up',
                                 uuid=uuid))
 
     if not data_set:
@@ -359,7 +359,7 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
         return response(500, data_group_config, data_type,
                         ['[{}] {}'.format(err.response.status_code,
                                           err.response.json())],
-                        url_for('upload_digital_take_up_data_file',
+                        url_for('upload_digital_take_up',
                                 uuid=uuid))
     if not data_group:
         data_group = admin_client.create_data_group(data_group_config)
@@ -371,7 +371,7 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
            methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_digital_take_up_data_file(admin_client, uuid):
+def upload_digital_take_up(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
@@ -391,7 +391,7 @@ def upload_digital_take_up_data_file(admin_client, uuid):
            methods=['POST'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_data_file_to_dashboard(admin_client, uuid):
+def upload_digital_take_up_file(admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
 
@@ -399,14 +399,15 @@ def upload_data_file_to_dashboard(admin_client, uuid):
         admin_client,
         DATA_TYPE,
         data_group,
-        uuid)
+        uuid,
+        'digital_take_up')
 
 
 @app.route('/dashboard/<uuid>/digital-take-up/upload/success',
            methods=['GET'])
 @requires_authentication
 @requires_permission('dashboard')
-def upload_digital_take_up_data_success(admin_client, uuid):
+def upload_digital_take_up_success(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],

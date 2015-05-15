@@ -117,7 +117,7 @@ def create_module_if_not_exists(admin_client,
         return module
     except HTTPError as e:
         exists = "Module with this Dashboard and Slug already exists"
-        if exists not in e.response.json()['message']:
+        if exists not in e.response.text:
             raise
 
 
@@ -161,12 +161,15 @@ def make_csv():
 @requires_authentication
 @requires_permission('dashboard')
 def upload_cost_per_transaction(admin_client, uuid):
-
     template_context = base_template_context()
     template_context.update({
         'user': session['oauth_user'],
         'data_group': admin_client.get_dashboard(uuid).get('slug'),
     })
+
+    if 'upload_data' in session:
+        upload_data = session.pop('upload_data')
+        template_context['upload_data'] = upload_data
 
     return render_template('builder/cost_per_transaction/upload.html',
                            uuid=uuid,
@@ -225,6 +228,7 @@ def upload_cost_per_transaction_file(admin_client, uuid):
         DATA_TYPE,
         data_group,
         uuid,
+        'cost_per_transaction',
         data_set=data_set)
 
 
