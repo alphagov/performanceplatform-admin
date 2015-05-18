@@ -31,7 +31,7 @@
     </header>
 </section>
 
-<form id="{{ data_group }}-{{ data_type }}-upload" method="POST" action="{{ url_for('upload_cost_per_transaction_file', uuid=uuid) }}" enctype="multipart/form-data">
+<form id="{{ data_type }}-upload" method="POST" action="{{ url_for('upload_cost_per_transaction_file', uuid=uuid) }}" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="row steps">
         <div class="col-sm-12 col-md-4">

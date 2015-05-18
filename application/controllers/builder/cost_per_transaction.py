@@ -163,8 +163,7 @@ def make_csv():
 def upload_cost_per_transaction(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
-        'user': session['oauth_user'],
-        'data_group': admin_client.get_dashboard(uuid).get('slug'),
+        'user': session['oauth_user']
     })
 
     if 'upload_data' in session:
