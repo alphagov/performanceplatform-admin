@@ -50,7 +50,7 @@ def add_user_satisfaction(admin_client, uuid):
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
     return render_template(
-        'user_satisfaction/add.html',
+        'builder/user_satisfaction/add.html',
         uuid=uuid,
         form=form,
         **template_context)
@@ -66,7 +66,7 @@ def get_in_touch(admin_client, uuid):
         'user': session['oauth_user']
     })
     return render_template(
-        'user_satisfaction/get-in-touch.html',
+        'builder/user_satisfaction/get-in-touch.html',
         email=app.config['NOTIFICATIONS_EMAIL'],
         uuid=uuid,
         **template_context)

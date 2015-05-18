@@ -50,6 +50,32 @@
       <h1>Dashboard data</h1>
     </header>
 
+     <section class="dashboard-data-item">
+       <div class="row">
+         <header class="col-md-3">
+           <h1>Cost per transaction</h1>
+         </header>
+
+         {% if "cost-per-transaction" in modules %}
+         <p class="advisory col-sm-12"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Data successfully set up</p>
+         {% else %}
+         <div class="col-md-5">
+           <p>
+             To calculate your cost per transaction you will need:
+           </p>
+
+           <ul>
+             <li>the quarterly number of transactions on your service</li>
+             <li>the quarterly cost of running your service</li>
+           </ul>
+
+           <p><a href="">Find out more about cost per transaction</a></p>
+           <p><a href="{{ url_for('upload_cost_per_transaction', uuid=uuid) }}" class="btn btn-info">Add cost per transaction</a></p>
+         </div>
+         {% endif %}
+       </div>
+      </section>
+
     <section class="dashboard-data-item">
       <div class="row">
         <header class="col-md-3">
