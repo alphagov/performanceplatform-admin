@@ -293,8 +293,7 @@ class SendDashboardForReviewTestCase(FlaskAppTestCase):
 class DashboardListTestCase(FlaskAppTestCase):
 
     def setUp(self):
-        self.app = app.test_client()
-        self.dashboards = {'dashboards': [
+        self.dashboards = [
             {
                 'url': 'http://stagecraft/dashboard/uuid',
                 'public-url': 'http://spotlight/performance/carers-allowance',
@@ -303,131 +302,101 @@ class DashboardListTestCase(FlaskAppTestCase):
                 'id': 'uuid',
                 'title': 'Name of service'
             }
-        ]}
+        ]
 
-    @signed_in(permissions=['signin'])
-    def test_authorised_user_is_required(self, client):
-        resp = client.get('/dashboards')
-        assert_that(resp.status, equal_to('302 FOUND'))
+        app.config['WTF_CSRF_ENABLED'] = False
+        self.app = app.test_client()
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'dashboard']
+            }
 
-    def test_authenticated_user_is_required(self):
+    def test_authorised_user_is_required(self):
+        with self.client.session_transaction() as session:
+            session['oauth_user'] = {'permissions': ['signin']}
         resp = self.client.get('/dashboards')
         assert_that(resp.status, equal_to('302 FOUND'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    def test_authenticated_user_is_required(self):
+        with self.client.session_transaction() as session:
+            del session['oauth_token']
+        resp = self.client.get('/dashboards')
+        assert_that(resp.status, equal_to('302 FOUND'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_index_page_shows_a_list_of_dashboards(
-            self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         assert_that(resp.data, contains_string('Name of service'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_index_page_with_stagecraft_down_or_0_dashboards_shows_errors(
-            self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 500
-        get_patch.return_value = response
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
+    def test_index_page_with_stagecraft_0_dashboards_shows_errors(
+            self, get_patch):
 
-        resp = client.get('/dashboards')
+        get_patch.return_value.status_code = 200
 
-        assert_that(resp.data, contains_string(
-            'Could not retrieve the list of dashboards'
-        ))
-
-        response.status_code = 200
-        response.json = Mock(return_value={'dashboards': []})
-        get_patch.return_value = response
-
-        resp = client.get('/dashboards')
+        resp = self.client.get('/dashboards')
 
         assert_that(resp.data, contains_string(
             'No dashboards stored'
         ))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
-    def test_index_page_with_stagecraft_down_errors(self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 500
-        get_patch.return_value = response
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
+    def test_index_page_with_stagecraft_down_shows_errors(
+            self, get_patch):
+        get_patch.return_value = None
 
-        resp = client.get('/dashboards')
+        resp = self.client.get('/dashboards')
 
         assert_that(resp.data, contains_string(
             'Could not retrieve the list of dashboards'
         ))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_published_dashboards_are_flagged_as_published(
-            self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         assert_that(resp.data, contains_string('Published'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_unpublished_dashboards_are_flagged_as_unpublished(
-            self, get_patch, client):
-        self.dashboards['dashboards'][0]['status'] = 'unpublished'
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+        self.dashboards[0]['status'] = 'unpublished'
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         assert_that(resp.data, contains_string('Unpublished'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_in_review_dashboards_are_flagged_as_in_review(
-            self, get_patch, client):
-        self.dashboards['dashboards'][0]['status'] = 'in-review'
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+        self.dashboards[0]['status'] = 'in-review'
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         assert_that(resp.data, contains_string('In Review'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_published_dashboards_cannot_be_edited(
-            self, get_patch, client):
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         self.assertFalse('Edit dashboard' in resp.data)
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_unpublished_dashboards_can_be_edited(
-            self, get_patch, client):
-        self.dashboards['dashboards'][0]['status'] = 'unpublished'
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+
+        self.dashboards[0]['status'] = 'unpublished'
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         assert_that(resp.data, contains_string('Edit dashboard'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
-    @patch('requests.get')
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboards")
     def test_in_review_dashboards_cannot_be_edited(
-            self, get_patch, client):
-        self.dashboards['dashboards'][0]['status'] = 'in-review'
-        response = requests.Response()
-        response.status_code = 200
-        response.json = Mock(return_value=self.dashboards)
-        get_patch.return_value = response
-        resp = client.get('/dashboards')
+            self, get_patch):
+        self.dashboards[0]['status'] = 'in-review'
+        get_patch.return_value = self.dashboards
+        resp = self.client.get('/dashboards')
         self.assertFalse('Edit dashboard' in resp.data)
