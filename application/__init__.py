@@ -23,7 +23,7 @@ app.redis_instance = Redis(
     port=app.config['REDIS_PORT'],
 )
 app.session_interface = RedisSessionInterface(
-    redis=app.redis_instance, prefix='admin_app:session:')
+    redis=app.redis_instance, prefix='performanceplatform_admin:session:')
 
 # adds uncaught exception handlers to app and submits to sentry
 # this will only send when SENTRY_DSN is defined in config
