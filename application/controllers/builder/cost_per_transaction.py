@@ -47,7 +47,7 @@ def get_module_config_for_cost_per_transaction(owning_organisation):
             "type": "currency"
         },
         "query_parameters": {
-            "sort_by": "_timestamp:descending"
+            "sort_by": "_timestamp:ascending"
         },
         "options": {
             "value-attribute": "count",
