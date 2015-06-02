@@ -179,7 +179,7 @@ def clone_module(admin_client, target_dashboard_uuid=None):
     }
     dashboard_response = requests.get(dashboards_url, headers=headers)
     if dashboard_response.status_code == 200:
-        dashboards = dashboard_response.json()['dashboards']
+        dashboards = dashboard_response.json()
         if request.form and 'dashboard_uuid' in request.form:
             source_dashboard_uuid = request.form['dashboard_uuid']
             modules = admin_client.list_modules_on_dashboard(
@@ -324,6 +324,7 @@ def build_dict_for_post(form, module_types):
             'order': index,
             'modules': [],
         })
+
     return {
         'published': form.published.data == 'True',
         'page-type': 'dashboard',
@@ -348,8 +349,10 @@ def build_dict_for_post(form, module_types):
 
 def format_error(verb, form, error):
     if isinstance(error, requests.HTTPError):
+        error_message = error.response.content if error.response.content \
+            else error.message
         return 'Error {} the {} dashboard: {}'.format(
-            verb, form.slug.data, error.response.json()['message'])
+            verb, form.slug.data, error_message)
     elif isinstance(error, InvalidFormFieldError):
         return 'Error {} the {} dashboard: {}'.format(
             verb, form.slug.data, to_error_list(form.errors))

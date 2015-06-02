@@ -497,7 +497,7 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_list_module_types,
             client):
         mock_render.return_value = ''
-        dashboards = {'dashboards': [
+        dashboards = [
             {
                 'url': 'http://stagecraft/dashboard/uuid',
                 'public-url': 'http://spotlight/performance/carers-allowance',
@@ -505,7 +505,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'id': 'uuid',
                 'title': 'Name of service'
             }
-        ]}
+        ]
         response = requests.Response()
         response.status_code = 200
         response.json = Mock(return_value=dashboards)
@@ -516,7 +516,7 @@ class DashboardTestCase(FlaskAppTestCase):
         mock_render.assert_called_once_with(
             rendered_template,
             modules=None,
-            dashboards=dashboards['dashboards'],
+            dashboards=dashboards,
             source_dashboard_uuid=None,
             selected_dashboard=None,
             target_dashboard_uuid=None,
@@ -541,7 +541,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'title': 'Dashboard title!'
             }
         mock_render.return_value = ''
-        dashboards = {'dashboards': [
+        dashboards = [
             {
                 'url': 'http://stagecraft/dashboard/uuid',
                 'public-url': 'http://spotlight/performance/carers-allowance',
@@ -549,7 +549,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'id': 'uuid',
                 'title': 'Name of service'
             }
-        ]}
+        ]
         response = requests.Response()
         response.status_code = 200
         response.json = Mock(return_value=dashboards)
@@ -560,7 +560,7 @@ class DashboardTestCase(FlaskAppTestCase):
         mock_render.assert_called_once_with(
             rendered_template,
             modules=None,
-            dashboards=dashboards['dashboards'],
+            dashboards=dashboards,
             source_dashboard_uuid=None,
             selected_dashboard=None,
             target_dashboard_uuid='target_dashboard_uuid',
@@ -584,7 +584,7 @@ class DashboardTestCase(FlaskAppTestCase):
             mock_list_module_types,
             client):
         mock_render.return_value = ''
-        dashboards = {'dashboards': [
+        dashboards = [
             {
                 'url': 'http://stagecraft/dashboard/uuid',
                 'public-url': 'http://spotlight/performance/carers-allowance',
@@ -592,7 +592,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'id': 'uuid',
                 'title': 'Name of service'
             }
-        ]}
+        ]
         modules = [
             {
                 'id': 'abc',
@@ -614,9 +614,9 @@ class DashboardTestCase(FlaskAppTestCase):
         mock_render.assert_called_once_with(
             rendered_template,
             modules=[{'id': 'abc', 'title': 'def'}],
-            dashboards=dashboards['dashboards'],
+            dashboards=dashboards,
             source_dashboard_uuid='uuid',
-            selected_dashboard=dashboards['dashboards'][0],
+            selected_dashboard=dashboards[0],
             target_dashboard_uuid=None,
             target_dashboard_name='new dashboard',
             user={'permissions': ['signin', 'dashboard']},
@@ -642,7 +642,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'title': 'Dashboard title!'
             }
         mock_render.return_value = ''
-        dashboards = {'dashboards': [
+        dashboards = [
             {
                 'url': 'http://stagecraft/dashboard/uuid',
                 'public-url': 'http://spotlight/performance/carers-allowance',
@@ -650,7 +650,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 'id': 'uuid',
                 'title': 'Name of service'
             }
-        ]}
+        ]
         modules = [
             {
                 'id': 'abc',
@@ -672,9 +672,9 @@ class DashboardTestCase(FlaskAppTestCase):
         mock_render.assert_called_once_with(
             rendered_template,
             modules=[{'id': 'abc', 'title': 'def'}],
-            dashboards=dashboards['dashboards'],
+            dashboards=dashboards,
             source_dashboard_uuid='uuid',
-            selected_dashboard=dashboards['dashboards'][0],
+            selected_dashboard=dashboards[0],
             target_dashboard_uuid='target_dashboard_uuid',
             target_dashboard_name='Dashboard title!',
             user={'permissions': ['signin', 'dashboard']},

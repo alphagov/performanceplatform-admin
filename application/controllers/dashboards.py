@@ -31,6 +31,7 @@ def dashboard_hub(admin_client, uuid):
         'user': session['oauth_user'],
     })
     dashboard_dict = admin_client.get_dashboard(uuid)
+
     if dashboard_dict['status'] != 'unpublished':
         flash('In review or published dashboards cannot be edited', 'info')
         return redirect(url_for('dashboard_list'))
@@ -42,7 +43,9 @@ def dashboard_hub(admin_client, uuid):
         modules = [module["data_type"] for module in dashboard_dict["modules"]]
     form = DashboardHubForm(obj=dashboard)
     if form.validate_on_submit():
-        admin_client.update_dashboard(uuid, form.data)
+        data = form.data
+        data["slug"] = dashboard_dict["slug"]
+        admin_client.update_dashboard(uuid, data)
         return redirect(url_for('dashboard_list'))
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
@@ -65,7 +68,9 @@ def dashboard_hub(admin_client, uuid):
 @requires_permission('dashboard')
 def send_dashboard_for_review(admin_client, uuid):
     dashboard_dict = admin_client.get_dashboard(uuid)
-    admin_client.update_dashboard(uuid, {'status': 'in-review'})
+    admin_client.update_dashboard(uuid, {'status': 'in-review',
+                                         'slug': dashboard_dict["slug"],
+                                         'title': dashboard_dict["title"]})
 
     conn = boto.ses.connect_to_region(
         'us-east-1',
@@ -97,23 +102,14 @@ def dashboard_list(admin_client):
         'user': session['oauth_user'],
     })
 
-    dashboards_url = '{0}/dashboards'.format(
-        app.config['STAGECRAFT_HOST'])
-    access_token = session['oauth_token']['access_token']
-    headers = {
-        'Authorization': 'Bearer {0}'.format(access_token),
-    }
+    dashboard_response = admin_client.get_dashboards()
 
-    dashboard_response = requests.get(dashboards_url, headers=headers)
-
-    if dashboard_response.status_code == 200:
-        dashboards = dashboard_response.json()['dashboards']
-        if len(dashboards) == 0:
+    if dashboard_response:
+        if len(dashboard_response) == 0:
             flash('No dashboards stored', 'info')
     else:
         flash('Could not retrieve the list of dashboards', 'danger')
-        dashboards = None
 
     return render_template('dashboards/index.html',
-                           dashboards=dashboards,
+                           dashboards=dashboard_response,
                            **template_context)
