@@ -218,7 +218,7 @@ def upload_cost_per_transaction_file(admin_client, uuid):
             'error')
         return response(500, data_group, DATA_TYPE,
                         ['[{}] {}'.format(err.response.status_code,
-                                          err.response.json())],
+                                          err.response)],
                         url_for('upload_cost_per_transaction',
                                 uuid=uuid))
 
