@@ -190,6 +190,8 @@ class UploadPageTestCase(FlaskAppTestCase):
         get_data_group_patch.return_value = {
             'name': 'visas'
         }
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
         add_module_to_dashboard_patch.return_value = {}
 
         self.file_data = {
@@ -254,6 +256,8 @@ class UploadPageTestCase(FlaskAppTestCase):
         get_data_group_patch.return_value = {
             'name': 'visas'
         }
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
         add_module_to_dashboard_patch.return_value = {}
 
         self.upload_spreadsheet_mock.return_value = \
@@ -317,6 +321,8 @@ class UploadPageTestCase(FlaskAppTestCase):
         get_data_group_patch.return_value = {
             'name': 'visas'
         }
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
         add_module_to_dashboard_patch.return_value = {}
 
         response = client.post(self.upload_url, data=self.file_data)
@@ -373,6 +379,8 @@ class UploadPageTestCase(FlaskAppTestCase):
         get_data_group_patch.return_value = {
             'name': 'visas'
         }
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
         add_module_to_dashboard_patch.return_value = {}
 
         client.post(self.upload_url, data=self.file_data)
@@ -382,8 +390,9 @@ class UploadPageTestCase(FlaskAppTestCase):
         assert_that(create_data_set_patch.called, equal_to(False))
         get_data_group_patch.assert_called_once_with("visas")
         assert_that(create_data_group_patch.called, equal_to(False))
-        list_module_types_patch.assert_called_once_with()
+        assert_that(list_module_types_patch.call_count, equal_to(2))
         add_module_to_dashboard_patch.assert_called_once_with('visas', {
+            'type_id': 'uuid',
             'data_group': 'visas',
             'data_type': 'cost-per-transaction',
             'title': 'Cost per transaction'})
@@ -430,6 +439,8 @@ class UploadPageTestCase(FlaskAppTestCase):
         create_data_group_patch.return_value = {
             'name': 'visas'
         }
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
         add_module_to_dashboard_patch.return_value = {}
 
         client.post(self.upload_url, data=self.file_data)
@@ -444,8 +455,9 @@ class UploadPageTestCase(FlaskAppTestCase):
             'max_age_expected': 0})
         get_data_group_patch.assert_called_once_with("visas")
         create_data_group_patch.assert_called_once_with({'name': 'visas'})
-        list_module_types_patch.assert_called_once_with()
+        assert_that(list_module_types_patch.call_count, equal_to(2))
         add_module_to_dashboard_patch.assert_called_once_with('visas', {
+            'type_id': 'uuid',
             'data_group': 'visas',
             'data_type': 'cost-per-transaction',
             'title': 'Cost per transaction'})
@@ -477,6 +489,9 @@ class UploadPageTestCase(FlaskAppTestCase):
 
         get_dashboard_patch.return_value = {
             'slug': 'visas'}
+
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
 
         # ===
         response_json_mock = Mock()
@@ -534,6 +549,9 @@ class UploadPageTestCase(FlaskAppTestCase):
 
         get_dashboard_patch.return_value = {
             'slug': 'visas'}
+
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
 
         # ===
         response_json_mock = Mock()
@@ -604,6 +622,8 @@ class UploadPageTestCase(FlaskAppTestCase):
         get_data_group_patch.return_value = {
             'name': 'visas'
         }
+        list_module_types_patch.return_value = [{'name': 'single_timeseries',
+                                                 'id': 'uuid'}]
         # ===
         response = Mock()
         response.status_code = 400
@@ -631,8 +651,9 @@ class UploadPageTestCase(FlaskAppTestCase):
         assert_that(create_data_set_patch.called, equal_to(False))
         get_data_group_patch.assert_called_once_with("visas")
         assert_that(create_data_group_patch.called, equal_to(False))
-        list_module_types_patch.assert_called_once_with()
+        assert_that(list_module_types_patch.call_count, equal_to(2))
         add_module_to_dashboard_patch.assert_called_once_with('visas', {
+            'type_id': 'uuid',
             'data_group': 'visas',
             'data_type': 'cost-per-transaction',
             'title': 'Cost per transaction'})
