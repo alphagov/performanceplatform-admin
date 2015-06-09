@@ -349,10 +349,8 @@ def build_dict_for_post(form, module_types):
 
 def format_error(verb, form, error):
     if isinstance(error, requests.HTTPError):
-        error_message = error.response.content if error.response.content \
-            else error.message
         return 'Error {} the {} dashboard: {}'.format(
-            verb, form.slug.data, error_message)
+            verb, form.slug.data, error.response.json()['message'])
     elif isinstance(error, InvalidFormFieldError):
         return 'Error {} the {} dashboard: {}'.format(
             verb, form.slug.data, to_error_list(form.errors))
