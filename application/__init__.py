@@ -45,6 +45,11 @@ import application.controllers.builder.cost_per_transaction
 import application.controllers.admin.transforms
 import application.controllers.upload
 
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'public, max-age=0'
+    return response
+
 
 def start(port):
     app.debug = app.config['DEBUG'] or False
