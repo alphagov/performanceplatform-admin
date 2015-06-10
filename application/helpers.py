@@ -10,7 +10,7 @@ from requests_oauthlib import OAuth2Session
 from requests import Timeout, ConnectionError
 
 
-environment = getenv('INFRASTRUCTURE_ENV', 'development')
+environment = app.config.get('ENVIRONMENT', 'development')
 
 
 @app.context_processor
