@@ -29,13 +29,11 @@ from application.controllers.builder.common import(
 DATA_TYPE = 'cost-per-transaction'
 
 
-def get_module_config_for_cost_per_transaction(module_type_id,
-                                               owning_organisation):
+def get_module_config_for_cost_per_transaction(owning_organisation):
 
     module_config = {
         "slug": DATA_TYPE,
         "title": "Cost per transaction",
-        "type_id": module_type_id,
         "description": "",
         "info": ["Data source: {}".format(owning_organisation),
                  "<a href=\"https://www.gov.uk/service-manual/measurement/\
@@ -195,10 +193,7 @@ def upload_cost_per_transaction_file(admin_client, uuid):
     owning_organisation = (
         dashboard.get('organisation', {})).get("name", 'Unknown')
 
-    module_type_id = [t for t in admin_client.list_module_types()
-                      if t['name'] == 'single_timeseries'].pop()['id']
     module_config = get_module_config_for_cost_per_transaction(
-        module_type_id,
         owning_organisation)
 
     try:

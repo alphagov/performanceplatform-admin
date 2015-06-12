@@ -390,7 +390,7 @@ class UploadPageTestCase(FlaskAppTestCase):
         assert_that(create_data_set_patch.called, equal_to(False))
         get_data_group_patch.assert_called_once_with("visas")
         assert_that(create_data_group_patch.called, equal_to(False))
-        assert_that(list_module_types_patch.call_count, equal_to(2))
+        assert_that(list_module_types_patch.call_count, equal_to(1))
         add_module_to_dashboard_patch.assert_called_once_with('visas', {
             'type_id': 'uuid',
             'data_group': 'visas',
@@ -455,7 +455,7 @@ class UploadPageTestCase(FlaskAppTestCase):
             'max_age_expected': 0})
         get_data_group_patch.assert_called_once_with("visas")
         create_data_group_patch.assert_called_once_with({'name': 'visas'})
-        assert_that(list_module_types_patch.call_count, equal_to(2))
+        assert_that(list_module_types_patch.call_count, equal_to(1))
         add_module_to_dashboard_patch.assert_called_once_with('visas', {
             'type_id': 'uuid',
             'data_group': 'visas',
@@ -651,7 +651,7 @@ class UploadPageTestCase(FlaskAppTestCase):
         assert_that(create_data_set_patch.called, equal_to(False))
         get_data_group_patch.assert_called_once_with("visas")
         assert_that(create_data_group_patch.called, equal_to(False))
-        assert_that(list_module_types_patch.call_count, equal_to(2))
+        assert_that(list_module_types_patch.call_count, equal_to(1))
         add_module_to_dashboard_patch.assert_called_once_with('visas', {
             'type_id': 'uuid',
             'data_group': 'visas',
