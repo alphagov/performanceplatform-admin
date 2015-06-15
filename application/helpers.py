@@ -2,6 +2,7 @@ import random
 import string
 from werkzeug.utils import redirect
 from application import app
+from collections import defaultdict
 from flask import abort, session, redirect, request, url_for, flash
 from functools import wraps
 from os import getenv
@@ -133,13 +134,9 @@ def no_access(session_oauth_user):
 
 
 def group_by_group(data_sets):
-    grouped_data_sets = {}
+    grouped_data_sets = defaultdict(list)
     for item in data_sets:
-        if item['data_group'] in grouped_data_sets:
-            grouped_data_sets[item['data_group']].append(item)
-        else:
-            grouped_data_sets[item['data_group']] = []
-            grouped_data_sets[item['data_group']].append(item)
+        grouped_data_sets[item['data_group']].append(item)
     return grouped_data_sets
 
 
