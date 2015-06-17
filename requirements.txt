@@ -15,8 +15,8 @@ pyOpenSSL==0.14
 pytz==2014.4
 raven==5.0.0
 redis==2.10.1
-requests==2.3.0
-requests-oauthlib==0.4.1
+requests==2.6.0
+requests-oauthlib==0.5.0
 pyScss==1.2.0
 xlrd==0.9.3
 boto==2.36.0
