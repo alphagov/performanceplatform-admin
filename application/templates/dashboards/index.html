@@ -27,7 +27,7 @@
                   {% if dashboard.status == "unpublished" %}
                     <li><a class='btn btn-success' href="{{ url_for('dashboard_hub', uuid=dashboard.id) }}">Edit dashboard</a></li>
                   {% endif %}
-                  <li><a class='btn btn-success' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}">Admin edit</a></li>
+                  <li><a class='btn btn-success' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}"><strong>BIG EDIT</strong></a></li>
                   <li><a class='btn btn-success' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}">Clone</a></li>
                   <li><a class='btn btn-primary' href="{{ dashboard['public-url'] }}" target="_blank">Preview</a></li>
               </ul>
