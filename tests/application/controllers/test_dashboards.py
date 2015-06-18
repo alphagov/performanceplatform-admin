@@ -1,19 +1,19 @@
 from tests.application.support.flask_app_test_case import (
-    FlaskAppTestCase,
-    signed_in
+    FlaskAppTestCase
 )
-from mock import patch, Mock
+from mock import patch
 from application import app
 from hamcrest import (
     assert_that,
     contains_string,
     equal_to,
     has_entries,
-    ends_with
+    ends_with,
+    not_none,
+    match_equality
 )
 import os
 import json
-import requests
 
 
 def dashboard_data(options={}):
@@ -140,6 +140,30 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
         assert_that(
             mock_update_dashboard.call_args[0][0], equal_to('dashboard-uuid'))
         assert_that(post_json, has_entries(data))
+
+    @patch("application.controllers.dashboards.render_template")
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
+    def test_doesnt_render_templates_with_modules_without_data_type(
+            self,
+            mock_get_dashboard,
+            mock_render_template):
+        mock_render_template.return_value = ''
+        mock_get_dashboard.return_value = dashboard_data(
+            {'modules': [
+                {'slug': 'slug'},
+                {'data_type': 'user-satisfaction-score'}]})
+        self.client.get('/dashboards/dashboard-uuid')
+        mock_render_template.assert_called_once_with(
+            match_equality('builder/dashboard-hub.html'),
+            dashboard_title=match_equality(not_none()),
+            uuid=match_equality(not_none()),
+            form=match_equality(not_none()),
+            modules=match_equality(['user-satisfaction-score']),
+            preview_url=match_equality(not_none()),
+            environment=match_equality(not_none()),
+            user=match_equality(not_none()),
+        )
+        #mock_render_template.assert_called_once_with('abc')
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
