@@ -47,7 +47,7 @@ def get_module_config_for_cost_per_transaction(owning_organisation):
         "options": {
             "value-attribute": "count",
             "axis-period": "quarter",
-            "format": {
+            "format-options": {
                 "sigfigs": 4,
                 "type": "currency"
             }
