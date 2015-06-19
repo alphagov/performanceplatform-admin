@@ -6,6 +6,8 @@ from freezegun import freeze_time
 from hamcrest import (
     assert_that,
     contains_string,
+    has_entries,
+    match_equality,
     equal_to,
     ends_with
 )
@@ -401,8 +403,6 @@ class UploadPageTestCase(FlaskAppTestCase):
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
-    @patch("application.controllers.builder"
-           ".cost_per_transaction.get_module_config_for_cost_per_transaction")
     @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.list_module_types')
@@ -413,14 +413,10 @@ class UploadPageTestCase(FlaskAppTestCase):
             list_module_types_patch,
             create_data_group_patch,
             get_data_group_patch,
-            get_module_config_patch,
             create_data_set_patch,
             get_data_set_patch,
             get_dashboard_patch,
             client):
-
-        get_module_config_patch.return_value = {
-            'title': 'Cost per transaction'}
 
         get_dashboard_patch.return_value = {
             'slug': 'visas'}
@@ -452,15 +448,20 @@ class UploadPageTestCase(FlaskAppTestCase):
             'bearer_token': 'abc123def',
             'data_group': 'visas',
             'data_type': 'cost-per-transaction',
-            'max_age_expected': 0})
+            'max_age_expected': 0,
+            'auto_ids': '_timestamp, end_at, period, channel'})
         get_data_group_patch.assert_called_once_with("visas")
         create_data_group_patch.assert_called_once_with({'name': 'visas'})
         assert_that(list_module_types_patch.call_count, equal_to(1))
-        add_module_to_dashboard_patch.assert_called_once_with('visas', {
-            'type_id': 'uuid',
-            'data_group': 'visas',
-            'data_type': 'cost-per-transaction',
-            'title': 'Cost per transaction'})
+
+        add_module_to_dashboard_patch.assert_called_once_with(
+            'visas',
+            match_equality(has_entries({
+                'type_id': 'uuid',
+                'data_group': 'visas',
+                'data_type': 'cost-per-transaction',
+                'title': 'Cost per transaction'
+            })))
 
     @signed_in(permissions=['signin', 'dashboard'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')

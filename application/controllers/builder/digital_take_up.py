@@ -219,8 +219,10 @@ def create_dataset_and_module(input_data_type,
         admin_client, data_group_name, input_data_type, uuid)
 
     # DATA SET
+    auto_ids = "_timestamp, channel, period"
     input_data_set = get_or_create_data_set(
-        admin_client, uuid, data_group['name'], input_data_type, period)
+        admin_client, uuid, data_group['name'], input_data_type, period,
+        auto_ids)
 
     if output_data_type:
         get_or_create_data_set(
@@ -313,10 +315,10 @@ def create_module_if_not_exists(admin_client,
 
 
 def get_or_create_data_set(admin_client, uuid, data_group, data_type,
-                           period):
+                           period, auto_ids=""):
 
     data_set_config = get_data_set_config(data_group, data_type,
-                                          period)
+                                          period, auto_ids)
 
     try:
         data_set = admin_client.get_data_set(
@@ -334,7 +336,7 @@ def get_or_create_data_set(admin_client, uuid, data_group, data_type,
     return data_set
 
 
-def get_data_set_config(data_group_name, data_type, period):
+def get_data_set_config(data_group_name, data_type, period, auto_ids=""):
     if period == 'week':
         max_age_expected = 1300000
     else:
@@ -345,8 +347,10 @@ def get_data_set_config(data_group_name, data_type, period):
         'data_group': data_group_name,
         'bearer_token': generate_bearer_token(),
         'upload_format': 'csv',
-        'max_age_expected': max_age_expected
+        'max_age_expected': max_age_expected,
     }
+    if auto_ids:
+        data_set_config['auto_ids'] = auto_ids
     return data_set_config
 
 
