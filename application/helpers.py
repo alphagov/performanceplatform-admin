@@ -212,7 +212,8 @@ def redirect_if_module_exists(module_name):
             dashboard_dict = admin_client.get_dashboard(uuid)
             if "modules" in dashboard_dict.keys():
                 data_types = [module["data_type"]
-                              for module in dashboard_dict["modules"]]
+                              for module in dashboard_dict["modules"]
+                              if 'data_type' in module]
                 if module_name in data_types:
                     flash("Module already exists", 'info')
                     return redirect(url_for(

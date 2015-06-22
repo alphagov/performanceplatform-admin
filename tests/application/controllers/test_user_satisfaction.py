@@ -164,9 +164,10 @@ class AddUserSatisfactionTestCase(FlaskAppTestCase):
             'business_model': 'Department budget',
             'published': False,
             'status': 'unpublished',
-            'modules': [{
-                'data_type': 'user-satisfaction-score'
-            }]
+            'modules': [
+                {'data_type': 'user-satisfaction-score'},
+                {'slug': 'slug'}
+            ]
         }
 
         response = self.client.get(

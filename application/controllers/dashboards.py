@@ -16,8 +16,6 @@ from application.helpers import (
 )
 from application import app
 
-import requests
-
 
 DASHBOARD_ROUTE = '/dashboards'
 
@@ -40,7 +38,8 @@ def dashboard_hub(admin_client, uuid):
     dashboard = Dashboard(**dashboard_dict)
     modules = []
     if "modules" in dashboard_dict.keys():
-        modules = [module["data_type"] for module in dashboard_dict["modules"]]
+        modules = [module["data_type"] for module in dashboard_dict["modules"]
+                   if 'data_type' in module]
     form = DashboardHubForm(obj=dashboard)
     if form.validate_on_submit():
         data = form.data
