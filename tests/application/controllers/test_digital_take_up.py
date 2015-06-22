@@ -283,7 +283,6 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             client):
 
         get_data_group_patch.return_value = {'name': 'apply-uk-visa'}
-
         get_data_set_patch.return_value = None
 
         create_data_set_patch.return_value = self.CREATE_DATA_SET_RETURN_VALUE
@@ -297,6 +296,21 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         client.post(
             '/dashboard/dashboard-uuid/digital-take-up/channel-options',
             data=self.params())
+
+        create_data_set_patch.assert_any_call(match_equality(has_entries({
+            'data_group': 'apply-uk-visa',
+            'data_type': 'transactions-by-channel',
+            'auto_ids': '_timestamp, channel, period',
+            'max_age_expected': 1300000,
+            'upload_format': 'csv'
+        })))
+
+        create_data_set_patch.assert_any_call(match_equality(has_entries({
+            'data_group': 'apply-uk-visa',
+            'data_type': 'transactions-by-channel',
+            'max_age_expected': 1300000,
+            'upload_format': 'csv'
+        })))
 
         add_module_patch.assert_called_with(
             'apply-uk-visa', match_equality(has_entries(
@@ -744,7 +758,3 @@ class UploadPageTestCase(FlaskAppTestCase):
         assert_that(
             self.get_from_session('upload_data')['payload'],
             equal_to(['Message 1', 'Message 2']))
-
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    def test_data_added_to_backdrop(self, get_data_set_patch):
-        pass

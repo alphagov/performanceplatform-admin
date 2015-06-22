@@ -87,7 +87,8 @@ def get_data_set_config(data_group_name, data_type):
         'data_group': data_group_name,
         'bearer_token': generate_bearer_token(),
         'upload_format': 'csv',
-        'max_age_expected': 0
+        'max_age_expected': 0,
+        'auto_ids': '_timestamp, end_at, period, channel'
     }
     return data_set_config
 
