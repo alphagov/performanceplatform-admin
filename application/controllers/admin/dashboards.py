@@ -3,7 +3,7 @@ from application.forms import DashboardCreationForm, ModuleTypes, DataSources
 from application.helpers import (
     base_template_context,
     requires_authentication,
-    requires_permission,
+    requires_feature,
 )
 from flask import (
     flash, redirect, render_template, request,
@@ -85,7 +85,7 @@ def update_modules_form_and_redirect(func):
 @app.route('{0}/new'.format(DASHBOARD_ROUTE), methods=['GET'])
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('big-edit')
 def dashboard_form(admin_client, uuid=None):
     def should_use_session(session, uuid):
         if 'pending_dashboard' not in session:
@@ -163,7 +163,7 @@ def dashboard_form(admin_client, uuid=None):
 @app.route('{0}/clone_module'.format(
     DASHBOARD_ROUTE), methods=['POST', 'GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('big-edit')
 def clone_module(admin_client, target_dashboard_uuid=None):
     modules = None
     dashboards = None
@@ -218,7 +218,7 @@ def clone_module(admin_client, target_dashboard_uuid=None):
 
 @app.route('{0}/clone'.format(DASHBOARD_ROUTE), methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('big-edit')
 def dashboard_clone(admin_client):
     template_context = base_template_context()
     template_context['user'] = session['oauth_user']
@@ -244,7 +244,7 @@ class InvalidFormFieldError(Exception):
 
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('big-edit')
 @update_modules_form_and_redirect
 def dashboard_update(admin_client, module_types, form, uuid):
     try:
@@ -267,7 +267,7 @@ def dashboard_update(admin_client, module_types, form, uuid):
 
 @app.route('{0}'.format(DASHBOARD_ROUTE), methods=['POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('big-edit')
 @update_modules_form_and_redirect
 def dashboard_create(admin_client, module_types, form):
     try:

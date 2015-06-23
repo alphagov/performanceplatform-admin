@@ -65,7 +65,7 @@ class DashboardTestCase(FlaskAppTestCase):
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
+                    'permissions': ['signin', 'admin']
                 }
 
             data = valid_dashboard_data({
@@ -102,7 +102,7 @@ class DashboardTestCase(FlaskAppTestCase):
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
+                    'permissions': ['signin', 'admin']
                 }
 
             data = valid_dashboard_data({
@@ -171,7 +171,7 @@ class DashboardTestCase(FlaskAppTestCase):
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
+                    'permissions': ['signin', 'admin']
                 }
 
             data = valid_dashboard_data({'owning_organisation': ''})
@@ -203,7 +203,7 @@ class DashboardTestCase(FlaskAppTestCase):
                 with admin_app.session_transaction() as session:
                     session['oauth_token'] = {'access_token': 'token'}
                     session['oauth_user'] = {
-                        'permissions': ['signin', 'dashboard']
+                        'permissions': ['signin', 'admin']
                     }
 
                 data = valid_dashboard_data({
@@ -236,7 +236,7 @@ class DashboardTestCase(FlaskAppTestCase):
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
+                    'permissions': ['signin', 'admin']
                 }
                 session['pending_dashboard'] = {'slug': 'my-valid-slug'}
 
@@ -254,7 +254,7 @@ class DashboardTestCase(FlaskAppTestCase):
             with admin_app.session_transaction() as session:
                 session['oauth_token'] = {'access_token': 'token'}
                 session['oauth_user'] = {
-                    'permissions': ['signin', 'dashboard']
+                    'permissions': ['signin', 'admin']
                 }
 
             data = valid_dashboard_data()
@@ -279,7 +279,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
             session['pending_dashboard'] = dashboard_data
 
@@ -307,7 +307,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         self.client.post('/admin/dashboards',
@@ -320,7 +320,7 @@ class DashboardTestCase(FlaskAppTestCase):
             'danger'
         )
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_add_module_redirects_back_to_the_form(self,
                                                    mock_list_organisations,
                                                    mock_list_data_sets,
@@ -335,7 +335,7 @@ class DashboardTestCase(FlaskAppTestCase):
             contains_string('admin/dashboards/new?modules=1')
         )
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_clone_module_new_dashboard_redirects_with_correct_query_params(
             self,
             mock_list_organisations,
@@ -350,7 +350,7 @@ class DashboardTestCase(FlaskAppTestCase):
             resp.headers['location'],
             ends_with('/clone_module'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_clone_module_existing_dashboard_redirects_correct_query_params(
             self,
             mock_list_organisations,
@@ -370,7 +370,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.get_module")
     @patch("application.controllers.admin.dashboards.render_template")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_clone_module_appends_to_the_form_with_the_correct_modules(
             self,
             mock_render,
@@ -426,7 +426,7 @@ class DashboardTestCase(FlaskAppTestCase):
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
     @patch("performanceplatform.client.admin.AdminAPI.get_module")
     @patch("application.controllers.admin.dashboards.render_template")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_clone_module_appends_correct_modules_to_form_existing_dashboard(
             self,
             mock_render,
@@ -487,7 +487,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch('requests.get')
     @patch("application.controllers.admin.dashboards.render_template")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_get_clone_module_no_target_uuid_renders_with_correct_args(
             self,
             mock_render,
@@ -521,13 +521,13 @@ class DashboardTestCase(FlaskAppTestCase):
             selected_dashboard=None,
             target_dashboard_uuid=None,
             target_dashboard_name='new dashboard',
-            user={'permissions': ['signin', 'dashboard']},
+            user={'permissions': ['signin', 'admin']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/new')
 
     @patch('requests.get')
     @patch("application.controllers.admin.dashboards.render_template")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_get_clone_module_with_target_uuid_renders_with_correct_args(
             self,
             mock_render,
@@ -565,7 +565,7 @@ class DashboardTestCase(FlaskAppTestCase):
             selected_dashboard=None,
             target_dashboard_uuid='target_dashboard_uuid',
             target_dashboard_name='Dashboard title!',
-            user={'permissions': ['signin', 'dashboard']},
+            user={'permissions': ['signin', 'admin']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/target_dashboard_uuid')
 
@@ -573,7 +573,7 @@ class DashboardTestCase(FlaskAppTestCase):
     @patch("application.controllers.admin.dashboards.render_template")
     @patch(
         "performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_post_clone_module_no_target_uuid_renders_with_correct_args(
             self,
             mock_list_modules_on_dashboard,
@@ -619,7 +619,7 @@ class DashboardTestCase(FlaskAppTestCase):
             selected_dashboard=dashboards[0],
             target_dashboard_uuid=None,
             target_dashboard_name='new dashboard',
-            user={'permissions': ['signin', 'dashboard']},
+            user={'permissions': ['signin', 'admin']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/new')
 
@@ -627,7 +627,7 @@ class DashboardTestCase(FlaskAppTestCase):
     @patch("application.controllers.admin.dashboards.render_template")
     @patch(
         "performanceplatform.client.admin.AdminAPI.list_modules_on_dashboard")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_post_clone_module_with_target_uuid_renders_with_correct_args(
             self,
             mock_list_modules_on_dashboard,
@@ -677,7 +677,7 @@ class DashboardTestCase(FlaskAppTestCase):
             selected_dashboard=dashboards[0],
             target_dashboard_uuid='target_dashboard_uuid',
             target_dashboard_name='Dashboard title!',
-            user={'permissions': ['signin', 'dashboard']},
+            user={'permissions': ['signin', 'admin']},
             environment={'human_name': 'Development', 'name': 'development'},
             target_dashboard_url='/admin/dashboards/target_dashboard_uuid')
 
@@ -690,7 +690,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         data = valid_dashboard_data({
@@ -733,7 +733,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         data = valid_dashboard_data({
@@ -757,7 +757,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         data = valid_dashboard_data({
@@ -806,7 +806,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         resp = self.client.get('/admin/dashboards/uuid')
@@ -837,7 +837,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         resp = self.client.get('/admin/dashboards/uuid')
@@ -868,7 +868,7 @@ class DashboardTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'admin']
             }
 
         resp = self.client.get('/admin/dashboards/clone?uuid=uuid')
@@ -886,7 +886,7 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(m['id'].data, equal_to(''))
         assert_that(resp.status_code, equal_to(200))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_remove_module_after_adding(
             self,
             mock_list_organisations,
@@ -909,7 +909,7 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(len(session['pending_dashboard']['modules']),
                         equal_to(0))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_remove_module_from_existing_dashboard(
             self,
             mock_list_organisations,
@@ -937,7 +937,7 @@ class DashboardTestCase(FlaskAppTestCase):
             assert_that(len(session['pending_dashboard']['modules']),
                         equal_to(0))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_remove_middle_module(
             self,
             mock_list_organisations,
@@ -965,7 +965,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
     @patch("application.forms.DashboardCreationForm.validate")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_reorder_modules_on_new_applies_changes_when_form_is_valid(
             self,
             mock_validate,
@@ -1003,7 +1003,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     @patch("application.forms.DashboardCreationForm.validate")
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'admin'])
     def test_reorder_modules_on_update_applies_changes_when_form_is_valid(
             self,
             mock_validate,

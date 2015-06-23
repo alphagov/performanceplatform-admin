@@ -11,7 +11,7 @@ import boto.ses
 from application.helpers import (
     base_template_context,
     requires_authentication,
-    requires_permission,
+    requires_feature,
     to_error_list
 )
 from application import app
@@ -22,7 +22,7 @@ DASHBOARD_ROUTE = '/dashboards'
 
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET', 'POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def dashboard_hub(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
@@ -64,7 +64,7 @@ def dashboard_hub(admin_client, uuid):
 @app.route('{0}/<uuid>/send-for-review'.format(
     DASHBOARD_ROUTE), methods=['POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def send_dashboard_for_review(admin_client, uuid):
     dashboard_dict = admin_client.get_dashboard(uuid)
     admin_client.update_dashboard(uuid, {'status': 'in-review',
@@ -92,9 +92,9 @@ def send_dashboard_for_review(admin_client, uuid):
     return redirect(url_for('dashboard_list'))
 
 
-@app.route('/dashboards', methods=['GET'])
+@app.route(DASHBOARD_ROUTE, methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def dashboard_list(admin_client):
     template_context = base_template_context()
     template_context.update({

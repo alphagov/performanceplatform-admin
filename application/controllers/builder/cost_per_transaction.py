@@ -16,7 +16,7 @@ from application.helpers import (
     base_template_context,
     generate_bearer_token,
     requires_authentication,
-    requires_permission
+    requires_feature
 )
 from application.utils.datetimeutil import (
     previous_year_quarters,
@@ -155,7 +155,7 @@ def make_csv():
 
 @app.route('/dashboard/<uuid>/cost-per-transaction/upload', methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def upload_cost_per_transaction(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
@@ -174,7 +174,7 @@ def upload_cost_per_transaction(admin_client, uuid):
 
 @app.route('/dashboard/<uuid>/cost-per-transaction/spreadsheet-template')
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def cost_per_transaction_spreadsheet_template(admin_client, uuid):
     csv = make_csv()
     csv_response = make_response(csv)
@@ -185,7 +185,7 @@ def cost_per_transaction_spreadsheet_template(admin_client, uuid):
 
 @app.route('/dashboard/<uuid>/cost-per-transaction/upload', methods=['POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def upload_cost_per_transaction_file(admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
@@ -230,7 +230,7 @@ def upload_cost_per_transaction_file(admin_client, uuid):
 @app.route('/dashboard/<uuid>/cost-per-transaction/upload/success',
            methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def upload_cost_per_transaction_success(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({'user': session['oauth_user']})

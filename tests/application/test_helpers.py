@@ -2,13 +2,14 @@ import unittest
 from application import app
 from application.helpers import(
     requires_authentication,
-    requires_permission,
+    requires_feature,
     signed_in,
     group_by_group,
     signed_in_no_access,
     no_access,
     has_user_with_token,
     view_helpers,
+    user_has_feature,
 )
 from hamcrest import assert_that, equal_to, is_
 from mock import patch
@@ -25,7 +26,7 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(can_edit_dashboards({}), is_(False))
         assert_that(can_edit_dashboards({'permissions': ['signin']}),
                     is_(False))
-        assert_that(can_edit_dashboards({'permissions': ['dashboard']}),
+        assert_that(can_edit_dashboards({'permissions': ['dashboard-editor']}),
                     is_(True))
 
     @patch('application.helpers.signed_in')
@@ -40,39 +41,25 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(response.headers['Location'], equal_to('/'))
 
     @patch('application.helpers.signed_in')
-    def test_requires_permission_allows_access(self, signed_in_mock):
+    def test_requires_feature_allows_access(self, signed_in_mock):
         signed_in_mock.return_value = True
         func = lambda: 'Decorator exited successfully'
-        wrapped_app_method = requires_permission('special-permission')
+        wrapped_app_method = requires_feature('big-edit')
 
         with app.test_request_context('/protected', method='GET') as context:
             context.session.update({
-                'oauth_user': {'permissions': ['special-permission']},
+                'oauth_user': {'permissions': ['admin']},
             })
             response = wrapped_app_method(func)()
 
         assert_that(response, is_('Decorator exited successfully'))
 
     @patch('application.helpers.signed_in')
-    def test_requires_permission_raises_exception_for_invalid_decoration(
-            self, signed_in_mock):
-        signed_in_mock.return_value = True
-        func = lambda: 'Decorator exited successfully'
-        wrapped_app_method = requires_permission()
-
-        with app.test_request_context('/protected', method='GET') as context:
-            context.session.update({
-                'oauth_user': {'permissions': ['a-permission']},
-            })
-
-            self.assertRaises(Exception, wrapped_app_method(func))
-
-    @patch('application.helpers.signed_in')
-    def test_requires_permission_redirects_when_not_signed_in(
+    def test_requires_feature_redirects_when_not_signed_in(
             self, signed_in_mock):
         signed_in_mock.return_value = False
         func = lambda: 'Decorator exited successfully'
-        wrapped_app_method = requires_permission('special-permission')
+        wrapped_app_method = requires_feature('some-feature')
 
         with app.test_request_context('/protected', method='GET') as context:
             response = wrapped_app_method(func)()
@@ -81,11 +68,11 @@ class HelpersTestCase(unittest.TestCase):
         assert_that(response.headers['Location'], is_('/'))
 
     @patch('application.helpers.signed_in')
-    def test_requires_permission_redirects_for_bad_permissions(
+    def test_requires_feature_redirects_for_bad_permissions(
             self, signed_in_mock):
         signed_in_mock.return_value = True
         func = lambda: 'Decorator exited successfully'
-        wrapped_app_method = requires_permission('special-permission')
+        wrapped_app_method = requires_feature('some-feature')
 
         with app.test_request_context('/protected', method='GET') as context:
             context.session.update({

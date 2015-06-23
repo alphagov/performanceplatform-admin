@@ -32,7 +32,7 @@ class UploadOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authenticated_user_is_required(self):
@@ -180,7 +180,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authenticated_user_is_required(self):
@@ -260,7 +260,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
         assert_that(response.headers['Location'],
                     ends_with('/upload'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
@@ -320,7 +320,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                     "type_id": "36546562-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('application.controllers.builder.digital_take_up.'
            'create_dataset_and_module')
@@ -363,7 +363,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             match_equality(not_none())
         )
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('application.controllers.builder.digital_take_up.'
            'create_dataset_and_module')
@@ -406,7 +406,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             match_equality(not_none())
         )
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_group')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_group')
@@ -471,7 +471,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
                     "type_id": "36546562-b2bd-44a9-b94a-e3cfc472ddf4"
                 })))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('application.controllers.builder.digital_take_up.'
            'get_or_create_data_group')
@@ -540,7 +540,7 @@ class ChannelOptionsPageTestCase(FlaskAppTestCase):
             }
         )
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('application.controllers.builder.digital_take_up.'
            'create_dataset_and_module')
@@ -610,7 +610,7 @@ class DownloadTemplatePageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authenticated_user_is_required(self):
@@ -712,7 +712,7 @@ class UploadPageTestCase(FlaskAppTestCase):
     def tearDown(self):
         self.upload_spreadsheet_patcher.stop()
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard',
            return_value={})
     def test_upload_slug_renders_digital_take_up_upload_page(
@@ -729,7 +729,7 @@ class UploadPageTestCase(FlaskAppTestCase):
         response = client.get(self.upload_url)
         assert_that(response.status, equal_to('302 FOUND'))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     def test_handles_invalid_spreadsheet(

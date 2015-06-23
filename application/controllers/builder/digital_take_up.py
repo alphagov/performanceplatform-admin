@@ -15,7 +15,7 @@ from application.forms import UploadOptionsForm, ChannelOptionsForm
 from application.helpers import (
     base_template_context,
     requires_authentication,
-    requires_permission,
+    requires_feature,
     to_error_list,
     generate_bearer_token,
     redirect_if_module_exists
@@ -39,7 +39,7 @@ DATA_TYPE = 'transactions-by-channel'
     '{0}/<uuid>/digital-take-up/upload-options'.format(DASHBOARD_ROUTE),
     methods=['GET', 'POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 @redirect_if_module_exists('digital-takeup')
 def upload_options(admin_client, uuid):
     template_context = base_template_context()
@@ -67,7 +67,7 @@ def upload_options(admin_client, uuid):
 @app.route(
     '{0}/<uuid>/digital-take-up/api-get-in-touch'.format(DASHBOARD_ROUTE))
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def api_get_in_touch(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
@@ -135,7 +135,7 @@ def get_transform_config_for_digital_takeup(data_group, period):
     '{0}/<uuid>/digital-take-up/channel-options'.format(DASHBOARD_ROUTE),
     methods=['GET', 'POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 @redirect_if_module_exists('digital-takeup')
 def channel_options(admin_client, uuid):
     template_context = base_template_context()
@@ -181,7 +181,7 @@ def channel_options(admin_client, uuid):
 @app.route(
     '{0}/<uuid>/digital-take-up/spreadsheet-template'.format(DASHBOARD_ROUTE))
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def spreadsheet_template(admin_client, uuid):
     csv = make_csv()
     response = make_response(csv)
@@ -374,7 +374,7 @@ def get_or_create_data_group(admin_client, data_group_name, data_type, uuid):
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def upload_digital_take_up(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
@@ -394,7 +394,7 @@ def upload_digital_take_up(admin_client, uuid):
 @app.route('/dashboard/<uuid>/digital-take-up/upload',
            methods=['POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def upload_digital_take_up_file(admin_client, uuid):
     dashboard = admin_client.get_dashboard(uuid)
     data_group = dashboard["slug"]
@@ -410,7 +410,7 @@ def upload_digital_take_up_file(admin_client, uuid):
 @app.route('/dashboard/<uuid>/digital-take-up/upload/success',
            methods=['GET'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def upload_digital_take_up_success(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({
