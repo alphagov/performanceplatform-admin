@@ -233,3 +233,19 @@ class HelpersTestCase(unittest.TestCase):
             ]
         }
         assert_that(group_by_group(data_sets), equal_to(grouped_data_sets))
+
+    def test_admin_user_has_bigedit_feature(self):
+        user = {'permissions': ['admin']}
+        assert_that(user_has_feature('big-edit', user), equal_to(True))
+
+    def test_dashboard_editor_user_does_not_have_bigedit_feature(self):
+        user = {'permissions': ['dashboard-editor']}
+        assert_that(user_has_feature('big-edit', user), equal_to(False))
+
+    def test_dashboard_editor_and_admin_user_does_have_bigedit_feature(self):
+        user = {'permissions': ['dashboard-editor', 'admin']}
+        assert_that(user_has_feature('big-edit', user), equal_to(True))
+
+    def test_user_with_permissions_not_in_list_features(self):
+        user = {'permissions': ['signin']}
+        assert_that(user_has_feature('big-edit', user), equal_to(False))

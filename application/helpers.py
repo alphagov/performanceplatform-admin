@@ -221,3 +221,17 @@ def redirect_if_module_exists(module_name):
             return func(*args, **kwargs)
         return check_and_redirect
     return wrap
+
+
+def user_has_feature(feature, user):
+    if not user:
+        return False
+    roles = app.config.get('ROLES')
+    user_role_definitions = filter(
+        lambda definition: definition['role'] in user['permissions'], roles)
+    user_role_features = map(
+        lambda definition: definition['features'], user_role_definitions)
+    if len(user_role_features) == 0:
+        return False
+    return feature in set(reduce(
+        lambda item, memo: memo + item, user_role_features))
