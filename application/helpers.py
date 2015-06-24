@@ -16,11 +16,7 @@ environment = app.config.get('ENVIRONMENT', 'development')
 
 @app.context_processor
 def view_helpers():
-    def can_edit_dashboards(user):
-        return user_has_feature('edit-dashboards', user)
-
     return dict(
-        can_edit_dashboards=can_edit_dashboards,
         user_has_feature=user_has_feature
     )
 

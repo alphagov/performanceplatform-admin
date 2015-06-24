@@ -21,12 +21,14 @@ class HelpersTestCase(unittest.TestCase):
         app.config['TESTING'] = True
         self.app = app.test_client()
 
-    def test_view_helper_can_edit_dashboards(self):
-        can_edit_dashboards = view_helpers()['can_edit_dashboards']
-        assert_that(can_edit_dashboards({}), is_(False))
-        assert_that(can_edit_dashboards({'permissions': ['signin']}),
+    def test_view_helper_user_has_feature(self):
+        user_has_feature = view_helpers()['user_has_feature']
+        assert_that(user_has_feature('edit-dashboards', {}), is_(False))
+        assert_that(user_has_feature('edit-dashboards',
+                                     {'permissions': ['signin']}),
                     is_(False))
-        assert_that(can_edit_dashboards({'permissions': ['dashboard-editor']}),
+        assert_that(user_has_feature('edit-dashboards',
+                                     {'permissions': ['dashboard-editor']}),
                     is_(True))
 
     @patch('application.helpers.signed_in')
