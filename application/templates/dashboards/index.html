@@ -34,6 +34,9 @@
                     <li><a class='btn btn-success' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}">Clone</a></li>
                   {% endif %}
                   <li><a class='btn btn-primary' href="{{ dashboard['public-url'] }}" target="_blank">Preview</a></li>
+                  {% if dashboard.status == "unpublished" and user_has_feature('big-edit', user)%}
+                    <li><a class='btn btn-warning' href="{{ url_for('dashboard_delete', uuid=dashboard.id) }}">Delete dashboard</a></li>
+                  {% endif %}
               </ul>
           </div>
       </li>

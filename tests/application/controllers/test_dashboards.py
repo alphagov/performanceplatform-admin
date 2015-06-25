@@ -232,6 +232,31 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
         assert_that(response.data,
                     contains_string('Send dashboard for review'))
 
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.delete_dashboard")
+    def test_delete_unpublished_dashboard(
+            self, mock_delete_dashboard, mock_get_dashboard):
+        with self.client.session_transaction() as session:
+            session['oauth_user'] = {
+                'permissions': ['signin', 'admin']}
+        response = self.client.delete('/delete/dashboard-uuid')
+        self.assert_flashes('A dashboard deleted', 'info')
+        assert_that(response.status, equal_to('302 FOUND'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data(
+               {'status': ' published', 'published': True}))
+    @patch("performanceplatform.client.admin.AdminAPI.delete_dashboard")
+    def test_delete_published_dashboard(
+            self, mock_delete_dashboard, mock_get_dashboard):
+        with self.client.session_transaction() as session:
+            session['oauth_user'] = {
+                'permissions': ['signin', 'admin']}
+        response = self.client.delete('/delete/dashboard-uuid')
+        self.assert_flashes('Cannot delete published dashboard', 'info')
+        assert_that(response.status, equal_to('302 FOUND'))
+
 
 class SendDashboardForReviewTestCase(FlaskAppTestCase):
 

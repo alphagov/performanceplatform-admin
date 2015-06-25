@@ -18,6 +18,7 @@ from application import app
 
 
 DASHBOARD_ROUTE = '/dashboards'
+DASHBOARD_DELETE = '/delete'
 
 
 @app.route('{0}/<uuid>'.format(DASHBOARD_ROUTE), methods=['GET', 'POST'])
@@ -113,3 +114,20 @@ def dashboard_list(admin_client):
     return render_template('dashboards/index.html',
                            dashboards=dashboard_response,
                            **template_context)
+
+@app.route('{0}/<uuid>'.format(DASHBOARD_DELETE), methods=['GET', 'DELETE'])
+@requires_authentication
+@requires_feature('big-edit')
+def dashboard_delete(admin_client, uuid):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
+    dashboard_dict = admin_client.get_dashboard(uuid)
+    if dashboard_dict['status'] == 'unpublished':
+        admin_client.delete_dashboard(uuid)
+        flash(dashboard_dict['title'] + ' deleted', 'info')
+        return redirect(url_for('dashboard_list'))
+    else:
+        flash('Cannot delete published dashboard', 'info')
+        return redirect(url_for('dashboard_list'))
