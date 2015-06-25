@@ -10,7 +10,7 @@ from flask import (
 from application.helpers import (
     base_template_context,
     requires_authentication,
-    requires_permission,
+    requires_feature,
     to_error_list,
     redirect_if_module_exists
 )
@@ -23,7 +23,7 @@ DASHBOARD_ROUTE = '/dashboard'
     '{0}/<uuid>/user-satisfaction/add'.format(DASHBOARD_ROUTE),
     methods=['GET', 'POST'])
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 @redirect_if_module_exists('user-satisfaction-score')
 def add_user_satisfaction(admin_client, uuid):
     template_context = base_template_context()
@@ -59,7 +59,7 @@ def add_user_satisfaction(admin_client, uuid):
 @app.route(
     '{0}/<uuid>/user-satisfaction/get-in-touch'.format(DASHBOARD_ROUTE))
 @requires_authentication
-@requires_permission('dashboard')
+@requires_feature('edit-dashboards')
 def get_in_touch(admin_client, uuid):
     template_context = base_template_context()
     template_context.update({

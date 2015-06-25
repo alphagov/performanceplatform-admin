@@ -16,11 +16,9 @@ environment = app.config.get('ENVIRONMENT', 'development')
 
 @app.context_processor
 def view_helpers():
-    def can_edit_dashboards(user):
-        return 'permissions' in user and \
-            'dashboard' in user['permissions']
-
-    return dict(can_edit_dashboards=can_edit_dashboards)
+    return dict(
+        user_has_feature=user_has_feature
+    )
 
 
 def requires_authentication(f):
@@ -35,28 +33,24 @@ def requires_authentication(f):
     return verify_user_logged_in
 
 
-def requires_permission(permission=None):
+def requires_feature(feature):
     """
     Used for application level requests from a client.
     """
     def wrap(f):
 
         @wraps(f)
-        def verify_user_has_permission(*args, **kwargs):
-            if permission is None:
-                raise Exception('@requires_permission needs an argument')
+        def verify_user_has_feature(*args, **kwargs):
 
             if not signed_in(session):
                 return redirect(url_for('root'))
 
-            user_permissions = session['oauth_user']['permissions']
-
-            if permission in user_permissions:
+            if user_has_feature(feature, session['oauth_user']):
                 return f(*args, **kwargs)
             else:
                 return redirect(url_for('root'))
 
-        return verify_user_has_permission
+        return verify_user_has_feature
 
     return wrap
 
@@ -221,3 +215,17 @@ def redirect_if_module_exists(module_name):
             return func(*args, **kwargs)
         return check_and_redirect
     return wrap
+
+
+def user_has_feature(feature, user):
+    if not user:
+        return False
+    roles = app.config.get('ROLES')
+    user_role_definitions = filter(
+        lambda definition: definition['role'] in user['permissions'], roles)
+    user_role_features = map(
+        lambda definition: definition['features'], user_role_definitions)
+    if len(user_role_features) == 0:
+        return False
+    return feature in set(reduce(
+        lambda item, memo: memo + item, user_role_features))

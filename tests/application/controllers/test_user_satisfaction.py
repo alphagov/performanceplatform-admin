@@ -26,7 +26,7 @@ class AddUserSatisfactionTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authenticated_user_is_required(self):

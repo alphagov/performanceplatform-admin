@@ -4,9 +4,11 @@
 
 <h1>Your dashboards</h1>
 
+{% if user_has_feature('big-edit', user) %}
 <p>
     <a href="{{ url_for('dashboard_form') }}" class="btn btn-primary" role="button">Create a dashboard</a>
 </p>
+{% endif %}
 
 <p class="end-section">Manage the data and content to be displayed on your dashboards</p>
 
@@ -24,11 +26,13 @@
                   </span>
               </div>
               <ul class="col-sm-12 col-md-5 buttons">
-                  {% if dashboard.status == "unpublished" %}
+                  {% if user_has_feature('edit-dashboards', user) and dashboard.status == "unpublished" %}
                     <li><a class='btn btn-success' href="{{ url_for('dashboard_hub', uuid=dashboard.id) }}">Edit dashboard</a></li>
                   {% endif %}
-                  <li><a class='btn btn-success' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}"><strong>BIG EDIT</strong></a></li>
-                  <li><a class='btn btn-success' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}">Clone</a></li>
+                  {% if user_has_feature('big-edit', user) %}
+                    <li><a class='btn btn-success' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}"><strong>BIG EDIT</strong></a></li>
+                    <li><a class='btn btn-success' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}">Clone</a></li>
+                  {% endif %}
                   <li><a class='btn btn-primary' href="{{ dashboard['public-url'] }}" target="_blank">Preview</a></li>
               </ul>
           </div>

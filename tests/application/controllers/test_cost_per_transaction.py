@@ -29,7 +29,7 @@ class DownloadPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authenticated_user_is_required(self):
@@ -150,7 +150,7 @@ class UploadPageTestCase(FlaskAppTestCase):
     def tearDown(self):
         patch.stopall()
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -218,7 +218,7 @@ class UploadPageTestCase(FlaskAppTestCase):
                 '_flashes' in session,
                 equal_to(False))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -283,7 +283,7 @@ class UploadPageTestCase(FlaskAppTestCase):
                 '_flashes' in session,
                 equal_to(False))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -341,7 +341,7 @@ class UploadPageTestCase(FlaskAppTestCase):
                       "/cost-per-transaction/upload/success".format(
                           self.dash_id)))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -399,7 +399,7 @@ class UploadPageTestCase(FlaskAppTestCase):
             'data_type': 'cost-per-transaction',
             'title': 'Cost per transaction'})
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -463,7 +463,7 @@ class UploadPageTestCase(FlaskAppTestCase):
                 'title': 'Cost per transaction'
             })))
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -523,7 +523,7 @@ class UploadPageTestCase(FlaskAppTestCase):
             # reset flashes
             session['_flashes'] = []
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')
@@ -583,7 +583,7 @@ class UploadPageTestCase(FlaskAppTestCase):
             # reset flashes
             session['_flashes'] = []
 
-    @signed_in(permissions=['signin', 'dashboard'])
+    @signed_in(permissions=['signin', 'dashboard-editor'])
     @patch('performanceplatform.client.admin.AdminAPI.get_dashboard')
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     @patch('performanceplatform.client.admin.AdminAPI.create_data_set')

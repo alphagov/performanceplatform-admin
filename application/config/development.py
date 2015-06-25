@@ -22,9 +22,7 @@ FAKE_OAUTH_USER = {
     "organisation_slug": "cabinet-office",
     "permissions": [
         "signin",
-        "user",
         "admin",
-        "dashboard",
     ],
     "uid": "00000000-0000-0000-0000-000000000000"
 }

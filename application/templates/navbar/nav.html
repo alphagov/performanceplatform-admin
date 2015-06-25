@@ -31,12 +31,9 @@
           <li>
             <a href="{{ url_for('upload_list_data_sets') }}">Upload data</a>
           </li>
-          {% if can_edit_dashboards(user) %}
+          {% if user_has_feature('edit-dashboards', user) %}
             <li>
               <a href="{{ url_for('dashboard_list') }}">Your dashboards</a>
-            </li>
-            <li>
-              <a href="{{ url_for('transforms_index') }}">Transforms</a>
             </li>
           {% endif %}
           <li >

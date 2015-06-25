@@ -51,7 +51,7 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authenticated_user_is_required(self):
@@ -236,7 +236,7 @@ class SendDashboardForReviewTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard'],
+                'permissions': ['signin', 'dashboard-editor'],
                 'name': 'Mr Foo Bar',
                 'email': 'foo@bar.com'
             }
@@ -333,12 +333,13 @@ class DashboardListTestCase(FlaskAppTestCase):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
-                'permissions': ['signin', 'dashboard']
+                'permissions': ['signin', 'dashboard-editor']
             }
 
     def test_authorised_user_is_required(self):
         with self.client.session_transaction() as session:
-            session['oauth_user'] = {'permissions': ['signin']}
+            session['oauth_user'] = {
+                'permissions': ['signin']}
         resp = self.client.get('/dashboards')
         assert_that(resp.status, equal_to('302 FOUND'))
 
