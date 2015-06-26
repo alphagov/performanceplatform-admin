@@ -135,11 +135,16 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
     def test_dashboard_is_updated(
             self, mock_update_dashboard, mock_get_dashboard):
         data = self.params()
-        self.client.post('/dashboards/dashboard-uuid', data=data)
+        response = self.client.post('/dashboards/dashboard-uuid', data=data)
         post_json = mock_update_dashboard.call_args[0][1]
         assert_that(
             mock_update_dashboard.call_args[0][0], equal_to('dashboard-uuid'))
         assert_that(post_json, has_entries(data))
+        assert_that(response.status, equal_to('302 FOUND'))
+        assert_that(response.headers['Location'],
+                    ends_with('/dashboards/dashboard-uuid'))
+        self.assert_flashes(
+            'Your dashboard has been updated', 'success')
 
     @patch("application.controllers.dashboards.render_template")
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard")
