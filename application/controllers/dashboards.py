@@ -45,7 +45,8 @@ def dashboard_hub(admin_client, uuid):
         data = form.data
         data["slug"] = dashboard_dict["slug"]
         admin_client.update_dashboard(uuid, data)
-        return redirect(url_for('dashboard_list'))
+        flash('Your dashboard has been updated', 'success')
+        return redirect(url_for('dashboard_hub', uuid=uuid))
     if form.errors:
         flash(to_error_list(form.errors), 'danger')
 
