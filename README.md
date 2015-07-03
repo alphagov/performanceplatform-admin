@@ -35,6 +35,11 @@ A good guide to adding redis to launchctl can be found [here][]
 [Redis]: http://redis.io/
 [here]: http://mac-dev-env.patrickbougie.com/redis/
 
+### Bypassing signon in dev
+
+If you're running this in dev, an additional route '/sign-in' is available to bypass authing with signon.
+
+
 ### Getting set up with GOV.UK's single sign-on service
 
 1. Create a [signon application and user](https://github.com/alphagov/signonotron2#usage)
@@ -54,6 +59,12 @@ python tools/compile_sass.py
 
 ```bash
 python start.py 3070
+```
+
+or if you're using the [Performance Platform development environment](https://github.com/alphagov/pp-puppet) you can
+
+```bash
+bowl admin
 ```
 
 Starting the app in development will automatically compile stylesheets.
