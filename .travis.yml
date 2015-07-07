@@ -21,3 +21,5 @@ notifications:
   email: false
 services:
   - redis-server
+cache: pip
+sudo: false
