@@ -260,9 +260,9 @@ def dashboard_update(admin_client, module_types, form, uuid):
               ), 'success')
         del session['pending_dashboard']
         if 'save_and_continue' in request.form:
-          return redirect(url_for('dashboard_form', uuid=uuid))
+            return redirect(url_for('dashboard_form', uuid=uuid))
         else:
-          return redirect(url_for('dashboard_list'))
+            return redirect(url_for('dashboard_list'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('updating', form, e), 'danger')
         return redirect(url_for('dashboard_form', uuid=uuid))
@@ -281,9 +281,9 @@ def dashboard_create(admin_client, module_types, form):
         flash('Created the {} dashboard'.format(form.slug.data), 'success')
         del session['pending_dashboard']
         if 'save_and_continue' in request.form:
-          return redirect(url_for('dashboard_form', uuid=dashboard['id']))
+            return redirect(url_for('dashboard_form', uuid=dashboard['id']))
         else:
-          return redirect(url_for('dashboard_list'))
+            return redirect(url_for('dashboard_list'))
     except (requests.HTTPError, ValueError, InvalidFormFieldError) as e:
         flash(format_error('creating', form, e), 'danger')
         return redirect(url_for('dashboard_form'))
