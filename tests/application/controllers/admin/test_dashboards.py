@@ -725,6 +725,35 @@ class DashboardTestCase(FlaskAppTestCase):
         self.assert_flashes(expected_flash, expected_category='success')
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_save_and_continue_button_for_update(self,
+                                         update_mock,
+                                         mock_list_organisations,
+                                         mock_list_data_sets,
+                                         mock_list_module_types):
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'admin']
+            }
+
+        data = valid_dashboard_data({
+            'save_and_continue':'',
+        })
+
+        resp = self.client.post(
+            '/admin/dashboards/uuid', data=data)
+
+        assert_that(resp.status_code, equal_to(302))
+        assert_that(
+            resp.headers['Location'],
+            ends_with('/admin/dashboards/uuid'))
+        expected_flash = 'Updated the <a href="http://spotlight.development' +\
+            '.performance.service.gov.uk/performance/valid-slug">' + \
+            'My valid title</a> dashboard'
+        self.assert_flashes(expected_flash, expected_category='success')
+
+
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_updating_flash_escapes_title_html(self,
                                                update_mock,
                                                mock_list_organisations,
