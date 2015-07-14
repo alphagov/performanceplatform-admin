@@ -115,6 +115,7 @@ def dashboard_list(admin_client):
                            dashboards=dashboard_response,
                            **template_context)
 
+
 @app.route('{0}/<uuid>'.format(DASHBOARD_DELETE), methods=['GET', 'DELETE'])
 @requires_authentication
 @requires_feature('big-edit')

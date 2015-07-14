@@ -333,6 +333,24 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
+    def test_data_sets_renders_error_page_when_500_on_data_set_list(
+            self,
+            mock_data_set_list,
+            client):
+
+        http_error = requests.exceptions.HTTPError()
+        bad_response = Mock()
+        bad_response.status_code = 500
+        bad_response.content = '{"message": "Test Error"}'
+        http_error.response = bad_response
+
+        mock_data_set_list.side_effect = http_error
+        response = client.get("/upload-data")
+
+        self.assert_template_used('error.html')
+
+    @signed_in()
+    @patch('performanceplatform.client.admin.AdminAPI.list_data_sets')
     def test_data_sets_renders_a_data_set_list_and_okay_message_on_success(
             self,
             mock_data_set_list,

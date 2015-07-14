@@ -10,6 +10,19 @@ from application.helpers import(
     base_template_context,
     group_by_group)
 from performanceplatform.client.data_set import DataSet
+import traceback
+
+
+@app.errorhandler(StandardError)
+def internal_error(err):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user'],
+    })
+    print(traceback.format_exc())
+    return render_template('error.html',
+                           error="There has been an error",
+                           **template_context), 500
 
 
 @app.route('/upload-data', methods=['GET'])
@@ -23,6 +36,7 @@ def upload_list_data_sets(admin_client):
             return redirect(url_for('oauth_sign_out'))
         else:
             raise
+
     template_context.update({
         'user': session['oauth_user'],
         'data_sets': data_sets
