@@ -80,7 +80,8 @@ def upload_spreadsheet(data_set, file_data):
                 url = '{0}/data/{1}/{2}'.format(app.config['BACKDROP_HOST'],
                                                 data_set['data_group'],
                                                 data_set['data_type'])
-                data_set = DataSet(url, data_set['bearer_token'])
+                data_set = DataSet(url, data_set['bearer_token'],
+                                   retry_on_error=False)
                 try:
                     data_set.post(spreadsheet.as_json())
                 except HTTPError as err:
