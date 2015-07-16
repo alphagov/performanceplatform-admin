@@ -168,7 +168,7 @@ class DashboardHubPageTestCase(FlaskAppTestCase):
             environment=match_equality(not_none()),
             user=match_equality(not_none()),
         )
-        #mock_render_template.assert_called_once_with('abc')
+        # mock_render_template.assert_called_once_with('abc')
 
     @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
            return_value=dashboard_data())
