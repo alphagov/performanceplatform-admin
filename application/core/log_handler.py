@@ -26,7 +26,7 @@ def set_up_logging(app, env):
         get_log_file_handler("log/%s.log" % env, log_level)
     )
     app.logger.addHandler(
-        get_json_log_handler("log/%s.log.json" % env, app.name)
+        get_json_log_handler("log/%s.json.log" % env, app.name)
     )
     app.logger.setLevel(log_level)
     app.logger.info("{} logging started".format(app.name))
