@@ -19,7 +19,7 @@ def internal_error(err):
     template_context.update({
         'user': session['oauth_user'],
     })
-    print(traceback.format_exc())
+    app.logger.info(traceback.format_exc())
     return render_template('error.html',
                            error="There has been an error",
                            **template_context), 500
