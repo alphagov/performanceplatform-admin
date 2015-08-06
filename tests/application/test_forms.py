@@ -70,6 +70,17 @@ class DashboardTestCase(TestCase):
         assert_that(modules[-2].data['title'], equal_to('Digital services'))
         assert_that(modules[-1].data['title'], equal_to('Digital take-up'))
 
+    def test_dashboard_with_no_organisation_does_not_raise_exception(self):
+        dashboard_dict = json.loads(self.dashboard_json)
+        del(dashboard_dict['organisation'])
+        try:
+            convert_to_dashboard_form(dashboard_dict,
+                                      self.mock_admin_client,
+                                      self.mock_module_types,
+                                      self.mock_data_sources)
+        except Exception:
+            self.fail('convert_to_dashboard_form raised Exception')
+
 
 class DataSourcesTestCase(TestCase):
 

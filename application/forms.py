@@ -56,7 +56,7 @@ def convert_to_dashboard_form(
     elif len(transaction_link) == 1:
         dashboard_dict['transaction_link'] = transaction_link[0]['url']
         dashboard_dict['transaction_title'] = transaction_link[0]['title']
-    if dashboard_dict['organisation'] is not None:
+    if dashboard_dict.get('organisation') is not None:
         organisation_id = dashboard_dict['organisation']['id']
     else:
         organisation_id = None
