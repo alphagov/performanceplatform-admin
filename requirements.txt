@@ -5,6 +5,7 @@ Flask==0.10.1
 Flask-Scss==0.3
 Flask-WTF==0.10.1
 WTForms-Components==0.9.7
+google-api-python-client==1.4.1
 graphviz==0.4.2
 gunicorn==18.0
 logstash_formatter==0.5.7

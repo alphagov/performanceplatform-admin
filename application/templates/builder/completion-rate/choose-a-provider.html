@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-6">
+        <h3>Add completion rate data</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h1>Tell us your analytics provider</h1>
+    </div>
+</div>
+
+<section>
+    <header class='form'>
+        <div class="row">
+            <p class="col-md-6">
+                To collect completion rate data you need to have analytics service set up on your transaction and a goal set up to track completions
+            </p>
+        </div>
+    </header>
+</section>
+
+<form id="{{ data_type }}" method="POST" action="{{ url_for('choose_a_provider', uuid=uuid) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="radio" name="provider" id="google_analytics"><label for="google_analytics">Google analytics</label><br/>
+    <input type="radio" name="provider" id="omniture"><label for="omniture">Omniture</label><br/>
+    <input type="radio" name="provider" id="piwik"><label for="piwik">Piwik</label><br/>
+    <input type="radio" name="provider" id="webtrends"><label for="webtrends">WebTrends</label><br/>
+    <input type="radio" name="provider" id="other"><label for="other">Other</label><br/>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <input type="submit" class="btn btn-success" value="Continue" name="continue">
+        </div>
+    </div>
+</form>
+
+{% endblock %}

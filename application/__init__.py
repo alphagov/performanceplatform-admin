@@ -42,6 +42,7 @@ import application.controllers.dashboards
 import application.controllers.builder.user_satisfaction
 import application.controllers.builder.digital_take_up
 import application.controllers.builder.cost_per_transaction
+import application.controllers.builder.completion_rate
 import application.controllers.upload
 
 

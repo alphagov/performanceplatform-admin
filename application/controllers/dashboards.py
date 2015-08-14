@@ -36,11 +36,11 @@ def dashboard_hub(admin_client, uuid):
         return redirect(url_for('dashboard_list'))
 
     Dashboard = namedtuple('Dashboard', dashboard_dict.keys())
+    # ('Dashboard', 'modules', etc more dashboard property names)
     dashboard = Dashboard(**dashboard_dict)
     modules = []
     if "modules" in dashboard_dict.keys():
-        modules = [module["data_type"] for module in dashboard_dict["modules"]
-                   if 'data_type' in module]
+        modules = [module["data_type"] for module in dashboard_dict["modules"] if 'data_type' in module]
     form = DashboardHubForm(obj=dashboard)
     if form.validate_on_submit():
         data = form.data

@@ -126,6 +126,28 @@
           {% endif %}
       </div>
     </section>
+    <section class="dashboard-data-item">
+      <div class="row">
+        <header class="col-md-3">
+          <h1>Completion rate</h1>
+        </header>
+
+        {% if "completion-rate" in modules %}
+        <p class="advisory col-sm-12"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Data successfully set up</p>
+        {% else %}
+        <div class="col-md-5">
+          <p>
+            To calculate your completion rate you will need:
+          </p>
+
+          <ul>
+            <li>an analytics account for your service eg Google Analytics, Webtrends</li>
+          </ul>
+          <p><a href="{{ url_for('choose_a_provider', uuid=uuid) }}" class="btn btn-info">Add completion rate</a></p>
+        </div>
+        {% endif %}
+      </div>
+     </section>
   </section>
 
   <footer>

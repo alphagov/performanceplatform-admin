@@ -726,10 +726,10 @@ class DashboardTestCase(FlaskAppTestCase):
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_save_and_continue_button_for_update(self,
-                                                 update_mock,
-                                                 mock_list_organisations,
-                                                 mock_list_data_sets,
-                                                 mock_list_module_types):
+                                         update_mock,
+                                         mock_list_organisations,
+                                         mock_list_data_sets,
+                                         mock_list_module_types):
         with self.client.session_transaction() as session:
             session['oauth_token'] = {'access_token': 'token'}
             session['oauth_user'] = {
@@ -742,6 +742,7 @@ class DashboardTestCase(FlaskAppTestCase):
 
         resp = self.client.post(
             '/admin/dashboards/uuid', data=data)
+        post_json = update_mock.call_args[0][1]
 
         assert_that(resp.status_code, equal_to(302))
         assert_that(
@@ -752,30 +753,6 @@ class DashboardTestCase(FlaskAppTestCase):
             'My valid title</a> dashboard'
         self.assert_flashes(expected_flash, expected_category='success')
 
-    @patch("performanceplatform.client.admin.AdminAPI.create_dashboard")
-    def test_save_and_continue_button_for_create(self,
-                                                 create_dashboard,
-                                                 mock_list_organisations,
-                                                 mock_list_data_sets,
-                                                 mock_list_module_types):
-        with self.client.session_transaction() as session:
-            session['oauth_token'] = {'access_token': 'token'}
-            session['oauth_user'] = {
-                'permissions': ['signin', 'admin']
-            }
-
-        data = valid_dashboard_data({
-            'save_and_continue': '',
-        })
-        dashboard_id = 1234
-        create_dashboard.return_value = {'id': dashboard_id}
-        resp = self.client.post(
-            '/admin/dashboards', data=data)
-
-        assert_that(resp.status_code, equal_to(302))
-        assert_that(
-            resp.headers['Location'],
-            ends_with('/admin/dashboards/{}'.format(dashboard_id)))
 
     @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
     def test_updating_flash_escapes_title_html(self,
