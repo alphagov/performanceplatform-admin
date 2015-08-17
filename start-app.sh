@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-PORT=${1:-3070}
+PORT=${1:-3104}
 VENV_DIR=~/.virtualenvs/$(basename $(cd $(dirname $0) && pwd -P))-$PORT-$2
 
 if [ -z "$VIRTUAL_ENV" ]; then
