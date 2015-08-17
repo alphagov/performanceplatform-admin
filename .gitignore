@@ -10,3 +10,5 @@ nosetests.xml
 
 application/static/**/*.css
 log/*
+
+top-secret-do-not-commit.json
