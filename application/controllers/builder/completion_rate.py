@@ -27,6 +27,10 @@ from application.utils.datetimeutil import (
 from application.controllers.builder.common import(
     upload_data_and_respond)
 
+from oauth2client import client
+
+import httplib2
+
 DATA_TYPE = 'completion-rate'
 
 @app.route('/dashboard/<uuid>/completion-rate/choose-a-provider',
@@ -52,7 +56,7 @@ def choose_a_provider(admin_client, uuid):
                            **template_context)
 
 @app.route('/dashboard/<uuid>/completion-rate/set-up-provider',
-            methods=['GET', 'POST'])
+            methods=['GET'])
 @requires_authentication
 @requires_feature('edit-dashboards')
 def set_up_provider(admin_client, uuid):
@@ -65,3 +69,61 @@ def set_up_provider(admin_client, uuid):
                            uuid=uuid,
                            data_type=DATA_TYPE,
                            **template_context)
+
+@app.route('/dashboard/<uuid>/completion-rate/auth',
+            methods=['GET', 'POST'])
+@requires_authentication
+@requires_feature('edit-dashboards')
+def auth(admin_client, uuid):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user']
+    })
+
+    flow = client.flow_from_clientsecrets(
+        'top-secret-do-not-commit.json',
+        scope='https://www.googleapis.com/auth/analytics.readonly',
+        redirect_uri='http://admin.development.performance.service.gov.uk/dashboard/completion-rate/auth-callback')
+
+    auth_uri = flow.step1_get_authorize_url()
+    redirect_uri = "{0}&state={1}".format(auth_uri, uuid)
+
+    return redirect(redirect_uri)
+
+@app.route('/dashboard/completion-rate/auth-callback',
+            methods=['GET'])
+@requires_authentication
+@requires_feature('edit-dashboards')
+def auth_callback(admin_client):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user']
+    })
+
+    flow = client.flow_from_clientsecrets(
+        'top-secret-do-not-commit.json',
+        scope='https://www.googleapis.com/auth/analytics.readonly',
+        redirect_uri='http://admin.development.performance.service.gov.uk/dashboard/completion-rate/auth-callback')
+
+
+    credentials = flow.step2_exchange(request.args['code'])
+    http_auth = credentials.authorize(httplib2.Http())
+    session['http_auth']=http_auth
+    return redirect(url_for('choose_ga_profile_and_goal', uuid=request.args['state']));
+
+
+@app.route('/dashboard/<uuid>/completion-rate/choose-ga-profile-and-goal',
+            methods=['GET'])
+@requires_authentication
+@requires_feature('edit-dashboards')
+def choose_ga_profile_and_goal(admin_client, uuid):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user']
+    })
+
+    # get users profile(s)
+    # get users goal(s)
+
+    # put them on the page
+    return
