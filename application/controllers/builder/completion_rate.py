@@ -30,6 +30,9 @@ from application.controllers.builder.common import(
 from oauth2client import client
 
 import httplib2
+from apiclient.discovery import build
+
+import json
 
 DATA_TYPE = 'completion-rate'
 
@@ -108,12 +111,12 @@ def auth_callback(admin_client):
 
     credentials = flow.step2_exchange(request.args['code'])
     http_auth = credentials.authorize(httplib2.Http())
-    session['http_auth']=http_auth
+    session['credentials']=credentials
     return redirect(url_for('choose_ga_profile_and_goal', uuid=request.args['state']));
 
 
 @app.route('/dashboard/<uuid>/completion-rate/choose-ga-profile-and-goal',
-            methods=['GET'])
+            methods=['GET', 'POST'])
 @requires_authentication
 @requires_feature('edit-dashboards')
 def choose_ga_profile_and_goal(admin_client, uuid):
@@ -122,8 +125,27 @@ def choose_ga_profile_and_goal(admin_client, uuid):
         'user': session['oauth_user']
     })
 
-    # get users profile(s)
-    # get users goal(s)
+    if request.method == 'POST':
+        return redirect(url_for('set_up_provider', uuid=uuid))
+
+    http_auth = session['credentials'].authorize(httplib2.Http())
+
+    analytics_service = build('analytics', 'v3', http=http_auth)
+
+    analytics_request = analytics_service.management().profiles().list(accountId='~all', webPropertyId='~all')
+    response = analytics_request.execute()
+
+    goals = {}
+    profiles = response['items']
+    for profile in profiles:
+        request = analytics_service.management().goals().list(profileId=profile['id'], webPropertyId=profile['webPropertyId'], accountId=profile['accountId'])
+        response = request.execute()
+        goals[profile['id']] = response['items']
 
     # put them on the page
-    return
+    return render_template('builder/completion-rate/choose-ga-profile-and-goal.html',
+                           uuid=uuid,
+                           data_type=DATA_TYPE,
+                           profiles=profiles,
+                           goals=goals,
+                           **template_context)
