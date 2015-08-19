@@ -138,8 +138,8 @@ def choose_ga_profile_and_goal(admin_client, uuid):
     goals = {}
     profiles = response['items']
     for profile in profiles:
-        request = analytics_service.management().goals().list(profileId=profile['id'], webPropertyId=profile['webPropertyId'], accountId=profile['accountId'])
-        response = request.execute()
+        profile_request = analytics_service.management().goals().list(profileId=profile['id'], webPropertyId=profile['webPropertyId'], accountId=profile['accountId'])
+        response = profile_request.execute()
         goals[profile['id']] = response['items']
 
     # put them on the page
