@@ -126,7 +126,7 @@ def choose_ga_profile_and_goal(admin_client, uuid):
     })
 
     if request.method == 'POST':
-        return redirect(url_for('set_up_provider', uuid=uuid))
+        return redirect(url_for('confirm_data_choices', uuid=uuid))
 
     http_auth = session['credentials'].authorize(httplib2.Http())
 
@@ -149,3 +149,15 @@ def choose_ga_profile_and_goal(admin_client, uuid):
                            profiles=profiles,
                            goals=goals,
                            **template_context)
+
+@app.route('/dashboard/<uuid>/completion-rate/check-data',
+            methods=['GET', 'POST'])
+@requires_authentication
+@requires_feature('edit-dashboards')
+def check_data(admin_client, uuid):
+    template_context = base_template_context()
+    template_context.update({
+        'user': session['oauth_user']
+    })
+
+    
