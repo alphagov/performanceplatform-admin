@@ -24,12 +24,16 @@
 
 <form id="{{ data_type }}" method="POST" action="{{ url_for('choose_a_provider', uuid=uuid) }}" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <input type="radio" name="provider" id="google_analytics"><label for="google_analytics">Google analytics</label><br/>
-    <input type="radio" name="provider" id="omniture"><label for="omniture">Omniture</label><br/>
-    <input type="radio" name="provider" id="piwik"><label for="piwik">Piwik</label><br/>
-    <input type="radio" name="provider" id="webtrends"><label for="webtrends">WebTrends</label><br/>
-    <input type="radio" name="provider" id="other"><label for="other">Other</label><br/>
+    <div class="form-group">
+    <div class="radio">
 
+      <label for="google_analytics"><input type="radio" name="provider" id="google_analytics">Google analytics</label><br/>
+      <label for="omniture"><input type="radio" name="provider" id="omniture">Omniture</label><br/>
+      <label for="piwik"><input type="radio" name="provider" id="piwik">Piwik</label><br/>
+      <label for="webtrends"><input type="radio" name="provider" id="webtrends">WebTrends</label><br/>
+      <label for="other"><input type="radio" name="provider" id="other">Other</label><br/>
+    </div>
+  </div>
     <div class="row">
         <div class="col-xs-12">
             <input type="submit" class="btn btn-success" value="Continue" name="continue">

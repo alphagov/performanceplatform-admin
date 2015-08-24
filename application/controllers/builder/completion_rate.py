@@ -125,18 +125,26 @@ def choose_ga_profile_and_goal(admin_client, uuid):
         'user': session['oauth_user']
     })
 
-    if request.method == 'POST':
-        return redirect(url_for('confirm_data_choices', uuid=uuid))
-
     http_auth = session['credentials'].authorize(httplib2.Http())
-
     analytics_service = build('analytics', 'v3', http=http_auth)
-
     analytics_request = analytics_service.management().profiles().list(accountId='~all', webPropertyId='~all')
-    response = analytics_request.execute()
+    profile_list = analytics_request.execute()
+
+    if request.method == 'POST':
+        chosen_profile={}
+        chosen_id=request.form.get('profile_id')
+
+        for profile in profile_list['items']:
+            if profile['id']==chosen_id:
+                chosen_profile=profile
+                break
+
+        return redirect(url_for('check_data', uuid=uuid, profileId=chosen_profile['id'],
+         webPropertyId=chosen_profile['webPropertyId'], accountId=chosen_profile['accountId'], goalId=request.form.get('goal')))
+
 
     goals = {}
-    profiles = response['items']
+    profiles = profile_list['items']
     for profile in profiles:
         profile_request = analytics_service.management().goals().list(profileId=profile['id'], webPropertyId=profile['webPropertyId'], accountId=profile['accountId'])
         response = profile_request.execute()
@@ -150,6 +158,7 @@ def choose_ga_profile_and_goal(admin_client, uuid):
                            goals=goals,
                            **template_context)
 
+#check-data?profileId=id&webPropertyId=webPropertyId&goalId=goalId&accountId=accountId
 @app.route('/dashboard/<uuid>/completion-rate/check-data',
             methods=['GET', 'POST'])
 @requires_authentication
@@ -160,4 +169,15 @@ def check_data(admin_client, uuid):
         'user': session['oauth_user']
     })
 
-    
+
+
+    http_auth = session['credentials'].authorize(httplib2.Http())
+    analytics_service = build('analytics', 'v3', http=http_auth)
+    goal_request = analytics_service.management().goals().get(accountId=request.args.get('accountId', ''), webPropertyId=request.args.get('webPropertyId',''),
+    goalId=request.args.get('goalId',''),  profileId=request.args.get('profileId',''))
+    response = goal_request.execute()
+
+    return render_template('builder/completion-rate/check-data.html',
+                           uuid=uuid,
+                           data_type=DATA_TYPE,
+                           **template_context)

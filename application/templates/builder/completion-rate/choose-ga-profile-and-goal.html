@@ -2,44 +2,69 @@
 
 {% block body %}
 <div class="row">
-    <div class="col-md-6">
-        <h3>Add completion rate data</h3>
-    </div>
+  <div class="col-md-6">
+    <h3>Add completion rate data</h3>
+  </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
-        <h1>Tell us your analytics provider</h1>
-    </div>
+  <div class="col-md-6">
+    <h1>Tell us your analytics provider</h1>
+  </div>
 </div>
 
-<section>
-    <header class='form'>
-        <div class="row">
-            <p class="col-md-6">
-              Google Analytics is connected.<br>
-              You can revoke this connection at any time in your Google Analytics account.
-            </p>
+<div class="row">
+  <p class="col-md-6">
+    Google Analytics is connected.<br>
+    You can revoke this connection at any time in your Google Analytics account.
+  </p>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-6'>
+    <form id="{{ data_type }}" method="POST" action="{{ url_for('choose_ga_profile_and_goal', uuid=uuid) }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <div class="form-group">
+        <label for='profile_list'>Profile</label>
+        <select id='profile_list' class="form-control" name='profile_id'>
+          {% for options in profiles %}
+            <option value='{{ options['id'] }}'>{{ options['name'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="goal_list">Goal</label>
+        {% for options in profiles %}
+          <select style="display:none" name='goal' id='goal_list_{{ options['id'] }}' class="goal_selector form-control">
+            {% for goals in goals[options['id']] %}
+            <option value='{{ goals['id'] }}'>{{goals['name']}}</option>
+            {% endfor %}
+          </select>
+          {% endfor %}
         </div>
-    </header>
+      <details>
+        <summary>I can't find my goal</summary>
+        <p>Goals are set up in Google Analytics. If you can't see your goal here, please email <a href='mailto:performance-platform-help@digital.cabinet-office.gov.uk'>performance-platform-help@digital.cabinet-office.gov.uk</a></p>
+      </details>
+      <input type="submit" class="btn btn-success" value="Continue" name="continue">
+
+    </form>
+  </div>
+</div>
+
 </section>
 
-<form id="{{ data_type }}" method="POST" action="{{ url_for('choose_ga_profile_and_goal', uuid=uuid) }}" enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <select>
-    {% for options in profiles %}
-      <option>{{options['name']}}</option>
-    {% endfor %}
-  </select><br>
-    <select>
-    {% for options in goals[goals.keys()[0]] %}
-      <option>{{options['name']}}</option>
-    {% endfor %}
-    </select>
-    <div class="row">
-        <div class="col-xs-12">
-            <input type="submit" class="btn btn-success" value="Continue" name="continue">
-        </div>
-    </div>
-</form>
+<script type='text/javascript'>
+$(function(){
+  $('#profile_list').change(updateGoals);
+  $('.goal_selector').first().show();
+});
+
+function updateGoals(option){
+  $('.goal_selector').hide();
+  $('#goal_list_'+$('#profile_list').val()).show();
+}
+</script>
 
 {% endblock %}
