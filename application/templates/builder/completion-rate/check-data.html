@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-6">
+        <h3>Add completion rate data</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h1>Completion rate data</h1>
+    </div>
+</div>
+
+<section>
+  <div class="row">
+    <div class="col-md-8">
+
+      <h2>
+          Past 7 day conversions
+      </h2>
+      <p>Check your data</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="row">
+    <div class="col-md-8">
+      <dl>
+        <dt>Destination</dt>
+        <dd>{{destination_url}}</dd>
+        <dt>Funnel</dt>
+        <dd>{{funnel_url}}</dd>
+        <dt>Past 7 day conversions</dt>
+        <dd>{{conversions}}</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<p><a href='#'>Edit this data</a></p>
+<input type="submit" class="btn btn-success" value="Save this data" name="continue">
+
+
+{% endblock %}
