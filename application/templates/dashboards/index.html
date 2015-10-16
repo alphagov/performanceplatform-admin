@@ -35,6 +35,7 @@
                   {% endif %}
                   <li><a class='btn btn-primary' href="{{ dashboard['public-url'] }}" target="_blank">Preview</a></li>
                   {% if dashboard.status == "unpublished" and user_has_feature('big-edit', user)%}
+                    <li><a class='btn btn-warning' href="{{ url_for('publish_dashboard', uuid=dashboard.id) }}">Publish</a></li>
                     <li><a class='btn btn-warning' href="{{ url_for('dashboard_delete', uuid=dashboard.id) }}">Delete dashboard</a></li>
                   {% endif %}
               </ul>

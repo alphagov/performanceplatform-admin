@@ -132,3 +132,22 @@ def dashboard_delete(admin_client, uuid):
     else:
         flash('Cannot delete published dashboard', 'info')
         return redirect(url_for('dashboard_list'))
+
+
+@app.route('{0}/<uuid>/publish'.format(DASHBOARD_ROUTE),
+           methods=['GET', 'POST'])
+@requires_authentication
+@requires_feature('big-edit')
+def publish_dashboard(admin_client, uuid):
+    dashboard_dict = admin_client.get_dashboard(uuid)
+    if dashboard_dict['status'] == 'unpublished':
+        admin_client.update_dashboard(
+            uuid, {
+                'status': 'published',
+                'slug': dashboard_dict["slug"],
+                'title': dashboard_dict["title"]
+            })
+        flash('Your dashboard has been published', 'success')
+    else:
+        flash('Dashboard already published', 'info')
+    return redirect(url_for('dashboard_list'))

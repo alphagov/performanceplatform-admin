@@ -455,3 +455,84 @@ class DashboardListTestCase(FlaskAppTestCase):
         get_patch.return_value = self.dashboards
         resp = self.client.get('/dashboards')
         self.assertFalse('Edit dashboard' in resp.data)
+
+
+class PublishDashboardTestCase(FlaskAppTestCase):
+
+    def setUp(self):
+        app.config['WTF_CSRF_ENABLED'] = False
+        self.app = app.test_client()
+        with self.client.session_transaction() as session:
+            session['oauth_token'] = {'access_token': 'token'}
+            session['oauth_user'] = {
+                'permissions': ['signin', 'admin'],
+                'name': 'Mr Foo Bar',
+                'email': 'foo@bar.com'
+            }
+
+    @staticmethod
+    def params(options={}):
+        params = {
+            'slug': 'valid-slug',
+            'title': 'A dashboard',
+            'status': 'published'
+        }
+        params.update(options)
+        return params
+
+    def test_authenticated_user_is_required(self):
+        with self.client.session_transaction() as session:
+            del session['oauth_token']
+        response = self.client.post(
+            '/dashboards/dashboard-uuid/publish',
+            data={})
+        assert_that(response.status, equal_to('302 FOUND'))
+
+    def test_authorised_user_is_required(self):
+        with self.client.session_transaction() as session:
+            session['oauth_user'] = {'permissions': ['signin']}
+        response = self.client.get('/dashboards/dashboard-uuid')
+        assert_that(response.status, equal_to('302 FOUND'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_dashboard_status_is_set_to_published(
+            self,
+            mock_update_dashboard,
+            mock_get_dashboard):
+
+        response = self.client.post('/dashboards/dashboard-uuid/publish',
+                                    data=self.params())
+
+        assert_that(response.status_code, equal_to(302))
+        self.assert_flashes('Your dashboard has been published', 'success')
+
+        mock_update_dashboard.assert_called_once_with(
+            'dashboard-uuid', self.params())
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data())
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_redirects_to_about_your_service_page(
+            self,
+            mock_update_dashboard,
+            mock_get_dashboard):
+        response = self.client.post(
+            '/dashboards/dashboard-uuid/publish', data={})
+        assert_that(response.status, equal_to('302 FOUND'))
+        assert_that(response.headers['Location'],
+                    ends_with('/dashboards'))
+
+    @patch("performanceplatform.client.admin.AdminAPI.get_dashboard",
+           return_value=dashboard_data({"status": "published"}))
+    @patch("performanceplatform.client.admin.AdminAPI.update_dashboard")
+    def test_can_only_publish_unpublised_dashboard(
+            self,
+            mock_update_dashboard,
+            mock_get_dashboard):
+
+        self.client.post('/dashboards/dashboard-uuid/publish',
+                         data=self.params())
+        self.assert_flashes('Dashboard already published', 'info')
+        assert not mock_update_dashboard.called
