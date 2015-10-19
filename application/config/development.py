@@ -1,9 +1,9 @@
 COOKIE_SECRET_KEY = 'placeholder_cookie_secret_key'
 
-ADMIN_HOST = 'https://admin-beta.development.performance.service.gov.uk'
+ADMIN_HOST = 'http://performanceplatform-admin.dev.gov.uk/'
 
-BACKDROP_HOST = 'http://www.development.performance.service.gov.uk'
-STAGECRAFT_HOST = 'http://stagecraft.development.performance.service.gov.uk'
+BACKDROP_HOST = 'http://localhost:3039'
+STAGECRAFT_HOST = 'http://stagecraft.dev.gov.uk'
 
 GOVUK_SITE_URL = 'http://spotlight.development.performance.service.gov.uk'
 SIGNON_OAUTH_ID = 'oauth_id'
