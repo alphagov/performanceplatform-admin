@@ -2,7 +2,7 @@ COOKIE_SECRET_KEY = 'placeholder_cookie_secret_key'
 
 ADMIN_HOST = 'http://performanceplatform-admin.dev.gov.uk/'
 
-BACKDROP_HOST = 'http://localhost:3039'
+BACKDROP_HOST = 'http://backdrop-write.dev.gov.uk'
 STAGECRAFT_HOST = 'http://stagecraft.dev.gov.uk'
 
 GOVUK_SITE_URL = 'http://spotlight.development.performance.service.gov.uk'
