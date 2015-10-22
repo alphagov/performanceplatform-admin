@@ -1,4 +1,6 @@
+import pytz
 from application.files.parsers import ParseError
+from dateutil.parser import parse
 
 import csv
 import itertools
@@ -46,13 +48,25 @@ def parse_as_number(cell):
     1.1
     >>> parse_as_number("foo")
     'foo'
+    >>> parse_as_number("2015-10-05T00:00:00")
+    '2015-10-05T00:00:00+00:00'
+    >>> parse_as_number("2015-10-05T00:00:00Z")
+    '2015-10-05T00:00:00+00:00'
     """
+
     try:
         return int(cell)
     except ValueError:
         try:
             return float(cell)
         except ValueError:
+            if cell:
+                try:
+                    dt = parse(cell)
+                    value = dt.replace(tzinfo=pytz.UTC).isoformat()
+                    return value
+                except ValueError:
+                    return cell
             return cell
 
 
