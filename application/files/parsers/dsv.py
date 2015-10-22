@@ -1,9 +1,8 @@
-import pytz
 from application.files.parsers import ParseError
-from dateutil.parser import parse
 
 import csv
 import itertools
+from application.files.parsers.util import format_utc_date
 
 
 def parse_csv(incoming_data):
@@ -60,14 +59,7 @@ def parse_as_number(cell):
         try:
             return float(cell)
         except ValueError:
-            if cell:
-                try:
-                    dt = parse(cell)
-                    value = dt.replace(tzinfo=pytz.UTC).isoformat()
-                    return value
-                except ValueError:
-                    return cell
-            return cell
+            return format_utc_date(cell)
 
 
 def ignore_comment_lines(reader):

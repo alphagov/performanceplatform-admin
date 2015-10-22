@@ -1,4 +1,7 @@
 from application.files.parsers import ParseError
+from dateutil.parser import parse
+
+import pytz
 
 
 def remove_blanks(rows):
@@ -30,3 +33,14 @@ def make_dicts(rows):
                 'Some rows in the CSV file contain fewer values than columns')
 
         yield dict(zip(keys, row))
+
+
+def format_utc_date(cell):
+    if cell:
+        try:
+            dt = parse(cell)
+            return dt.replace(tzinfo=pytz.UTC).isoformat()
+        except ValueError:
+            return cell
+    else:
+        return cell
