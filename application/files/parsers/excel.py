@@ -1,4 +1,5 @@
 from application.files.parsers import ParseError
+from dateutil.parser import parse
 
 import datetime
 import logging
@@ -64,6 +65,12 @@ def _extract_cell_value(cell, book):
         logging.warn("Encountered errors in cells when parsing excel file")
         value = EXCEL_ERROR
     else:
-        value = cell.value
-
+        if cell.value:
+            try:
+                dt = parse(cell.value)
+                value = dt.replace(tzinfo=pytz.UTC).isoformat()
+            except ValueError:
+                value = cell.value
+        else:
+            value = cell.value
     return value
