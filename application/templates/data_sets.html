@@ -37,11 +37,11 @@
     <hr>
     {% if data_sets %}
       <ul class="list-unstyled data-group-list">
-        {% for group_name in data_sets %}
+        {% for group_name in data_sets|sort %}
         <li data-name={{group_name}}>
           <h3 class="data-group-name">{{ group_name }}</h3>
           <ul class="list-unstyled data-set-list">
-            {% for data_set in data_sets[group_name] %}
+            {% for data_set in data_sets[group_name]|sort(attribute='data_type') %}
             <li>
               {% include "upload/form.html" %}
               {% if upload_data and upload_data.data_group == data_set.data_group and upload_data.data_type == data_set.data_type %}

@@ -83,6 +83,7 @@ class ModuleTypes():
             for module in self.types
             if module['name'] != 'section'
         ]
+        choices.sort(key=lambda tup: tup[1])
         return choices
 
 
@@ -169,22 +170,22 @@ class DashboardCreationForm(Form):
             m.data_type.choices = data_sources.type_choices()
 
     dashboard_type = SelectField('Dashboard type', choices=[
-        ('transaction', 'Transaction'),
+        ('agency', 'Agency'),
+        ('content', 'Content'),
+        ('department', 'Department'),
         ('high-volume-transaction', 'High volume transaction'),
         ('service-group', 'Service group'),
-        ('agency', 'Agency'),
-        ('department', 'Department'),
-        ('content', 'Content'),
+        ('transaction', 'Transaction'),
         ('other', 'Other'),
     ])
     strapline = SelectField('Strapline', choices=[
-        ('Dashboard', 'Dashboard'),
-        ('Service dashboard', 'Service dashboard'),
         ('Content dashboard', 'Content dashboard'),
+        ('Dashboard', 'Dashboard'),
         ('Performance', 'Performance'),
         ('Policy dashboard', 'Policy dashboard'),
         ('Public sector purchasing dashboard',
          'Public sector purchasing dashboard'),
+        ('Service dashboard', 'Service dashboard'),
     ])
     slug = TextField('Dashboard URL')
     title = TextField('Dashboard title')
