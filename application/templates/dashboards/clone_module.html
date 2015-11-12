@@ -30,8 +30,8 @@
                 Select module
                 <span class="caret"></span>
               </button>
-              <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="module-select">
-                {% for module in modules %}
+              <ul class="dropdown-menu dropdown-menu-left" role="menu" aria-labelledby="module-select">
+                {% for module in modules|sort(attribute='title') %}
                   <li role="presentation">
                     <a role="menuitem" tabindex="-1" href="{{'{}?clone_module={}'.format(target_dashboard_url, module.id)}}">
                       Clone <span class="bold">{{ module.title }}</span> into <span class="bold">{{target_dashboard_name}}</span> <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
