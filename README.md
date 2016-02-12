@@ -82,5 +82,5 @@ the instructions in the `admin/config/development.py` file.
 Clone the stagecraft repo then from that folder, run:
 
 ```
- ./replicate-db.sh postgresql-primary-1.pp-preview
+ bash tools/replicate-db.sh api-postgresql-primary-1.api.integration govuk_dev
 ```
