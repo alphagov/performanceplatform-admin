@@ -1,5 +1,19 @@
 (function () {
 
+  function filterDataTypeBySelectedGroup() {
+    $('.data-group').each(function () {
+      var data_group = $(this);
+      var module_index = data_group.attr('id').replace('-data_group', '');
+      var data_type = $('#' + module_index + '-data_type');
+      data_group.on('change', function () {
+        var group = data_group.val();
+        data_type.children().show();
+        data_type.children('[label!=' + group + ']').hide();
+        data_type.val(data_type.find('[label=' + group  + '] option')[0].value);
+      });
+    });
+  }
+
   function setQueryParamsFromModuleType() {
     $('.js-module-type-selector').on('change', function () {
       var type = $(this).find('[value="' + $(this).val() + '"]').text(),
@@ -41,6 +55,8 @@
     });
     return modules.join(',');
   }
+
+  filterDataTypeBySelectedGroup();
 
   setQueryParamsFromModuleType();
 
