@@ -1,16 +1,6 @@
 {  
   "query": {
-    "duration": 52,
-    "collect": [
-      "avgSessionDuration:sum"
-    ],
-    "group_by": [
-      "stage"
-    ],
-    "period": "week",
-    "filter_by": [
-      "stage:thank-you"
-    ]
+    "sort_by": "_timestamp:ascending"
   },
   "visualisation" : {
     "axes": {
@@ -24,15 +14,24 @@
         }, 
         "y": [
             {
-                "format": "integer", 
-                "label": "Completed applications"
+                "format": {
+                    "pence": true,
+                    "type": "currency"
+                },
+                "label": "Average value"
             }
         ]
     }, 
-    "category": "stage", 
-    "show-line-labels": true, 
-    "show-total-lines": true, 
-    "use_stack": false, 
-    "value-attribute": "count:sum"
+    "axis-period": "month",
+    "date-picker": {
+        "start-date": "2016-08-29"
+    },
+    "format-options": {
+        "dps": 5,
+        "magnitude": true,
+        "sigfigs": 5,
+        "type": "number"
+    },
+    "value-attribute": "rate"
   }
 }
