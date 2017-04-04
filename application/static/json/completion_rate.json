@@ -1,11 +1,11 @@
 {
   "query": {
-    "duration": 52,
     "collect": [
       "count:sum"
     ],
+    "duration": 52,
     "group_by": [
-      "channel"
+      "stage"
     ],
     "period": "week"
   },
@@ -23,14 +23,17 @@
             {
                 "format": "percent", 
                 "key": "completion", 
-                "label": "Digital take-up"
+                "label": "Completion rate"
             }
         ]
     }, 
     "axis-period": "month", 
-    "denominator-matcher": ".+", 
-    "matching-attribute": "channel", 
-    "numerator-matcher": "(Digital)", 
+    "date-picker": {
+        "start-date": "206-08-29"
+    },
+    "denominator-matcher": "start", 
+    "matching-attribute": "stage", 
+    "numerator-matcher": "complete", 
     "value-attribute": "count:sum"
   }
 }
