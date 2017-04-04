@@ -135,8 +135,8 @@ class ModuleForm(Form):
 
     slug = TextField('Module URL')
     title = TextField('Title')
-    description = TextField('Description')
-    info = TextField('Info')
+    description = TextAreaField('Description')
+    info = TextAreaField('Info')
 
     query_parameters = JSONTextAreaField('Query parameters', default='{}')
     options = JSONTextAreaField('Visualisation settings', default='{}')
