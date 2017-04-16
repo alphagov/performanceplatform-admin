@@ -5,24 +5,30 @@ from functools import wraps
 from admin import app
 
 
-def signed_in(f):
-    @wraps(f)
-    def set_session_signed_in(*args, **kwargs):
-        self = args[0]
-        with self.client as client:
-            with client.session_transaction() as sess:
-                sess.update({
-                    'oauth_token': {
-                        'access_token': 'token'
-                    },
-                    'oauth_user': {
-                        'permissions': ['signin']
-                    }
-                })
-            kwargs['client'] = client
-            return f(*args, **kwargs)
-    return set_session_signed_in
+def signed_in(permissions=None):
+    if permissions is None:
+        permissions = ['signin']
 
+    def decorator(func):
+        @wraps(func)
+        def _new_signed_in(*args, **kwargs):
+            self = args[0]
+
+            with self.client as client:
+                with client.session_transaction() as sess:
+                    sess.update({
+                        'oauth_token': {
+                            'access_token': 'token'
+                        },
+                        'oauth_user': {
+                            'permissions': permissions
+                        }
+                    })
+
+            kwargs['client'] = client
+            return func(*args, **kwargs)
+        return _new_signed_in
+    return decorator
 
 class FlaskAppTestCase(TestCase):
 
