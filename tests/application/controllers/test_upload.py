@@ -40,7 +40,9 @@ class UploadTestCase(FlaskAppTestCase):
             '/upload-data/carers-allowance/volumetrics',
             data=post_data)
 
-        expected_post = [{u'_timestamp': u'2014-08-05T00:00:00Z', u'foo': 40}]
+        expected_post = [
+            {u'_timestamp': u'2014-08-05T00:00:00+00:00', u'foo': 40}
+        ]
         data_set_post_patch.assert_called_once_with(expected_post)
 
         upload_done_path = '/upload-data'

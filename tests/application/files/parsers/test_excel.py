@@ -67,3 +67,12 @@ class ParseExcelTestCase(unittest.TestCase):
             [None, None, None],
             ["The above row", "is full", "of nones"]
         ))
+
+    def test_parse_xlsx_handles_dates_in_text_format(self):
+        assert_that(self._parse_excel("bad_dates.xlsx"), contains(
+            ["_timestamp", "period", "count"],
+            ["2015-10-05T00:00:00+00:00", "week", 1],
+            ["2015-10-05T00:00:00+00:00", "week", 100],
+            ["2015-10-12T00:00:00+00:00", "week", 2],
+            ["2015-10-12T00:00:00+00:00", "week", 200],
+        ))

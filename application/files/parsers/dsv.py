@@ -2,6 +2,7 @@ from application.files.parsers import ParseError
 
 import csv
 import itertools
+from application.files.parsers.util import format_utc_date
 
 
 def parse_csv(incoming_data):
@@ -46,14 +47,19 @@ def parse_as_number(cell):
     1.1
     >>> parse_as_number("foo")
     'foo'
+    >>> parse_as_number("2015-10-05T00:00:00")
+    '2015-10-05T00:00:00+00:00'
+    >>> parse_as_number("2015-10-05T00:00:00Z")
+    '2015-10-05T00:00:00+00:00'
     """
+
     try:
         return int(cell)
     except ValueError:
         try:
             return float(cell)
         except ValueError:
-            return cell
+            return format_utc_date(cell)
 
 
 def ignore_comment_lines(reader):

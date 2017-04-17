@@ -737,7 +737,7 @@ class DashboardTestCase(FlaskAppTestCase):
             }
 
         data = valid_dashboard_data({
-            'save_and_continue':'',
+            'save_and_continue': '',
         })
 
         resp = self.client.post(
