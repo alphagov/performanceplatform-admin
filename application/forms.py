@@ -3,7 +3,8 @@ import json
 import requests
 from flask_wtf import Form as FlaskWTFForm
 from wtforms import (
-    FieldList, Form, FormField, TextAreaField, StringField, RadioField, BooleanField, HiddenField
+    BooleanField, FieldList, Form, FormField,
+    HiddenField, RadioField, StringField, TextAreaField,
 )
 from wtforms.validators import DataRequired, Email, URL, Optional
 from wtforms_components.fields.select import SelectField
@@ -254,7 +255,9 @@ class AboutYourServiceForm(FlaskWTFForm):
         ])
     service_description = TextAreaField(
         'Service description',
-        validators=[DataRequired(message='Service description cannot be blank')])
+        validators=[
+            DataRequired(message='Service description cannot be blank')]
+    )
 
 
 class DonePageURLForm(FlaskWTFForm):
