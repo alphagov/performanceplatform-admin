@@ -138,7 +138,7 @@ def dashboard_delete(admin_client, uuid):
            methods=['GET', 'POST'])
 @requires_authentication
 @requires_feature('big-edit')
-def publish_dashboard(admin_client, uuid):
+def dashboard_publish(admin_client, uuid):
     dashboard_dict = admin_client.get_dashboard(uuid)
     if dashboard_dict['status'] == 'unpublished':
         admin_client.update_dashboard(
@@ -150,4 +150,22 @@ def publish_dashboard(admin_client, uuid):
         flash('Your dashboard has been published', 'success')
     else:
         flash('Dashboard already published', 'info')
+    return redirect(url_for('dashboard_list'))
+
+@app.route('{0}/<uuid>/unpublish'.format(DASHBOARD_ROUTE),
+           methods=['GET', 'POST'])
+@requires_authentication
+@requires_feature('big-edit')
+def dashboard_unpublish(admin_client, uuid):
+    dashboard_dict = admin_client.get_dashboard(uuid)
+    if dashboard_dict['status'] == 'published':
+        admin_client.update_dashboard(
+            uuid, {
+                'status': 'unpublished',
+                'slug': dashboard_dict["slug"],
+                'title': dashboard_dict["title"]
+            })
+        flash('Your dashboard has been unpublished', 'success')
+    else:
+        flash('Dashboard already unpublished', 'info')
     return redirect(url_for('dashboard_list'))
