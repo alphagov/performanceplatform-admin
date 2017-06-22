@@ -1,37 +1,42 @@
-{  
+{
   "query": {
-    "sort_by": "_timestamp:ascending"
+    "collect": [
+      "count:sum"
+    ],
+    "period": "week",
+    "start_at": "2016-11-01T00:00:00+00:00"
   },
-  "visualisation" : {
+  "visualisation": {
     "axes": {
-        "x": {
-            "format": "date", 
-            "key": [
-                "_start_at", 
-                "_end_at"
-            ], 
-            "label": "Date"
-        }, 
-        "y": [
-            {
-                "format": {
-                    "pence": true,
-                    "type": "currency"
-                },
-                "label": "Average value"
-            }
-        ]
-    }, 
-    "axis-period": "month",
+      "x": {
+        "format": {
+          "format": "D MMM YYYY",
+          "type": "date"
+        },
+        "key": [
+          "_start_at",
+          "_end_at"
+        ],
+        "label": "Date"
+      },
+      "y": [
+        {
+          "format": {
+            "magnitude": true,
+            "sigfigs": 3,
+            "type": "integer"
+          },
+          "label": "Unique users"
+        }
+      ]
+    },
+    "axis-period": "week",
     "date-picker": {
-        "start-date": "2016-08-29"
+      "start-date": "2016-11-01"
     },
     "format-options": {
-        "dps": 5,
-        "magnitude": true,
-        "sigfigs": 5,
-        "type": "number"
+      "type": "integer"
     },
-    "value-attribute": "rate"
+    "value-attribute": "count:sum"
   }
 }
