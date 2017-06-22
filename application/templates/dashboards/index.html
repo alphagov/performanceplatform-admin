@@ -27,16 +27,19 @@
               </div>
               <ul class="col-sm-12 col-md-5 buttons">
                   {% if user_has_feature('edit-dashboards', user) and dashboard.status == "unpublished" %}
-                    <li><a class='btn btn-success' href="{{ url_for('dashboard_hub', uuid=dashboard.id) }}">Edit dashboard</a></li>
+                    <li><a class='btn btn-success' href="{{ url_for('dashboard_hub', uuid=dashboard.id) }}" title="Edit dashboard">Edit</a></li>
                   {% endif %}
                   {% if user_has_feature('big-edit', user) %}
-                    <li><a class='btn btn-success' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}"><strong>BIG EDIT</strong></a></li>
-                    <li><a class='btn btn-success' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}">Clone</a></li>
+                    <li><a class='btn btn-success' href="{{ url_for('dashboard_form', uuid=dashboard.id) }}" title="Edit dashboard"><strong>BIG EDIT</strong></a></li>
+                    <li><a class='btn btn-success' href="{{ url_for('dashboard_clone', uuid=dashboard.id) }}" title="Clone dashboard">Clone</a></li>
                   {% endif %}
                   <li><a class='btn btn-primary' href="{{ dashboard['public-url'] }}" target="_blank">Preview</a></li>
+                  {% if dashboard.status == "published" and user_has_feature('big-edit', user)%}
+                    <li><a class='btn btn-info' href="{{ url_for('dashboard_unpublish', uuid=dashboard.id) }}" title="Unpublish dashboard">Unpublish</a></li>
+                  {% endif %}
                   {% if dashboard.status == "unpublished" and user_has_feature('big-edit', user)%}
-                    <li><a class='btn btn-warning' href="{{ url_for('publish_dashboard', uuid=dashboard.id) }}">Publish</a></li>
-                    <li><a class='btn btn-warning' href="{{ url_for('dashboard_delete', uuid=dashboard.id) }}">Delete dashboard</a></li>
+                    <li><a class='btn btn-warning' href="{{ url_for('dashboard_publish', uuid=dashboard.id) }}" title="Publish dashboard">Publish</a></li>
+                    <li><a class='btn btn-danger' href="{{ url_for('dashboard_delete', uuid=dashboard.id) }}" title="Delete dashboard">Delete</a></li>
                   {% endif %}
               </ul>
           </div>
