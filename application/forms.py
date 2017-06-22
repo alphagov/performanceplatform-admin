@@ -1,12 +1,16 @@
+import json
+
+import requests
+from flask_wtf import Form as FlaskWTFForm
+from wtforms import (
+    BooleanField, FieldList, Form, FormField,
+    HiddenField, RadioField, StringField, TextAreaField,
+)
+from wtforms.validators import DataRequired, Email, URL, Optional
+from wtforms_components.fields.select import SelectField
+
 from application import app
 from application.fields.json_textarea import JSONTextAreaField
-from flask_wtf import Form as FlaskWTFForm
-from wtforms import (FieldList, Form, FormField, TextAreaField, TextField,
-                     RadioField, BooleanField, HiddenField)
-from wtforms.validators import Required, Email, URL, Optional
-from wtforms_components.fields.select import SelectField
-import requests
-import json
 
 
 def convert_to_module_for_form(module, module_types, cloned=False):
@@ -133,8 +137,8 @@ class ModuleForm(Form):
     data_group = SelectField('Data group', default='')
     data_type = SelectField('Data type', default='')
 
-    slug = TextField('Module URL')
-    title = TextField('Title')
+    slug = StringField('Module URL')
+    title = StringField('Title')
     description = TextAreaField('Description')
     info = TextAreaField('Info')
 
@@ -187,12 +191,12 @@ class DashboardCreationForm(Form):
          'Public sector purchasing dashboard'),
         ('Service dashboard', 'Service dashboard'),
     ])
-    slug = TextField('Dashboard URL')
-    title = TextField('Dashboard title')
-    description = TextField('Description')
+    slug = StringField('Dashboard URL')
+    title = StringField('Dashboard title')
+    description = TextAreaField('Description')
     owning_organisation = SelectField(
         'Owning organisation',
-        validators=[Required(message='This field cannot be blank.')]
+        validators=[DataRequired(message='This field cannot be blank.')]
     )
     customer_type = SelectField('Customer type', choices=[
         ('', ''),
@@ -209,8 +213,8 @@ class DashboardCreationForm(Form):
     costs = TextAreaField('Notes on costs')
     other_notes = TextAreaField('Other notes')
 
-    transaction_title = TextField('Transaction action')
-    transaction_link = TextField('Transaction link')
+    transaction_title = StringField('Transaction action')
+    transaction_link = StringField('Transaction link')
 
     modules = FieldList(FormField(ModuleForm), min_entries=0)
     published = HiddenField('published', default=False)
@@ -224,26 +228,26 @@ class AboutYouForm(FlaskWTFForm):
             admin_client)
         self.organisation.choices[0] = ('', 'Select a department or agency')
 
-    full_name = TextField(
+    full_name = StringField(
         'Full name',
-        validators=[Required(message='Name cannot be blank')])
-    email_address = TextField(
+        validators=[DataRequired(message='Name cannot be blank')])
+    email_address = StringField(
         'Email address',
         validators=[
-            Required(message='Email cannot be blank'),
+            DataRequired(message='Email cannot be blank'),
             Email(message='Email format is invalid')
         ])
     organisation = SelectField(
         'Your organisation',
-        validators=[Required(message='Organisation cannot be blank')]
+        validators=[DataRequired(message='Organisation cannot be blank')]
     )
 
 
 class AboutYourServiceForm(FlaskWTFForm):
-    service_name = TextField(
+    service_name = StringField(
         'Service name',
-        validators=[Required(message='Name cannot be blank')])
-    service_url = TextField(
+        validators=[DataRequired(message='Name cannot be blank')])
+    service_url = StringField(
         'Service start page URL',
         validators=[
             Optional(),
@@ -251,25 +255,27 @@ class AboutYourServiceForm(FlaskWTFForm):
         ])
     service_description = TextAreaField(
         'Service description',
-        validators=[Required(message='Service description cannot be blank')])
+        validators=[
+            DataRequired(message='Service description cannot be blank')]
+    )
 
 
 class DonePageURLForm(FlaskWTFForm):
-    done_page_url = TextField(
+    done_page_url = StringField(
         'Done page URL',
         validators=[
             URL(message='Done page URL format is invalid'),
-            Required(message='Done page URL cannot be blank')
+            DataRequired(message='Done page URL cannot be blank')
         ])
 
 
 class DashboardHubForm(FlaskWTFForm):
-    title = TextField(
+    title = StringField(
         'Dashboard title',
-        validators=[Required(message='Title cannot be blank')])
+        validators=[DataRequired(message='Title cannot be blank')])
     description = TextAreaField(
         'Dashboard description',
-        validators=[Required(message='Description cannot be blank')])
+        validators=[DataRequired(message='Description cannot be blank')])
 
 
 class UploadOptionsForm(FlaskWTFForm):
@@ -281,7 +287,7 @@ class UploadOptionsForm(FlaskWTFForm):
             ('month', 'Manually upload a spreadsheet every month')
         ],
         default='week',
-        validators=[Required(message='Please select an upload option')])
+        validators=[DataRequired(message='Please select an upload option')])
 
 
 class ChannelOptionsForm(FlaskWTFForm):
