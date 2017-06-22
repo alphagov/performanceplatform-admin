@@ -2,46 +2,85 @@
   "query": {},
   "visualisation": {
     "tabs": [
-        {
-            "axes": {
-                "x": {
-                    "format": "date", 
-                    "key": "_timestamp", 
-                    "label": "Date"
-                }
-            }, 
-            "data-source": {
-                "data-group": "govuk", 
-                "data-type": "monitoring", 
-                "query-params": {
-                    "period": "day"
-                }
-            }, 
-            "description": "", 
-            "module-type": "availability", 
-            "slug": "30-days", 
-            "title": "30 days"
-        }, 
-        {
-            "axes": {
-                "x": {
-                    "format": "time", 
-                    "key": "_timestamp", 
-                    "label": "Time"
-                }
-            }, 
-            "data-source": {
-                "data-group": "govuk", 
-                "data-type": "monitoring", 
-                "query-params": {
-                    "period": "hour"
-                }
-            }, 
-            "description": "", 
-            "module-type": "availability", 
-            "slug": "24-hours", 
-            "title": "24 hours"
-        }
+      {
+        "axes": {
+          "x": {
+            "format": "date",
+            "key": [
+              "_start_at",
+              "_end_at"
+            ],
+            "label": "Date"
+          },
+          "y": [
+            {
+              "format": "integer",
+              "groupId": "roaming",
+              "label": "Roaming users"
+            },
+            {
+              "format": "integer",
+              "groupId": "one-time",
+              "label": "Single location users"
+            },
+            {
+              "format": "integer",
+              "groupId": "transactions",
+              "label": "Total transactions"
+            }
+          ]
+        },
+        "data-source": {
+          "data-group": "gov-wifi",
+          "data-type": "account-usage",
+          "query-params": {
+            "collect": [
+              "count:sum"
+            ],
+            "duration": 12,
+            "filter_by": [
+              "dataType:account-usage"
+            ],
+            "group_by": [
+              "type"
+            ],
+            "period": "week"
+          }
+        },
+        "date-picker": {
+          "start-date": "2016-11-06"
+        },
+        "description": "Account usage and total number of transactions by week",
+        "format": "integer",
+        "module-type": "grouped_timeseries",
+        "one-hundred-percent": false,
+        "show-line-labels": true,
+        "show-total-label": false,
+        "slug": "weekly",
+        "title": "Weekly",
+        "use_stack": false,
+        "value-attribute": "count:sum"
+      },
+      {
+        "axes": {
+          "x": {
+            "format": "time",
+            "key": "_timestamp",
+            "label": "Time"
+          }
+        },
+        "data-source": {
+          "data-group": "govuk",
+          "data-type": "monitoring",
+          "query-params": {
+            "period": "hour"
+          }
+        },
+        "description": "",
+        "module-type": "availability",
+        "slug": "24-hours",
+        "title": "24 hours"
+      }
     ]
   }
 }

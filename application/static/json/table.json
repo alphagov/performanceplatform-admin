@@ -1,23 +1,36 @@
 {
   "query": {
-    "start_at": "2015-01-01T00:00:00Z"
+    "start_at": "2015-01-01T00:00:00Z",
+    "sort_by": "service_name:ascending",
+    "group_by": [
+      "department"
+    ]
   },
-  "visualisation" : {
+  "visualisation": {
     "axes": {
-        "x": {
-            "format": "url", 
-            "key": "url", 
-            "label": "URL"
-        }, 
-        "y": [
-            {
-                "format": "integer", 
-                "key": "comment_count:sum", 
-                "label": "Total comments"
-            }
-        ]
-    }, 
-    "sort-by": "comment_count:sum", 
+      "x": {
+        "key": "website",
+        "label": "Name of website"
+      },
+      "y": [
+        {
+          "format": "percent",
+          "key": "percentOfTotal(count:sum)",
+          "label": "Percentage of all government websites"
+        },
+        {
+          "format": "integer",
+          "key": "count:sum",
+          "label": "Number of websites"
+        },
+        {
+          "format": "url",
+          "key": "url",
+          "label": "URL"
+        }
+      ]
+    },
+    "sort-by": "count:sum",
     "sort-order": "descending"
   }
 }

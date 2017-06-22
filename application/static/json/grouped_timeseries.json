@@ -8,49 +8,50 @@
     "group_by": [
       "channel"
     ],
-    "period": "week",
-    "sort_by": "_timestamp:ascending"
+    "period": "week"
   },
-  "visualisation" : {
+  "visualisation": {
     "axes": {
-        "x": {
-            "format": {
-                "format": "D MMM YYYY", 
-                "type": "date"
-            }, 
-            "key": [
-                "_start_at", 
-                "_end_at"
-            ], 
-            "label": "Date"
-        }, 
-        "y": [
-            {
-                "format": "integer", 
-                "groupId": "digital", 
-                "label": "Digital"
-            }, 
-            {
-                "format": "integer", 
-                "groupId": "phone", 
-                "label": "Phone"
-            }, 
-            {
-                "format": "integer", 
-                "groupId": "paper", 
-                "label": "Paper"
-            }
-        ]
-    }, 
-    "axis-period": "week", 
-    "date-picker": {
-        "start-date": "2016-01-01"
+      "x": {
+        "format": {
+          "format": "D MMM YYYY",
+          "type": "date"
+        },
+        "key": [
+          "_start_at",
+          "_end_at"
+        ],
+        "label": "Date"
+      },
+      "y": [
+        {
+          "format": "integer",
+          "groupId": "digital",
+          "label": "Digital"
+        },
+        {
+          "format": "integer",
+          "groupId": "phone",
+          "label": "Phone"
+        },
+        {
+          "format": "integer",
+          "groupId": "paper",
+          "label": "Paper"
+        }
+      ]
     },
-    "format": "number",
-    "one-hundred-percent": false, 
-    "show-line-labels": true, 
+    "axis-period": "week",
+    "date-picker": {
+      "start-date": "2016-01-01"
+    },
+    "format": {
+      "type": "number"
+    },
+    "one-hundred-percent": false,
+    "show-line-labels": true,
     "show-total-label": true,
-    "use_stack": true, 
+    "use_stack": true,
     "value-attribute": "count:sum"
   }
 }

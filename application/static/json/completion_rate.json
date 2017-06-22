@@ -9,31 +9,31 @@
     ],
     "period": "week"
   },
-  "visualisation" : {
+  "visualisation": {
     "axes": {
-        "x": {
-            "format": "date", 
-            "key": [
-                "_start_at", 
-                "_end_at"
-            ], 
-            "label": "Date"
-        }, 
-        "y": [
-            {
-                "format": "percent", 
-                "key": "completion", 
-                "label": "Completion rate"
-            }
-        ]
-    }, 
-    "axis-period": "month", 
-    "date-picker": {
-        "start-date": "206-08-29"
+      "x": {
+        "format": "date",
+        "key": [
+          "_start_at",
+          "_end_at"
+        ],
+        "label": "Date"
+      },
+      "y": [
+        {
+          "format": "percent",
+          "key": "completion",
+          "label": "Completion rate"
+        }
+      ]
     },
-    "denominator-matcher": "start", 
-    "matching-attribute": "stage", 
-    "numerator-matcher": "complete", 
+    "axis-period": "month",
+    "date-picker": {
+      "start-date": "2016-08-29"
+    },
+    "denominator-matcher": "start",
+    "matching-attribute": "stage",
+    "numerator-matcher": "complete",
     "value-attribute": "count:sum"
   }
 }
