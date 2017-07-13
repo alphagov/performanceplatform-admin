@@ -9,7 +9,6 @@ from redis import Redis
 from application.core import log_handler
 from application.redis_session import RedisSessionInterface
 
-
 app = Flask(__name__)
 
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
@@ -17,11 +16,8 @@ GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 app.config['LOG_LEVEL'] = "INFO"
 app.config.from_object('application.config.default')
 app.config.from_object('application.config.{0}'.format(GOVUK_ENV))
-app.secret_key = app.config['COOKIE_SECRET_KEY']
-app.redis_instance = Redis(
-    host=app.config['REDIS_HOST'],
-    port=app.config['REDIS_PORT'],
-)
+app.secret_key = app.config['SECRET_KEY']
+app.redis_instance = Redis.from_url(url=app.config['REDIS_URL'])
 app.session_interface = RedisSessionInterface(
     redis=app.redis_instance, prefix='performanceplatform_admin:session:')
 

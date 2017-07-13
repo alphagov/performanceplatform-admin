@@ -1,25 +1,58 @@
 language: python
+dist: trusty
 python:
   - '2.7'
-env:
-  global:
-    # Contains a GH_TOKEN for the @gds-pp-ci user with public_repo access
-    secure: phJDs0lrSnnexBbeEde6Sn5TC4IcXPfjnHdJaSIn9juXg8Ks8K5GZ0HvFwBVsABZTC+ym9xmcRILt0ZUU81k1H9Ol9G2dnwCm+D9uNPzAP4yTxFpaKmfjutRA72K2mN5yS/1JZ3HZ5JZ54mJghyVev+KnIoMv1RsmpAo5hxNpQE=
-install:
-  - pip install -r requirements_for_tests.txt --use-mirrors
-script:
-  - ./run_tests.sh
-after_success:
-  - coveralls
-  - ./.travis/release_tag.sh
-branches:
-  except:
-    - release
-    - /^release_\d+$/
-    - /^deployed-to.*$/
+cache: pip
+sudo: true
 notifications:
   email: false
+
 services:
   - redis-server
-cache: pip
-sudo: false
+
+env:
+  global:
+    - PAAS_USER: pp-deploy@digital.cabinet-office.gov.uk
+    - PAAS_SERVICE: performance-platform-admin
+    - APP_BACKDROP_HOST_STAGING: https://www.preview.performance.service.gov.uk/
+    - APP_BACKDROP_HOST_PRODUCTION: https://www.performance.service.gov.uk
+    - APP_SIGNON_BASE_URL_STAGING: https://signon.integration.publishing.service.gov.uk
+    - APP_SIGNON_BASE_URL_PRODUCTION: https://signon.publishing.service.gov.uk
+    # PAAS_PASSWORD
+    - secure: cTNAL8kp9D0jiOqZIU0TNs3Pie7a/ZhTSgt6RoCn7h8yz3FpjPqXZ06VmIL/k5nWTXqlqL3/JNlzeO22k8yGGgydyN5BonD+dZu2F5LMr7ntAzUWt+HSvTc2mefTDX/aw8Thvf8z+ane5CLiGZiqSDRXen+u7QbKG0xEOL7uq9s=
+    # APP_SECRET_KEY_STAGING
+    - secure: RVfar/tsYGRRLW8I4KFHg/AC30MlAZZe1Q5IL7RawGdCDiS5g1/Cr3IljjQIhFP8lZV3DGp8FiqVZpGno/vogNqUI44MWS5bXNJ7MVagquPGwo6+JDyZWp/92xmUCuQVS7YIN0ZrgGipxkXN+owZbAzTVep6bvLqDcBlGJjD9NA=
+    # APP_SECRET_KEY_PRODUCTION
+    - secure: jZzOmVCPYiWgjtlC3Y9jYND9o99tZGG4q9cEqO+c39m1YkN8HzHmK61KH3RYK2y4aLk9Dkfg8yK1r3HaW+jT1la4SZ2/t0REDtGAkJoX/tzbFBAXY5Wsk4fCKz9bIDt0eaSTLW1ZQemxnBcJI27/9UvQ5Qr+x2qKKK9Fcl7GKRU=
+    # APP_SIGNON_OAUTH_ID_STAGING
+    - secure: efwjoq9GUutxr0q1FPEkUKrllYGZ59lNNZGUEsVs+f0IwvUZAuTmh48CCZujXONr7xe+a6XnmoyAPFaG78uGaegezVlCMjzSiKtvTM6T3PlFfKOrtjHf/ZxYehMEzItw6qRRF1coxILuVUN9APkaxz/9Tbv+W4NHCTKS11F3ZN4=
+    # APP_SIGNON_OAUTH_ID_PRODUCTION
+    - secure: i4VSBfxPrzlpFkvnUKS61TPinsWsBPbH9OFXAXTwzTkTSrryeGxJxV/xuwkTichuY30WfIbmeNpQmAJ+0ue0js6eDKJgiQpnmRYvaDOIrfVD5zgoPqWCnluz56KhVfcV7KQjqxF8u2n27zD4uMpq8RZlW0UkxCJqeww0bW88pGE=
+    # APP_SIGNON_OAUTH_SECRET_STAGING
+    - secure: bpWoDy41WOM9p6zq/Jb/YsXflzunjZkt/mtUX/ddSMM9aBvY/pJl8841WfX8ndda2+nobJyu6D+FOsocehrqmi0JKSZrvj414IV+XDU1UHdJbWKbwIMuh8UAFNypMj+pdolzN8gxpbYnqkPcEI+xmZPdoQqtUmHefNEJUNoz3/o=
+    # APP_SIGNON_OAUTH_SECRET_PRODUCTION
+    - secure: meE9AODVxUa/3e8lpRUpdxjdrMhikbRxhqQL93JY/+3eRMMWGTWTCnLg+ymYHU4X42JoN7oBhY5u108DQqa0SyYzzItIUiQj8S9VhuGnrBBIATNI0pFJ0r6OEybT/siPLGyZukajldaq7fsBcwIT//SvRipCrRY7wh9xqDnvmrM=
+    # Contains a GH_TOKEN
+    - secure: phJDs0lrSnnexBbeEde6Sn5TC4IcXPfjnHdJaSIn9juXg8Ks8K5GZ0HvFwBVsABZTC+ym9xmcRILt0ZUU81k1H9Ol9G2dnwCm+D9uNPzAP4yTxFpaKmfjutRA72K2mN5yS/1JZ3HZ5JZ54mJghyVev+KnIoMv1RsmpAo5hxNpQE=
+
+before_install:
+  - sudo rm -f /etc/boto.cfg
+
+script:
+  - ./run_tests.sh
+
+before_deploy:
+  - chmod +x etc/deploy.sh
+
+deploy:
+  - provider: script
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_STAGING APP_BACKDROP_HOST=$APP_BACKDROP_HOST_STAGING APP_SIGNON_BASE_URL=$APP_SIGNON_BASE_URL_STAGING APP_SIGNON_OAUTH_ID=$APP_SIGNON_OAUTH_ID_STAGING APP_SIGNON_OAUTH_SECRET=$APP_SIGNON_OAUTH_SECRET_STAGING etc/deploy.sh staging
+    skip_cleanup: true
+    on:
+      branch: staging
+
+  - provider: script
+    script: APP_SECRET_KEY=$APP_SECRET_KEY_PRODUCTION APP_BACKDROP_HOST=$APP_BACKDROP_HOST_PRODUCTION APP_SIGNON_BASE_URL=$APP_SIGNON_BASE_URL_PRODUCTION APP_SIGNON_OAUTH_ID=$APP_SIGNON_OAUTH_ID_PRODUCTION APP_SIGNON_OAUTH_SECRET=$APP_SIGNON_OAUTH_SECRET_PRODUCTION etc/deploy.sh production
+    skip_cleanup: true
+    on:
+      branch: production

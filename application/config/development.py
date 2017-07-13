@@ -1,19 +1,15 @@
-COOKIE_SECRET_KEY = 'placeholder_cookie_secret_key'
+import os
 
+DEBUG = True
+SECRET_KEY = 'placeholder_cookie_secret_key'
 ADMIN_HOST = 'http://performanceplatform-admin.dev.gov.uk/'
-
 BACKDROP_HOST = 'http://backdrop-write.dev.gov.uk'
 STAGECRAFT_HOST = 'http://stagecraft.dev.gov.uk'
-
 GOVUK_SITE_URL = 'http://spotlight.development.performance.service.gov.uk'
 SIGNON_OAUTH_ID = 'oauth_id'
 SIGNON_OAUTH_SECRET = 'oauth_secret'
 SIGNON_BASE_URL = 'http://signon.dev.gov.uk'
-
-DEBUG = True
-
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
+REDIS_URL = os.getenv('REDIS_URL')
 
 FAKE_OAUTH_TOKEN = 'development-oauth-access-token'
 FAKE_OAUTH_USER = {
