@@ -1,0 +1,12 @@
+---
+buildpack: python_buildpack
+name: performance-platform-admin
+services:
+  - redis-poc
+env:
+  GOVUK_ENV: production
+  GOVUK_SITE_URL: https://www.gov.uk
+
+memory: 256M
+routes:
+  - route: performance-platform-admin.cloudapps.digital

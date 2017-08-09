@@ -1,11 +1,13 @@
-from argh import arg
+import os
+
 from argh.dispatching import dispatch_command
+
 import application
 
 
-@arg('port', type=int, help='The port number to run the app on')
-def start_app(port):
-    application.start(port)
+def start_app():
+    port = int(os.getenv('PORT'))
+    application.start(port=port)
 
 
 if __name__ == '__main__':
