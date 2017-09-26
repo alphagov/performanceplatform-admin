@@ -7,7 +7,7 @@ from nose.tools import eq_
 from werkzeug.datastructures import FileStorage
 
 from application.files.uploaded import UploadedFile
-
+from application import app
 
 TEST_FILE_PATH = '/tmp/test-uploaded-file'
 
@@ -107,5 +107,7 @@ class TestUploadedFile(unittest.TestCase):
         mock_Popen.return_value = FakeProcess(1)
         csv_length_999999 = '\n'.join(['aa,bb,ccc' for i in range(100000)])
         uploaded_file = UploadedFile(create_file_storage(csv_length_999999))
-
+        old = app.config.get('VIRUS_CHECK')
+        app.config['VIRUS_CHECK'] = True
         eq_(uploaded_file.validate(), ['File may contain a virus'])
+        app.config['VIRUS_CHECK'] = old

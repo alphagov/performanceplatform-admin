@@ -1,4 +1,4 @@
-
+from application import app
 import mimetypes
 import os
 
@@ -36,8 +36,13 @@ class UploadedFile(object):
         self.cleanup()
 
     def is_virus(self):
-        proc = Popen(['clamdscan', self.filename],
-                     stdout=PIPE, stderr=PIPE)
+        try:
+            proc = Popen(['clamdscan', self.filename],
+                         stdout=PIPE, stderr=PIPE)
+        except OSError as os_error:
+            raise FileUploadError(
+                'Virus scanner is not installed'
+            )
 
         _, stderr = proc.communicate()
         return_code = proc.returncode
@@ -66,8 +71,12 @@ class UploadedFile(object):
         if self.is_too_big():
             problems.append('File is too big ({0})'.format(self.file_size))
 
-        if self.is_virus():
-            problems.append('File may contain a virus')
+        if app.config.get('VIRUS_CHECK', False) == True:
+            try:
+                if self.is_virus():
+                    problems.append('File may contain a virus')
+            except FileUploadError as upload_err:
+                problems.append(upload_err.message)
 
         return problems
 
