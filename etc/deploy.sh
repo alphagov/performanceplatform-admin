@@ -29,7 +29,7 @@ cf set-env $PAAS_SERVICE SIGNON_OAUTH_ID $APP_SIGNON_OAUTH_ID
 cf set-env $PAAS_SERVICE SIGNON_OAUTH_SECRET $APP_SIGNON_OAUTH_SECRET
 
 # deploy apps
-cf push $PAAS_SERVICE
+cf push -f manifest.yml
 
 # create and map routes
 cf map-route $PAAS_SERVICE cloudapps.digital --hostname $PAAS_SERVICE-$PAAS_SPACE
