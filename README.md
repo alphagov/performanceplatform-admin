@@ -30,7 +30,8 @@ brew install redis
 
 To start run `redis-server`
 
-A good guide to adding redis to launchctl can be found [here][]
+While the default command is enough to run the app locally, a good guide to
+adding redis to launchctl can be found [here][] if you're more ambitious.
 
 [Redis]: http://redis.io/
 [here]: http://mac-dev-env.patrickbougie.com/redis/
@@ -57,8 +58,14 @@ python tools/compile_sass.py
 
 ## Running the app
 
+This app expects two environment variables to be set: `PORT` and `REDIS_URL`.
+Redis needs to be running when booting the app locally.
+
 ```bash
-python start.py 3070
+export PORT=3070
+export REDIS_URL=redis://localhost:6379/12
+
+python start.py
 ```
 
 or if you're using the [Performance Platform development environment](https://github.com/alphagov/pp-puppet) you can
@@ -73,6 +80,8 @@ You can modify your local configuration without affecting version control using
 the instructions in the `admin/config/development.py` file.
 
 ## Running tests
+
+Redis needs to be running before starting the tests.
 
 ```bash
 ./run_tests.sh
