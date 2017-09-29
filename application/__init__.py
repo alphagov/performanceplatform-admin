@@ -18,6 +18,7 @@ app.config.from_object('application.config.default')
 app.config.from_object('application.config.{0}'.format(GOVUK_ENV))
 app.secret_key = app.config['SECRET_KEY']
 app.redis_instance = Redis.from_url(url=app.config['REDIS_URL'])
+print('---- {}'.format(app.redis_instance.connection_pool))
 app.session_interface = RedisSessionInterface(
     redis=app.redis_instance, prefix='performanceplatform_admin:session:')
 
