@@ -16,9 +16,10 @@ def load_paas_settings():
 
 PAAS = load_paas_settings()
 
-DEBUG = True
+DEBUG = False
 LOG_LEVEL = 'DEBUG'
 
+VIRUS_CHECK = False
 SECRET_KEY = os.getenv('SECRET_KEY')
 ADMIN_HOST = os.getenv('ADMIN_HOST')
 BACKDROP_HOST = os.getenv('BACKDROP_HOST')
