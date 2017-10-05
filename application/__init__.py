@@ -50,11 +50,9 @@ def add_header(response):
 
 def start(port):
     app.debug = app.config['DEBUG'] or False
-    if app.debug:
-        # does not watch for changes and recompile on requests if debug false
-        Scss(app,
-             static_dir='application/static/css',
-             asset_dir='application/assets/scss/manifest',
-             load_paths=[
-                 path.join(path.dirname(__file__), 'assets/scss')])
+    Scss(app,
+         static_dir='application/static/css',
+         asset_dir='application/assets/scss/manifest',
+         load_paths=[
+             path.join(path.dirname(__file__), 'assets/scss')])
     app.run('0.0.0.0', port=port)
