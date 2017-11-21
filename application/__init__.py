@@ -1,3 +1,4 @@
+from werkzeug.contrib.fixers import ProxyFix
 from os import getenv, path
 
 from flask import Flask
@@ -10,6 +11,7 @@ from application.core import log_handler
 from application.redis_session import RedisSessionInterface
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 GOVUK_ENV = getenv('GOVUK_ENV', 'development')
 
@@ -30,14 +32,6 @@ csrf = CsrfProtect(app)
 
 log_handler.set_up_logging(app, GOVUK_ENV)
 
-def _force_https():
-    from flask import _request_ctx_stack
-    if _request_ctx_stack is not None:
-        reqctx = _request_ctx_stack.top
-        reqctx.url_adapter.url_scheme = 'https'
-
-if GOVUK_ENV == 'production':
-    app.before_request(_force_https)
 
 import application.controllers.main
 import application.controllers.authentication
