@@ -14,7 +14,7 @@ env:
   global:
     - PAAS_USER: pp-deploy@digital.cabinet-office.gov.uk
     - PAAS_SERVICE: performance-platform-admin
-    - APP_BACKDROP_HOST_STAGING: https://www.staging.performance.service.gov.uk
+    - APP_BACKDROP_HOST_STAGING: https://performance-platform-backdrop-write-staging.cloudapps.digital
     - APP_BACKDROP_HOST_PRODUCTION: https://www.performance.service.gov.uk
     - APP_SIGNON_BASE_URL_STAGING: https://signon.staging.publishing.service.gov.uk
     - APP_SIGNON_BASE_URL_PRODUCTION: https://signon.publishing.service.gov.uk
