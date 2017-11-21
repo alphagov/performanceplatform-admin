@@ -30,14 +30,14 @@ csrf = CsrfProtect(app)
 
 log_handler.set_up_logging(app, GOVUK_ENV)
 
-def _force_https(app):
-    def wrapper(environ, start_response):
-        environ['wsgi.url_scheme'] = 'https'
-        return app(environ, start_response)
-    return wrapper
+def _force_https():
+    from flask import _request_ctx_stack
+    if _request_ctx_stack is not None:
+        reqctx = _request_ctx_stack.top
+        reqctx.url_adapter.url_scheme = 'https'
 
 if GOVUK_ENV == 'production':
-    app = _force_https(app)
+    app.before_request(_force_https)
 
 import application.controllers.main
 import application.controllers.authentication
