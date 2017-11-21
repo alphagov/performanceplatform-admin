@@ -30,6 +30,14 @@ csrf = CsrfProtect(app)
 
 log_handler.set_up_logging(app, GOVUK_ENV)
 
+def _force_https(app):
+    def wrapper(environ, start_response):
+        environ['wsgi.url_scheme'] = 'https'
+        return app(environ, start_response)
+    return wrapper
+
+if GOVUK_ENV == 'production':
+    app = _force_https(app)
 
 import application.controllers.main
 import application.controllers.authentication
