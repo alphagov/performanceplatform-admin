@@ -17,6 +17,7 @@ cf login -u $PAAS_USER -p $PAAS_PASSWORD -a https://api.cloud.service.gov.uk -o 
 
 # bind services
 cf bind-service $PAAS_SERVICE redis-poc
+cf bind-service $PAAS_SERVICE redis
 
 # set environmental variables
 cf set-env $PAAS_SERVICE ENVIRONMENT $PAAS_SPACE
