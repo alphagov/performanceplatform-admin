@@ -6,10 +6,10 @@ def load_paas_settings():
     paas = {}
     if 'VCAP_SERVICES' in os.environ:
         vcap = json.loads(os.environ['VCAP_SERVICES'])
-        for service in vcap['user-provided']:
-            if service['name'] == 'redis-poc':
+        for service in vcap['redis']:
+            if service['name'] == 'redis':
                 database_number = os.environ['REDIS_DATABASE_NUMBER']
-                url = service['credentials']['url']
+                url = service['credentials']['uri']
                 paas['REDIS_URL'] = '{}/{}'.format(url, int(database_number))
     return paas
 
