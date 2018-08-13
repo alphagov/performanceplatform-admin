@@ -56,33 +56,6 @@ class UploadTestCase(FlaskAppTestCase):
 
     @signed_in()
     @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
-    @patch('performanceplatform.client.data_set.DataSet.post')
-    def test_ask_for_file_if_none_chosen(
-            self,
-            data_set_post_patch,
-            get_data_set_patch,
-            client):
-        get_data_set_patch.return_value = {
-            'data_group': 'carers-allowance',
-            'data_type': 'volumetrics',
-            'bearer_token': 'abc123', 'foo': 'bar'
-        }
-
-        post_data = {
-            'file': (None, "")
-        }
-        response = client.post(
-            '/upload-data/carers-allowance/volumetrics',
-            data=post_data)
-
-        assert_that(
-            self.get_from_session('upload_data')['payload'],
-            equal_to(['Please choose a file to upload']))
-        assert_that(response.headers['Location'], ends_with('/upload-data'))
-        assert_that(response.status_code, equal_to(302))
-
-    @signed_in()
-    @patch('performanceplatform.client.admin.AdminAPI.get_data_set')
     def test_no_data_set_config_returns_error(
             self,
             get_data_set_patch,
