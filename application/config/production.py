@@ -16,7 +16,7 @@ def load_paas_settings():
 
 PAAS = load_paas_settings()
 
-DEBUG = True
+DEBUG = False
 LOG_LEVEL = 'DEBUG'
 
 VIRUS_CHECK = False
