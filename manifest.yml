@@ -8,5 +8,5 @@ env:
   GOVUK_ENV: production
   GOVUK_SITE_URL: https://www.gov.uk
 
-memory: 256M
+memory: 1G
 no-route: true
