@@ -2,7 +2,6 @@
 buildpack: python_buildpack
 name: performance-platform-admin
 services:
-  - redis-poc
   - redis
 env:
   GOVUK_ENV: production

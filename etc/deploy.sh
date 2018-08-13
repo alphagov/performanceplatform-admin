@@ -16,7 +16,6 @@ sudo apt-get update && sudo apt-get install cf-cli
 cf login -u $PAAS_USER -p $PAAS_PASSWORD -a https://api.cloud.service.gov.uk -o gds-performance-platform -s $PAAS_SPACE
 
 # bind services
-cf bind-service $PAAS_SERVICE redis-poc
 cf bind-service $PAAS_SERVICE redis
 
 # set environmental variables
