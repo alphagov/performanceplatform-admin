@@ -3,6 +3,7 @@ buildpack: python_buildpack
 name: performance-platform-admin
 services:
   - redis
+  - logit-ssl-drain
 env:
   GOVUK_ENV: production
   GOVUK_SITE_URL: https://www.gov.uk
